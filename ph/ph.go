@@ -133,6 +133,14 @@ func writeB1Histogram(data []byte, fh afero.File) {
 //
 // }
 
+func createKeyFromByteSlice(b []byte) string {
+	return fmt.Sprintf("%q", b)
+}
+
+func createByteSliceFromKey(s string) []byte {
+	// ...
+}
+
 func writeB2Histogram(data []byte, fh afero.File) {
 	// Create a histogram for 2-byte sequences.
 	// The keys are the 2-bytes sequences and the values are their occurance count.
