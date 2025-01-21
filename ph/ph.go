@@ -72,16 +72,7 @@ func doit(w io.Writer, fSys *afero.Afero) {
 	fmt.Fprintln(oh, "//!")
 	fmt.Fprintln(oh, "//! Generated code - do not edit!")
 	fmt.Fprintln(oh)
-	/*
-		writeB1Histogram(iData, oh)
-		writeB2Histogram(iData, oh)
-		writeB3Histogram(iData, oh)
-		writeB4Histogram(iData, oh)
-		writeB5Histogram(iData, oh)
-		writeB6Histogram(iData, oh)
-		writeB7Histogram(iData, oh)
-		writeB8Histogram(iData, oh)
-	*/
+
 	m1, k1 := createB1Histogram(iData)
 	m2, k2 := createB2Histogram(iData)
 	m3, k3 := createB3Histogram(iData)
@@ -90,6 +81,24 @@ func doit(w io.Writer, fSys *afero.Afero) {
 	m6, k6 := createB6Histogram(iData)
 	m7, k7 := createB7Histogram(iData)
 	m8, k8 := createB8Histogram(iData)
+	/*
+		type struct{
+			count int
+			pattern []byte
+		}
+
+
+		for i:= 0; i < len(k1); i++ {
+			n1, _ := m1[k1[i]]
+			n2, _ := m2[k2[i]]
+			n3, _ := m3[k3[i]]
+			n4, _ := m4[k4[i]]
+			n5, _ := m5[k5[i]]
+			n6, _ := m6[k6[i]]
+			n7, _ := m7[k7[i]]
+			n8, _ := m8[k8[i]]
+		}
+	*/
 
 	writeB1CCode(oh, m1, k1)
 	writeB2CCode(oh, m2, k2)
@@ -101,42 +110,3 @@ func doit(w io.Writer, fSys *afero.Afero) {
 	writeB8CCode(oh, m8, k8)
 
 }
-
-/*
-func writeB1Histogram(data []byte, fh afero.File) {
-	m, keys := createB1Histogram( data )
-	writeB1CCode(fh, m, keys)
-}
-
-func writeB2Histogram(data []byte, fh afero.File) {
-	m, keys := createB2Histogram( data )
-	writeB2CCode(fh, m, keys)
-}
-
-
-func writeB3Histogram(data []byte, fh afero.File) {
-	m, keys := createB3Histogram( data )
-	writeB3CCode(fh, m, keys)
-}
-
-func writeB4Histogram(data []byte, fh afero.File) {
-	m, keys := createB4Histogram( data )
-	writeB4CCode(fh, m, keys)
-}
-
-func writeB5Histogram(data []byte, fh afero.File) {
-	m, keys := createB5Histogram( data )
-	writeB5CCode(fh, m, keys)
-}
-
-func writeB6Histogram(data []byte, fh afero.File) {
-	m, keys := createB6Histogram( data )
-	writeB6CCode(fh, m, keys)
-}
-
-func writeB7Histogram(data []byte, fh afero.File) {
-}
-
-func writeB8Histogram(data []byte, fh afero.File) {
-}
-*/
