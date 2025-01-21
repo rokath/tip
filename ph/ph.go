@@ -81,15 +81,16 @@ func doit(w io.Writer, fSys *afero.Afero) {
 	m6, k6 := createB6Histogram(iData)
 	m7, k7 := createB7Histogram(iData)
 	m8, k8 := createB8Histogram(iData)
-	/*
-		type struct{
+	/**/
+		type patN struct{
 			count int
 			pattern []byte
 		}
-
+ pn := make([]patN)
 
 		for i:= 0; i < len(k1); i++ {
 			n1, _ := m1[k1[i]]
+			pn = append( pn, {n1, k1[:]})
 			n2, _ := m2[k2[i]]
 			n3, _ := m3[k3[i]]
 			n4, _ := m4[k4[i]]
@@ -98,7 +99,7 @@ func doit(w io.Writer, fSys *afero.Afero) {
 			n7, _ := m7[k7[i]]
 			n8, _ := m8[k8[i]]
 		}
-	*/
+	/* sortiert pn for count */
 
 	writeB1CCode(oh, m1, k1)
 	writeB2CCode(oh, m2, k2)
