@@ -1,5 +1,8 @@
 # Changelog
 
+The Tip project just started. It is not usable yet!
+
+<!---
 ## v1.0.0
 
 ### Added or Changed
@@ -13,3 +16,5 @@
 ### Removed
 
 - Some packages/libraries from acknowledgements I no longer use
+
+-->
