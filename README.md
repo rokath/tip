@@ -149,7 +149,7 @@ _Please refer to the [Tip User Manual](./docs/TipUsermanual.md)_
 ## Roadmap
 
 - [ ] Create Pattern Histogram Generator `ph`.
-- [ ] Write [Tip User Manual](./docs/TipUsermanual.md).
+- [ ] Write [Tip User Manual](./docs/TipUserManual.md).
 - [ ] to do
 
 
