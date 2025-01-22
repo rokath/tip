@@ -139,7 +139,7 @@ Table of Contents Generation:
 <!-- USAGE -->
 ## Usage
 
-_Please refer to the [Tip User Manual](./docs/TipUsermanual.md)_
+_Please refer to the [Tip User Manual](./docs/TipUserManual.md)_
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
