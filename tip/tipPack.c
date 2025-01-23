@@ -5,13 +5,14 @@
 
 
 typedef struct {
-    uint8_t * addr;
     uint8_t rp;
+    uint8_t * addr;
+    size_t len;
 } replacement_t;
 
 //! rp8 is the 8-byte replacement list. It cannot get longer.
-static replacement_t rp8[TIP_SRC_BUFFER_SIZE_MAX/8];
-static int c8 = 0; //!< c8 is the 8-byte replacement count
+static replacement_t rp[TIP_SRC_BUFFER_SIZE_MAX/2];
+static int rCnt = 0; //!< c8 is the 8-byte replacement count
 
 //! rp8 is the 2-byte replacement list. It cannot get longer.
 static replacement_t rp2[TIP_SRC_BUFFER_SIZE_MAX/2];
