@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"slices"
 
 	"github.com/spf13/afero"
 )
@@ -67,6 +68,26 @@ func doit(w io.Writer, fSys *afero.Afero) {
 		return
 	}
 	tips := generateSortedPatternHistogram(iData)
+	tips = tips[:127]
+
+	// sort tips for pattern length and count
+	compareFn := func(a, b tip) int {
+		if len(a.p) < len(b.p) {
+			return 1
+		}
+		if len(a.p) > len(b.p) {
+			return -1
+		}
+		if a.n < b.n {
+			return 1
+		}
+		if a.n > b.n {
+			return -1
+		}
+		return 0
+	}
+	slices.SortFunc(tips, compareFn)
+
 	writeGoTipTable(fSys, oFn, tips, stat)
 
 }

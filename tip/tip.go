@@ -4,44 +4,10 @@ func main() {
 
 }
 
-type replacer struct {
-	short byte
-	long  []byte
-}
-
-var nibbleList = []replacer{
-	{7, []byte{0xAA, 0x00, 0xFF}},
-	{2, []byte{0xFF, 0xFF}},
-	{1, []byte{0xFF, 0xAA}},
-	{0, []byte{0xFF, 0x00}},
-}
-
-// Translate nibbleList
-
-// 1 1:  0xFF, 0xAA, 0xFF, 0xAA
-// 7 2:  0xAA, 0x00, 0xFF 0xFF, 0xFF
-// So we have 64 double nibble pattern, we can add to the byte list
-// 0bbb0bbb -> 00bbbbbb (bbbbbb==000000 is forbidden to kep 0x00 out)
-// In the above pattern 0 0 []byte{ 0xFF, 0x00, 0xFF, 0x00 } we need to forbid,
-// so it will be 01000000 then and we use 65...127 = 63 more pattern
-
-// Here we can use 01bbbbbb another 64 byte pattern
-var byteList = []replacer{
-	{0x02, []byte{0xFF, 0x00, 0xFF}},
-	{0x01, []byte{0x00}},
-}
-
-// byte list and nibble list result in a combined list sorted by pattern length:
-var combinedList = []replacer{
-	{0x3F, []byte{0xAA, 0x00, 0xFF, 0xAA, 0x00, 0xFF}},
-	{0x02, []byte{0xFF, 0x00, 0xFF}},
-	{0x01, []byte{0x00}},
-}
-
-// pack converts in to out and returns final lenth.
+// tiPack converts in to out and returns final lenth.
 //
 // Algorithm:
-// * Start with combind list longest pattern and try to find a match inside in.
+// * Start with tip list longest pattern and try to find a match inside in.
 // * If a longest possible pattern match was found we have afterwards:
 //   - preBytes match postBytes
 //   - start over with preBytes and postBytes and so on until we cannot replace any pattern anymore
@@ -56,8 +22,63 @@ var combinedList = []replacer{
 // * (A) is in and (C) is the result of the first
 // Using (C) we collect the remaing bytes: xx xx xx xx xx xx in this example
 // We convert them to yy yy yy yy yy yy yy
-func pack(in []byte, out []byte) int {
 
-	// in: 0x00, 0xAA, 0xFF, 0xFF
-	return 0
+// Worst case length, when no compression is possible
+// in |bits| 7-bits    |out
+// -- | -- | --------- | --
+// 0 |  0 | 0 * 7 + 0 |  0
+// 1 |  8 | 1 * 7 + 1 |  2
+// 2 | 16 | 2 * 7 + 2 |  3
+// 3 | 24 | 3 * 7 + 3 |  4
+// 4 | 32 | 4 * 7 + 4 |  5
+// 5 | 40 | 5 * 7 + 5 |  6
+// 6 | 48 | 6 * 7 + 6 |  7
+// 7 | 56 | 8 * 7 + 0 |  8 (reserving 9)
+// 8 | 64 | 9 * 7 + 1 | 10
+// 9 | 72 |10 * 7 + 2 | 11
+// ...
+func tiPack(in []byte) (out []byte) {
+	maxLen := 8*len(in)/7 + 1 // if no compression is possible, for each byte 1 more bit is needed
+	out = make([]byte, maxLen)
+	/*
+		ref := make([]bool, maxLen) // ref gets 1s where matching patterns are found
+
+		f := string(in)
+
+		for _, x := range tipTable {
+
+			s := string(x)
+
+			n := strings.Index(f, s)
+			ref[n] = true
+
+			for k, y := range in {
+
+			}
+
+			comp := func(a, b []byte) bool {
+				return true
+			}
+			ref[0] = slices.IndexFunc(in, comp, x)
+
+		}
+	*/
+	return out
+}
+
+// ScanBuffer returns the offset of the first occurence of pattern in buf,
+// or -1 if search was not found in buf.
+func ScanBuffer(buf, pattern []byte) int {
+	offset := 0
+	ix := 0
+	for ix < len(pattern) {
+		b := buf[offset]
+		if pattern[ix] == b {
+			ix++
+		} else {
+			ix = 0
+		}
+		offset++
+	}
+	return offset
 }
