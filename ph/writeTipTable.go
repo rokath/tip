@@ -9,8 +9,8 @@ import (
 	"github.com/spf13/afero"
 )
 
-// writeTipTable generates a file oFn containing Go code using pn and stat
-func writeGoTipTable(fSys *afero.Afero, oFn string, pn []nPatt, stat os.FileInfo) {
+// writeTipTable generates a file oFn containing Go code using t[:127] and stat
+func writeGoTipTable(fSys *afero.Afero, oFn string, t []tip, stat os.FileInfo) {
 	oh, err := fSys.Create(oFn)
 	if err != nil {
 		log.Fatal(err)
@@ -20,49 +20,20 @@ func writeGoTipTable(fSys *afero.Afero, oFn string, pn []nPatt, stat os.FileInfo
 	fmt.Fprintln(oh, `package main`)
 	fmt.Fprintln(oh, "// Generated code - do not edit!")
 	fmt.Fprintln(oh)
-	fmt.Fprintf(oh, "var tipTable = [127]tipReplace{ // from %s (%s)\n", stat.Name(), stat.ModTime().String())
-	for i, x := range pn[len(pn)-127:] {
-		s := byteSliceAsGoCode(x.pattern)
-		y := 52 - len(s)
-		fmt.Fprintf(oh, "\t{ 0x%02x, %s }, %s// %s cnt = %5d\n", 0x7f-i, s, spaces(y), string(x.pattern), x.n)
+	fmt.Fprintf(oh, "var tipTable = [127][]byte { // from %s (%s)%s-- __ASCII__   count rpl\n", stat.Name(), stat.ModTime().String()[:16], spaces(14-len(stat.Name())))
+	limit := min(127, len(t))
+	for i, x := range t[:limit] {
+		s := byteSliceAsGoCode(x.p)
+		y := 64 - len(s)
+		fmt.Fprintf(oh, "\t%s, %s// %s%s%7d  %02x\n", s, spaces(y), byteSliceAsASCII(x.p), spaces(10-len(x.p)), x.n, i+1)
 	}
 	fmt.Fprintf(oh, "}\n")
-}
-
-// https://gist.github.com/chmike/05da938833328a9a94e02506922f2e7b
-func dumpByteSlice(b []byte) {
-	var a [16]byte
-	n := (len(b) + 15) &^ 15
-	for i := 0; i < n; i++ {
-		// if i%16 == 0 {
-		// 	fmt.Printf("%4d", i)
-		// }
-		if i%8 == 0 {
-			fmt.Print(" ")
-		}
-		if i < len(b) {
-			fmt.Printf(" %02X", b[i])
-		} else {
-			fmt.Print("   ")
-		}
-		if i >= len(b) {
-			a[i%16] = ' '
-		} else if b[i] < 32 || b[i] > 126 {
-			a[i%16] = '.'
-		} else {
-			a[i%16] = b[i]
-		}
-		if i%16 == 15 {
-			fmt.Printf("  %s", string(a[:]))
-		}
-	}
-	fmt.Println()
 }
 
 // byteSliceAsGoCode returns b as a Go code string. Evample:  []byte{ 0x5a, 0xf8, 0xbb}
 func byteSliceAsGoCode(b []byte) string {
 	var s strings.Builder
-	s.WriteString("[]byte{")
+	s.WriteString("{")
 	for i, x := range b {
 		s.WriteString(fmt.Sprintf(" 0x%02x", x))
 		if i < len(b)-1 {
@@ -73,21 +44,19 @@ func byteSliceAsGoCode(b []byte) string {
 	return s.String()
 }
 
-/*
 // byteSliceAsASCII returns b as ASCII string. Example:  .Aah.B..C
 func byteSliceAsASCII(b []byte) string {
 	var s strings.Builder
-	//s.WriteString("[]byte{")
-	for i, x := range b {
-		s.WriteString(fmt.Sprintf(" 0x%02x", x))
-		if i < len(b)-1 {
-			s.WriteString(",")
+	for _, x := range b {
+		if 0x20 <= x && x <= 0x7f {
+			s.WriteString(fmt.Sprintf("%c", x))
+		} else {
+			s.WriteString(" ")
 		}
 	}
-	s.WriteString("}")
 	return s.String()
 }
-*/
+
 // spaces returns a string consisting of n spaces.
 func spaces(n int) (s string) {
 	switch n {
