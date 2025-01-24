@@ -12,8 +12,6 @@ typedef struct {
 
 //! @brief rpp is the replacement list. It cannot get more elements.
 static replacement_t rp[TIP_SRC_BUFFER_SIZE_MAX/2];
-static int ri = 0; //!< @var ri is the replacements index.
-static int rc = 0; //!< @var rc is the replacements count.
 
 //! @brief rpInit is called when a new unpacked buffer arrived.
 void rpInit( void ){
