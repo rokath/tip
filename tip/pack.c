@@ -15,12 +15,12 @@ static replacement_t rp[TIP_SRC_BUFFER_SIZE_MAX/2];
 
 //! @brief rpInit is called when a new unpacked buffer arrived.
 void rpInit( void ){
-    // The first 2 element are initialized as boders.
+    // The first 2 elements are initialized as boders.
     rp[0].bo = 0; // From idx to rp[0].bo is first hey stack.
     rp[0].sz = 0; // Dummy entry to get started.
     // The space between 2 rps is a hay stack.
     rp[1].bo = TIP_SRC_BUFFER_SIZE_MAX; // From idx to rp[0].bo is first hey stack.
-    rp[1].sz = 0; // Dummy entry to get started.
+  //rp[1].sz = 0; // Dummy entry to get started.
 }
 
 //! @brief tip encodes src buffer with size len into dst buffer and returns encoded len.
