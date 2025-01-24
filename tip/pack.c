@@ -15,7 +15,7 @@ static replacement_t rp[TIP_SRC_BUFFER_SIZE_MAX/2];
 
 //! @brief rpInit is called when a new unpacked buffer arrived.
 void rpInit( void ){
-    rc = 2; // The first 2 element are initialized with a stopper.
+    // The first 2 element are initialized as boders.
     rp[0].bo = 0; // From idx to rp[0].bo is first hey stack.
     rp[0].sz = 0; // Dummy entry to get started.
     // The space between 2 rps is a hay stack.
