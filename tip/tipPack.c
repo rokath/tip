@@ -4,7 +4,8 @@
 #include "tip.h"
 
 
-typedef struct {
+typedef struct replacement {
+    replacement * next;
     uint8_t rp;
     uint8_t * addr;
     size_t len;
@@ -12,6 +13,11 @@ typedef struct {
 
 //! rp8 is the 8-byte replacement list. It cannot get longer.
 static replacement_t rp[TIP_SRC_BUFFER_SIZE_MAX/2];
+replacement * start = &rp;
+
+while( start->next != NULL {
+    start->
+
 static int rCnt = 0; //!< c8 is the 8-byte replacement count
 
 //! rp8 is the 2-byte replacement list. It cannot get longer.
