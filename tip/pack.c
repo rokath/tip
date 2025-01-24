@@ -46,7 +46,7 @@ size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
                 k++; // The rp insert takes part inside the already processed rps.
             }
             k++;
-        }while(hay+hlen>=src+len)
+        }while(hay+hlen<src+len)
     }
 
     // Some bytes groups in the src buffer are replacable with 0x01...0xFF and some not.
