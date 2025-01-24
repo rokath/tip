@@ -3,11 +3,11 @@
 #include <stddef.h>
 #include "tip.h"
 
-//! @brief replacement_t is the replacement
-typedef struct replacement_tag {
-    uint8_t  by; // by is the replacement byte 0x01 to 0xff.
-    uint16_t bo; // bo is the Buffer offset, where replacement size start.
+//! @brief replacement_t is a replacement type descriptor.
+typedef struct {
+    uint16_t bo; // bo is the buffer offset, where replacement size starts.
     uint8_t  sz; // sz is the replacement size (2-8).
+    uint8_t  by; // by is the replacement byte 0x01 to 0xff.
 } replacement_t;
 
 //! @brief rpp is the replacement list. It cannot get more elements.
@@ -20,8 +20,8 @@ static int rc = 0; //!< @var rc is the replacements count.
 void rpInit( void ){
     rc = 1; // The first element is initialized with a stopper.
     rp[0].by = 0; // 0x00 is no replacement byte and signals the end.
-    rp[0].sz = 0; // 
-    rp[0].bo = TIP_SRC_BUFFER_SIZE_MAX; // From idx to rp[0].bo is hey.
+    rp[0].sz = 0; // sz is redundant but good for speed.
+    rp[0].bo = 0; // TIP_SRC_BUFFER_SIZE_MAX; // From idx to rp[0].bo is first hey stack.
 }
 
 //! @brief rpInsert extends rp in an ordered way.
@@ -71,6 +71,11 @@ size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
 
         // Traverse the already found replacements to find hey stacks to look for the needle.
         for( int k = 0; k < rc; k++ ){ // at start rc is 1
+            
+            // advance in buffer
+            idx = rp[k].bo + rp[k].sz;
+            ptr = src + idx;
+   
             // get next hay
             uint8_t hay = ptr;
             size_t hlen = rp[k].bo - idx;
@@ -82,10 +87,6 @@ size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
                 uint16_t offset = loc - src; // offset is the needle (=pattern) position.
                 rpInsert( by, offset, nlen );
             }
-
-            // advance in buffer
-            idx = rp[k].bo + rp[k].sz;
-            ptr = src + idx;
         }
     }
 
