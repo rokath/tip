@@ -87,5 +87,55 @@ With 2 reserved bytes, zA and fA is this possible:
 * We take binary data and automatically determine a good shortcut set.
 * The shortcut set is de-facto a pattern list.
 
+
+ tiPack converts in to out and returns final lenth.
+
+ Algorithm:
+ * Start with tip list longest pattern and try to find a match inside in.
+ * If a longest possible pattern match was found we have afterwards:
+   - preBytes match postBytes
+   - start over with preBytes and postBytes and so on until we cannot replace any pattern anymore
+   - Then we have: xx xx p7 x p0 p0 xx xx xx for example, where pp are any pattern replace bytes,
+     which all != 0 and all have MSB==0. The xx are the remaining bytes, which can have any values.
+     Of course we need the position information like:
+
+ (A) in:  xx xx xx xx xx xx xx xx xx xx xx xx xx xx xx xx
+ (B) in:  xx xx P7 P7 P7 P7 xx P0 P0 P0 P0 P0 P0 xx xx xx
+ (C) ref:  0  0  1  1  1  1  0  1  1  1  1  1  1  0  0  0
+ (D) (in) xx xx      p7     xx    p0    p0       xx xx xx
+ * (A) is in and (C) is the result of the first
+ Using (C) we collect the remaing bytes: xx xx xx xx xx xx in this example
+ We convert them to yy yy yy yy yy yy yy
+
+Worst case length, when no compression is possible:
+
+in | bits |     7-bits | out | delta to previous | out delta to in
+--:|-----:|-----------:|----:|-------------------|------
+ 0 |    0 |  0 * 7 + 0 |   0 |                   |
+ 1 |    8 |  1 * 7 + 1 |   2 | +2                | 1
+ 2 |   16 |  2 * 7 + 2 |   3 | +1                | 1
+ 3 |   24 |  3 * 7 + 3 |   4 | +1                | 1
+ 4 |   32 |  4 * 7 + 4 |   5 | +1                | 1
+ 5 |   40 |  5 * 7 + 5 |   6 | +1                | 1
+ 6 |   48 |  6 * 7 + 6 |   7 | +1                | 1
+ 7 |   56 |  7 * 7 + 7 |   8 | +1                | 1
+ 8 |   64 |  9 * 7 + 1 |  10 | +2                | 2
+ 9 |   72 | 10 * 7 + 2 |  11 | +1                | 2
+10 |   80 | 11 * 7 + 3 |  12 | +1                | 2
+11 |   88 | 12 * 7 + 4 |  13 | +1                | 2
+12 |   96 | 13 * 7 + 5 |  14 | +1                | 2
+13 |  104 | 14 * 7 + 6 |  15 | +1                | 2
+14 |  112 | 15 * 7 + 7 |  16 | +1                | 2
+15 |  120 | 17 * 7 + 1 |  18 | +2                | 3
+16 |  128 | 18 * 7 + 2 |  19 | +1                | 3
+17 |  136 | 19 * 7 + 3 |  20 | +1                | 3
+18 |  144 | 20 * 7 + 4 |  21 | +1                | 3
+19 |  152 | 21 * 7 + 5 |  22 | +1                | 3
+20 |  160 | 22 * 7 + 6 |  23 | +1                | 3
+21 |  168 | 23 * 7 + 7 |  24 | +1                | 3
+22 |  176 | 25 * 7 + 1 |  26 | +2                | 4
+23 |  184 | 26 * 7 + 2 |  27 | +1                | 4
+
+
 -->
 
