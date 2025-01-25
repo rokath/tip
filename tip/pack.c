@@ -73,8 +73,8 @@ size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
     return generateTipPacket( dst );
 }
 
-//! @brief ur contains all unreplacable bytes from src. It cannot get longer.
-//! @details All unreplacable bytes are stretched inside the to 7-bit units.
+//! @brief ur holds all unreplacable bytes from src. It cannot get longer.
+//! @details All unreplacable bytes are stretched inside to 7-bit units.
 //! This makes the data a bit longer.
 static uint8_t ur[TIP_SRC_BUFFER_SIZE_MAX*8/7+1];
 
