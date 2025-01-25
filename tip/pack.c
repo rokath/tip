@@ -16,10 +16,11 @@ typedef struct {
 //! @brief rp is the replacement list. It cannot get more elements.
 //! The space between 2 rps is a hay stack.
 static replacement_t rp[TIP_SRC_BUFFER_SIZE_MAX/2 + 2];
+static int rc;
 
 //! @brief rpInit is called when a new unpacked buffer arrived.
 static inline void rpInit(size_t len){
-    // The first 2 elements are initialized as boders.
+    rc = 2; // The first 2 elements are initialized as boders.
     rp[0].bo = 0;
     rp[0].sz = 0; 
     // From (rp[0].bo + rp[0].sz) to rp[1].bo is the first hey stack.
@@ -63,12 +64,13 @@ size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
 //! @param by The replacement byte for the location.
 //! @param offset The location to be extended with.
 //! @param sz The replacement pattern size.
-void rpInsert( int k, uint8_t by, uint16_t offset, uint8_t sz ){
-    // int i = ri;
-    // while( rp[i++].bo < bo );
-    // rp[i].bo = bo;
-    // rp[i].sz = sz;
-    // rc++;
+static inline void rpInsert( int k, uint8_t by, uint16_t offset, uint8_t sz ){
+    k++;
+    rc++;
+    memmove( &rp[rc], &rp[k], (rc-k)*sizeof(replacement_t);
+    rp[k].by = by;
+    rp[k].bo = offset;
+    rp[k].sz = sz;
 }
 
 //! @brief ur contains all unreplacable bytes from src. It cannot get longer.
