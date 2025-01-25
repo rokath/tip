@@ -19,7 +19,7 @@ func Pack(in []byte) (out []byte) {
 	return out[:olen]
 }
 
-func Unack(in []byte) (out []byte) {
+func Unpack(in []byte) (out []byte) {
 	limit := 20 * len(in) // 8*len(in) is what we need if max compression is possible.
 	out = make([]byte, limit)
 	olen := C.TiU((*C.uchar)(unsafe.Pointer(&out[0])),
