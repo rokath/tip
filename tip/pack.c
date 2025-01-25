@@ -43,6 +43,7 @@ size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
                 uint8_t by = TipTable[i].by; // by is the replacement byte.
                 uint16_t offset = loc - src; // offset is the needle (=pattern) position.
                 rpInsert( by, offset, nlen );
+                k--; // Same k needs processing again.
             }
             k++; // The rp insert takes part inside the already processed rps.
         }while(hay+hlen<src+len)
