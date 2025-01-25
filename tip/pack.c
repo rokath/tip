@@ -44,8 +44,8 @@ size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
                 uint16_t offset = loc - src; // offset is the needle (=pattern) position.
                 rpInsert( by, offset, nlen );
                 k--; // Same k needs processing again.
-            }
-            k++; // The rp insert takes part inside the already processed rps.
+            } // The rp insert takes part inside the already processed rps.
+            k++;
         }while(hay+hlen<src+len)
     }
     // Some bytes groups in the src buffer are replacable with 0x01...0xFF and some not.
