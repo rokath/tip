@@ -12,7 +12,7 @@ typedef struct {
 
 //! @brief rp is the replacement list. It cannot get more elements.
 //! The space between 2 rps is a hay stack.
-static replacement_t rp[TIP_SRC_BUFFER_SIZE_MAX/2];
+static replacement_t rp[TIP_SRC_BUFFER_SIZE_MAX/2 + 2];
 
 //! @brief rpInit is called when a new unpacked buffer arrived.
 void rpInit(size_t len){
