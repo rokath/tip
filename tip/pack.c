@@ -1,3 +1,6 @@
+//! @file pack.c
+//! @brief Written for ressources constraint embedded devices.
+//! tip() is not re-entrant.
 
 #include <strings.h>
 #include <stddef.h>
@@ -15,7 +18,7 @@ typedef struct {
 static replacement_t rp[TIP_SRC_BUFFER_SIZE_MAX/2 + 2];
 
 //! @brief rpInit is called when a new unpacked buffer arrived.
-void rpInit(size_t len){
+static inline void rpInit(size_t len){
     // The first 2 elements are initialized as boders.
     rp[0].bo = 0;
     rp[0].sz = 0; 
@@ -33,8 +36,7 @@ size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
         size_t nlen = TipTable[i].sz;
         // Traverse rp to find hey stacks.
         int k = 0;
-        do{      
-            // get next hay stack
+        do{ // get next hay stack
             uint8_t const * hay = src + rp[k].bo + rp[k].sz;
             size_t hlen = rp[k+1].bo - rp[k].bo - rp[k].sz;
             // search the needle
@@ -42,7 +44,7 @@ size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
             if( loc ){ // found
                 uint8_t by = TipTable[i].by; // by is the replacement byte.
                 uint16_t offset = loc - src; // offset is the needle (=pattern) position.
-                rpInsert( by, offset, nlen );
+                rpInsert(k, by, offset, nlen );
                 k--; // Same k needs processing again.
             } // The rp insert takes part inside the already processed rps.
             k++;
@@ -57,10 +59,11 @@ size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
 }
 
 //! @brief rpInsert extends rp in an ordered way.
+//! @param k The position after where to insert.
 //! @param by The replacement byte for the location.
 //! @param offset The location to be extended with.
 //! @param sz The replacement pattern size.
-void rpInsert( uint8_t by, uint16_t offset, uint8_t sz ){
+void rpInsert( int k, uint8_t by, uint16_t offset, uint8_t sz ){
     // int i = ri;
     // while( rp[i++].bo < bo );
     // rp[i].bo = bo;
