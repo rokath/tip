@@ -27,6 +27,20 @@ static inline void rpInit(size_t len){
     rp[1].bo = len;
 };
 
+//! @brief rpInsert extends rp in an ordered way.
+//! @param k The position after where to insert.
+//! @param by The replacement byte for the location.
+//! @param offset The location to be extended with.
+//! @param sz The replacement pattern size.
+static inline void rpInsert( int k, uint8_t by, uint16_t offset, uint8_t sz ){
+    k++;
+    rc++;
+    memmove( &rp[rc], &rp[k], (rc-k)*sizeof(replacement_t);
+    rp[k].by = by;
+    rp[k].bo = offset;
+    rp[k].sz = sz;
+}
+
 //! @brief tip encodes src buffer with size len into dst buffer and returns encoded len.
 //! @details For the tip encoding it uses the linked tipTable.c object.
 size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
@@ -57,20 +71,6 @@ size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
     collectUnreplacableBytes( src );
     convertUnreplacableBytes();
     return generateTipPacket( dst );
-}
-
-//! @brief rpInsert extends rp in an ordered way.
-//! @param k The position after where to insert.
-//! @param by The replacement byte for the location.
-//! @param offset The location to be extended with.
-//! @param sz The replacement pattern size.
-static inline void rpInsert( int k, uint8_t by, uint16_t offset, uint8_t sz ){
-    k++;
-    rc++;
-    memmove( &rp[rc], &rp[k], (rc-k)*sizeof(replacement_t);
-    rp[k].by = by;
-    rp[k].bo = offset;
-    rp[k].sz = sz;
 }
 
 //! @brief ur contains all unreplacable bytes from src. It cannot get longer.
