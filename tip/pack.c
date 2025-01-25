@@ -60,15 +60,39 @@ size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
     return generateTipPacket( dst );
 }
 
+//! getReplacementPattern returns a pointer or NULL. 
+static uint8_t * getReplacementPattern( uint8_t by ){
+    for(int i = 0; i < TipTableLength){
+        if( i == by ){
+            return TipTable[i].pt;
+        }
+    }
+    return NULL
+}
+
 // generateTipPacket uses r and u to build the tip.
-static size_t generateTipPacket( uint8_t dst ){ 
+static size_t generateTipPacket( uint8_t * dst ){ 
     uint8_t * u7 = u + sizeof(u) - uCount; // unreplacable to 7-bit converted bytes
     // Traverse r to find relacement pattern.
     int k = 0;
-    do {
-        int uBytes = r[k+1].bo ;
-        r[k].sz
-    }
+    do { // r[k] is done here, we need to fill the space and insert r[k+1] pattern.
+        int uBytes = r[k+1].bo - (r[k].bo + r[k].sz);
+        while(uCount && uBytes--){
+            // Each inserted u7 byte is also a place holder for a u8 byte.
+            // u7 count is >= u8 count, so we can cover all u8 positions.
+            // The u7 we have more, we append ant the end.
+            *dst++ = 0x80 | *u7++; // Set msb as unreplacable marker.
+        }
+        uint8_t sz = r[k+1].sz; // Size of next replacement.
+        if( sz == 0 ){
+            k++; // no more replacements, but some unreplacable may still exist.
+            continue;
+        }
+        uint8_t * pt = getReplacementPattern( r[k+1].by );
+        while( sz-- ){
+            *dst++ = *pt++;
+        }
+    }while(k < rc -1);
 }
 
 
@@ -100,9 +124,10 @@ static size_t shift87bit( uint8_t * buf, size_t len, size_t limit ){
 static inline void rInit(size_t len){
     rc = 2; // The first 2 elements are initialized as boders.
     r[0].bo = 0;
-    r[0].sz = 0; 
+    r[0].sz = 0; // r[0].by is never used. 
     // From (r[0].bo + r[0].sz) to r[1].bo is the first hey stack.
     r[1].bo = len;
+    r[1].sz = 0; // needed as end marker. r[1].by is never used. 
 };
 
 //! @brief rInsert extends r in an ordered way.
