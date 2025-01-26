@@ -4,6 +4,7 @@
 //! This implementation is optimized for speed in favour RAM usage. 
 //! If RAM usage matters r could be a bit array at the end of the destination buffer just to mark the unreplacable bytes.
 //! In a loop then the packed data can get constructed directly into the destination buffer by searching for the pattern a second time.
+//! @author thomas.hoehenleitner [at] seerose.net
 
 #include "tipInternal.h"
 
@@ -110,6 +111,7 @@ static size_t shift87bit( uint8_t * buf, size_t len, size_t limit ){
             msb |= (0x80 & buf[--n8])>>i; // Store the MSB of the current last byte at bit position
             buf[--n7] = 0x80 | buf[n8]; // the last byte 7 LSBs and MSB=1 to the end
         }
+        buf[--n7] = 0x80 | msb;
     }
     return 123;
 }

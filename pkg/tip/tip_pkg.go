@@ -1,3 +1,6 @@
+//
+package tip
+
 // Copyright 2025 Thomas.Hoehenleitner [at] seerose.net
 // Use of this source code is governed by a license that can be found in the LICENSE file.
 
@@ -12,12 +15,11 @@
 // package folders, where it is used separately.package tip
 
 // #cgo CFLAGS: -g -Wall -I../../src
-// #include "tip.h"
-// size_t TiP( uint8_t* dst, uint8_t const * src, size_t len );
+// #include "memmem.c"
 // #include "tipTable.c"
+// #include "tip.c"
 // #include "tiPack.c"
 // #include "tiUnpack.c"
-// #include "memmem.c"
 import "C"
 
 import "unsafe"

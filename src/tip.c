@@ -1,5 +1,6 @@
 //! @file tip.c
 //! @brief Contains common tip code!
+//! @author thomas.hoehenleitner [at] seerose.net
 
 #include "tipInternal.h"
 

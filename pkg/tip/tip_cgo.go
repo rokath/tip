@@ -8,7 +8,7 @@
 // The Go functions defined here are not exported. They are called by the Go test functions in this package.
 // This way the test functions are executing the tip C-code compiled with the tipConfig.h here.
 // Inside ./testdata this file is named cgoPackage.go where it is maintained.
-package tip_cgo
+package tip
 
 // #cgo CFLAGS: -g -Wall -I../../src
 // #include <stdlib.h>
@@ -22,7 +22,7 @@ func memMem(hay, needle []byte) (pos int) {
 	h := (*C.uchar)(unsafe.Pointer(&hay[0]))
 	n := (*C.uchar)(unsafe.Pointer(&needle[0]))
 
-	addr := (*C.uchar)(unsafe.Pointer(memmem(h, len(hay), n, len(needle))))
+	addr := (*C.uchar)(unsafe.Pointer(C.memmem(h, len(hay), n, len(needle))))
 	if addr != 0 {
 		return addr - n
 	}

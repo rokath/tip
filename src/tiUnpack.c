@@ -1,6 +1,7 @@
 //! @file tiUnpack.c
 //! @brief This is the tip unpack code. Works also without tiPack.c.
 //! @details todo
+//! @author thomas.hoehenleitner [at] seerose.net
 
 #include "tipInternal.h"
 
@@ -9,7 +10,7 @@ static size_t shift78bit( uint8_t * buf, size_t len, size_t limit );
 //! @brief tiu decodes src buffer with size len into dst buffer and returns decoded len.
 size_t TiU( uint8_t* dst, uint8_t const * src, size_t len ){
     // todo
-    return 0;
+    return shift78bit( dst, len, src-dst ); // dummy, todo
 }
 
 //! shift78bit transforms len 7-bit bytes in buf to 8-bit units.

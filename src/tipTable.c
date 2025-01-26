@@ -1,8 +1,6 @@
 //! @file tipTable.c
 //! @brief Generated code - do not edit!
-
-#include <stddef.h>
-#include <stdint.h>
+//! @author thomas.hoehenleitner [at] seerose.net
 
 #include "tipInternal.h"
 

@@ -1,5 +1,13 @@
 //! @file tipInternal.h
 //! @brief Contains not exported common declarations.
+//! @author thomas.hoehenleitner [at] seerose.net
+
+#ifndef TIP_INTERNAL_H_
+#define TIP_INTERNAL_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stddef.h>
 #include <stdint.h>
@@ -20,3 +28,8 @@ extern const size_t tipTableSize;
 
 void getPatternFromId( uint8_t id, uint8_t ** pt, size_t * sz );
 
+#ifdef __cplusplus
+}
+#endif
+
+#endif // TIP_INTERNAL_H_
