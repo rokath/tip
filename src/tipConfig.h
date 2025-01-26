@@ -14,6 +14,10 @@ extern "C" {
 
 typedef uint16_t offset_t; //!< uint16_t allows to process up to 65 KB buffers.
 
+//! TIP_PATTERN_SIZE_MAX is the max replacement pattern size.
+//! The tipTable generator uses this value.
+#define TIP_PATTERN_SIZE_MAX 8
+
 #ifdef __cplusplus
 }
 #endif

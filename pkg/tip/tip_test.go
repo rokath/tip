@@ -8,7 +8,12 @@ import (
 
 func TestBuffer(t *testing.T) {
 	in := []byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}
-	buf := Pack(in)
-	out := Unpack(buf)
-	assert.Equal(t, in, out)
+
+	buf := make([]byte, 100)
+	n := Pack(buf, in)
+
+	out := make([]byte, 100)
+	m := Unpack(out, buf[:n])
+	
+	assert.Equal(t, in, out[:m])
 }

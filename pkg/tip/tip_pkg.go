@@ -15,6 +15,7 @@ package tip
 // package folders, where it is used separately.package tip
 
 // #cgo CFLAGS: -g -Wall -I../../src
+// #include "tip.h"
 // #include "memmem.c"
 // #include "tipTable.c"
 // #include "tip.c"
@@ -24,19 +25,21 @@ import "C"
 
 import "unsafe"
 
-func Pack(in []byte) (out []byte) {
-	limit := 2 * len(in) // 8*len(in)/7 + 1 is what we need if no compression is possible.
-	out = make([]byte, limit)
-	ilen := (C.size_t)(limit)
-	olen := C.TiP((*C.uchar)(unsafe.Pointer(&out[0])),
+// Pack compresses in to out with no zeroes in out and returns packed size plen.
+// out needs to have a size of at least 8*len(in)/7 + 1 for the case in cannot get compressed.
+func Pack(out, in []byte) (plen int) {
+	ilen := (C.size_t)(len(in))
+	olen := C.tip((*C.uchar)(unsafe.Pointer(&out[0])),
 		/*     */ (*C.uchar)(unsafe.Pointer(&in[0])), ilen)
-	return out[:olen]
+	return int(olen)
 }
 
-func Unpack(in []byte) (out []byte) {
-	limit := 20 * len(in) // 8*len(in) is what we need if max compression is possible.
-	out = make([]byte, limit)
-	olen := C.TiU((*C.uchar)(unsafe.Pointer(&out[0])),
-		/*     */ (*C.uchar)(unsafe.Pointer(&in[0])), (C.size_t)(len(in)))
-	return out[:olen]
+// Unpack decompresses in to out and returns unpacked size ulen.
+// out needs to have a size of at least TIP_PATTERN_SIZE_MAX*len(in)
+// for the case if in has max possible compression was.
+func Unpack(out, in []byte) (ulen int) {
+	ilen := (C.size_t)(len(in))
+	olen := C.tiu((*C.uchar)(unsafe.Pointer(&out[0])),
+		/*     */ (*C.uchar)(unsafe.Pointer(&in[0])), ilen)
+	return int(olen)
 }
