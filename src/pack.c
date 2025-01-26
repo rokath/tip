@@ -1,5 +1,5 @@
 //! @file pack.c
-//! @brief This is the tip pack code. Works also without tiUnpack.c.
+//! @brief This is the tip pack code. Works also without unpack.c.
 //! @details Written for ressources constraint embedded devices. This tip() code is not re-entrant avoiding heavy stack usage.
 //! This implementation is optimized for speed in favour RAM usage. 
 //! If RAM usage matters r could be a bit array at the end of the destination buffer just to mark the unreplacable bytes.
