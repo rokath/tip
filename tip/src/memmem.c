@@ -1,6 +1,6 @@
 // From // https://stackoverflow.com/questions/2188914/c-searching-for-a-string-in-a-file
 
-#include <strings.h>
+#include <string.h>
 #include "memmem.h"
 
 /** 
