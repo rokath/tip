@@ -1,5 +1,5 @@
 //! @file unpack.c
-//! @brief This is the tip unpack code. Works also without tiPack.c.
+//! @brief This is the tip unpack code. Works also without pack.c.
 //! @details todo
 //! @author thomas.hoehenleitner [at] seerose.net
 
