@@ -6,8 +6,9 @@ import (
 	"github.com/tj/assert"
 )
 
-func TestScanBuffer(t *testing.T) {
+func TestBuffer(t *testing.T) {
 	in := []byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}
-	pt := []byte{0xcc, 0xaa}
-	assert.Equal(t, in, pt)
+	buf := Pack(in)
+	out := Unpack(buf)
+	assert.Equal(t, in, out)
 }

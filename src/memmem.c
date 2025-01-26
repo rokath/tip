@@ -12,7 +12,7 @@
  * @details The return value is a pointer to the beginning of the sub-string, or
  * NULL if the substring is not found.
  */
-void *memmem(const void *haystack, size_t hlen, const void *needle, size_t nlen)
+void *Memmem(const void *haystack, size_t hlen, const void *needle, size_t nlen)
 {
     int needle_first;
     const void *p = haystack;

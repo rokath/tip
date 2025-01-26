@@ -1,4 +1,4 @@
-//! @file tiPack.c
+//! @file pack.c
 //! @brief This is the tip pack code. Works also without tiUnpack.c.
 //! @details Written for ressources constraint embedded devices. This tip() code is not re-entrant avoiding heavy stack usage.
 //! This implementation is optimized for speed in favour RAM usage. 
@@ -30,6 +30,10 @@ static size_t uCount = 0;
 //! @brief tip encodes src buffer with size len into dst buffer and returns encoded len.
 //! @details For the tip encoding it uses the linked tipTable.c object.
 size_t TiP( uint8_t* dst, uint8_t const * src, size_t len ){
+    if( len < 16 ){
+        memcpy(dst, src, len);
+        return len;
+    }
     rInit(len);
     for( int id = 1; id < 0x7f; id++ ){
         // get needle (the next pattern)

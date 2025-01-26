@@ -1,4 +1,4 @@
-//! @file tiUnpack.c
+//! @file unpack.c
 //! @brief This is the tip unpack code. Works also without tiPack.c.
 //! @details todo
 //! @author thomas.hoehenleitner [at] seerose.net
@@ -8,7 +8,12 @@
 static size_t shift78bit( uint8_t * buf, size_t len, size_t limit );
 
 //! @brief tiu decodes src buffer with size len into dst buffer and returns decoded len.
-size_t TiU( uint8_t* dst, uint8_t const * src, size_t len ){
+size_t TiU( uint8_t * dst, const uint8_t * src, size_t len ){
+    if( len < 16 ){
+        memcpy(dst, src, len);
+        return len;
+    }
+
     // todo
     return shift78bit( dst, len, src-dst ); // dummy, todo
 }
