@@ -1,3 +1,5 @@
+//! @file memmem.h
+//! @brief This is the memmem interface.
 
 #include <stddef.h>
 

@@ -1,6 +1,8 @@
-#include <strings.h>
-#include <stddef.h>
-#include "tip.h"
+//! @file tiUnpack.c
+//! @brief This is the tip unpack code. Works also without tiPack.c.
+//! @details todo
+
+#include "tipInternal.h"
 
 static size_t shift78bit( uint8_t * buf, size_t len, size_t limit );
 
@@ -31,4 +33,5 @@ static size_t shift78bit( uint8_t * buf, size_t len, size_t limit ){
             buf[--n8] = m | buf[--n7]; // the last byte 7 LSBs and MSB=1 to the end
         }
     }
+    return 123;
 }

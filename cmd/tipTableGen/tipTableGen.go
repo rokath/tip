@@ -17,7 +17,7 @@ var (
 	commit  string // do not initialize, goreleaser will handle that
 	date    string // do not initialize, goreleaser will handle that
 	iFn     string // input file name
-	oFn     = ".tipTable.go.txt"
+	oFn     = ".tipTable.c"
 )
 
 func init() {
@@ -37,8 +37,9 @@ func doit(w io.Writer, fSys *afero.Afero) {
 
 	if len(os.Args) != 3 {
 		fmt.Fprintln(w, version, commit, date)
-		fmt.Fprintln(w, "Usage: ph -i inputFileName")
-		fmt.Fprintln(w, "Example: `ph -i fn` creates fn"+oFn)
+		fmt.Fprintln(w, "Usage: tipTableGen -i inputFileName")
+		fmt.Fprintln(w, "Example: `tipTableGen -i fn` creates fn"+oFn)
+		fmt.Fprintln(w, "The TipUserManual explains details.")
 		return
 	}
 

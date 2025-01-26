@@ -1,4 +1,5 @@
-// From // https://stackoverflow.com/questions/2188914/c-searching-for-a-string-in-a-file
+//! @file mmemmem.c
+//! @brief From // https://stackoverflow.com/questions/2188914/c-searching-for-a-string-in-a-file
 
 #include <string.h>
 #include "memmem.h"

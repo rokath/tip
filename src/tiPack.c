@@ -1,17 +1,17 @@
-//! @file pack.c
-//! @brief Written for ressources constraint embedded devices. This tip() code is not re-entrant avoiding heavy stack usage.
-//! @details This implementation is optimized for speed in favour RAM usage. 
+//! @file tiPack.c
+//! @brief This is the tip pack code. Works also without tiUnpack.c.
+//! @details Written for ressources constraint embedded devices. This tip() code is not re-entrant avoiding heavy stack usage.
+//! This implementation is optimized for speed in favour RAM usage. 
 //! If RAM usage matters r could be a bit array at the end of the destination buffer just to mark the unreplacable bytes.
 //! In a loop then the packed data can get constructed directly into the destination buffer by searching for the pattern a second time.
 
-#include <strings.h>
-#include <stddef.h>
-#include "tip.h"
+#include "tipInternal.h"
 
 static size_t shift87bit( uint8_t * buf, size_t len, size_t limit );
 static inline void rInit(size_t len);
 static inline void rInsert( int k, uint8_t by, offset_t offset, uint8_t sz );
 static void collectUnreplacableBytes( uint8_t const * src );
+static size_t generateTipPacket( uint8_t * dst );
 
 //! @brief r is the replacement list. It cannot get more elements.
 //! The space between 2 rs is a hay stack.
@@ -30,10 +30,14 @@ static size_t uCount = 0;
 //! @details For the tip encoding it uses the linked tipTable.c object.
 size_t TiP( uint8_t* dst, uint8_t const * src, size_t len ){
     rInit(len);
-    for( int i = 0; i < TipTableLength; i++ ){
+    for( int id = 1; id < 0x7f; id++ ){
         // get needle (the next pattern)
-        uint8_t * needle = TipTable[i].pt;
-        size_t nlen = TipTable[i].sz;
+        uint8_t * needle;
+        size_t nlen;
+        getPatternFromId( id, &needle, &nlen );
+        if( nlen == 0 ){
+            break;
+        }
         // Traverse r to find hey stacks.
         int k = 0;
         uint8_t const * hay;
@@ -43,10 +47,9 @@ size_t TiP( uint8_t* dst, uint8_t const * src, size_t len ){
             hlen = r[k+1].bo - r[k].bo - r[k].sz;
             // search the needle
             uint8_t * loc = memmem( hay, hlen, needle, nlen );
-            if( loc ){ // found
-                uint8_t by = TipTable[i].by; // by is the replacement byte.
+            if( loc ){ // found, id is the replacement byte.
                 offset_t offset = loc - src; // offset is the needle (=pattern) position.
-                rInsert(k, by, offset, nlen );
+                rInsert(k, id, offset, nlen );
                 k--; // Same k needs processing again.
             } // The r insert takes part inside the already processed rs.
             k++;
@@ -58,16 +61,6 @@ size_t TiP( uint8_t* dst, uint8_t const * src, size_t len ){
     collectUnreplacableBytes( src );
     uCount = shift87bit( u, uCount, sizeof(u) );
     return generateTipPacket( dst );
-}
-
-//! getReplacementPattern returns a pointer or NULL. 
-static uint8_t * getReplacementPattern( uint8_t by ){
-    for(int i = 0; i < TipTableLength){
-        if( i == by ){
-            return TipTable[i].pt;
-        }
-    }
-    return NULL
 }
 
 // generateTipPacket uses r and u to build the tip.
@@ -83,18 +76,19 @@ static size_t generateTipPacket( uint8_t * dst ){
             // The u7 we have more, we append ant the end.
             *dst++ = 0x80 | *u7++; // Set msb as unreplacable marker.
         }
-        uint8_t sz = r[k+1].sz; // Size of next replacement.
+        size_t sz = r[k+1].sz; // Size of next replacement.
         if( sz == 0 ){
             k++; // no more replacements, but some unreplacable may still exist.
             continue;
         }
-        uint8_t * pt = getReplacementPattern( r[k+1].by );
+        uint8_t * pt;
+        getPatternFromId( r[k+1].by, &pt, &sz );
         while( sz-- ){
             *dst++ = *pt++;
         }
     }while(k < rc -1);
+    return 123;
 }
-
 
 //! shift87bit transforms len 8-bit bytes in buf to 7-bit units.
 //! @param buf is a byte buffer. It is destroyed during operation.
@@ -117,6 +111,7 @@ static size_t shift87bit( uint8_t * buf, size_t len, size_t limit ){
             buf[--n7] = 0x80 | buf[n8]; // the last byte 7 LSBs and MSB=1 to the end
         }
     }
+    return 123;
 }
 
 //! @brief rInit is called when a new unpacked buffer arrived.
@@ -147,10 +142,9 @@ static inline void rInsert( int k, uint8_t by, offset_t offset, uint8_t sz ){
 static void collectUnreplacableBytes( uint8_t const * src ){
     for( int k = 0; k < rc - 1; k++ ){
         offset_t offset = r[k].bo + r[k].sz;
-        uint8_t * addr = src + offset;
+        uint8_t const * addr = src + offset;
         size_t len = r[k+1].bo - offset; // gap
         memcpy( u + uCount, addr, len );
         uCount += len;
     }
 }
-
