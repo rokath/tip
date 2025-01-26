@@ -125,7 +125,7 @@ Table of Contents Generation:
 ### Built TipTable Generator `tipTableGen`
 
 * `cd tipTableGen; go build -ldflags "-w" ./...`
-* Create data files and run pc on them to get a pattern histogram.
+* Create data files and run tipTableGen on them to get a tipTable.c file.
 
 ### Build `tip` and `tiu`
 
