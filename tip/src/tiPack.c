@@ -28,7 +28,7 @@ static size_t uCount = 0;
 
 //! @brief tip encodes src buffer with size len into dst buffer and returns encoded len.
 //! @details For the tip encoding it uses the linked tipTable.c object.
-size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
+size_t TiP( uint8_t* dst, uint8_t const * src, size_t len ){
     rInit(len);
     for( int i = 0; i < TipTableLength; i++ ){
         // get needle (the next pattern)
