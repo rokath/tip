@@ -10,7 +10,7 @@ extern "C" {
 #endif
 
 //! TIP_SRC_BUFFER_SIZE_MAX is the maximun allowed input data buffer length.
-#define TIP_SRC_BUFFER_SIZE_MAX 0xfffff
+#define TIP_SRC_BUFFER_SIZE_MAX 0xffffffff
 
 //! TIP_PATTERN_SIZE_MAX is the max replacement pattern size.
 //! The tipTable generator uses this value.

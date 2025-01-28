@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/afero"
@@ -110,7 +111,7 @@ func buildPatternHistogram(data []byte, maxPatternLength int) map[string]int {
 	// This pattern search is very simple and may get improved.
 	for ptLen := 2; ptLen <= maxPatternLength; ptLen++ { // loop over pattern sizes
 		for i := 0; i < len(data)-(ptLen-1); i++ { // loop over data
-			key := createPatternLineString(data[i:i+(ptLen)])
+			key := createPatternLineString(data[i : i+(ptLen)])
 			if value, ok := m[key]; ok { // pattern already fount before
 				m[key] = value + 1 // increment count
 			} else { // first time pattern occurance
@@ -166,15 +167,26 @@ func generateTipTable(fSys *afero.Afero, oFn string, t []pc, stat os.FileInfo, m
 		log.Fatal(err)
 	}
 	defer oh.Close()
+	var tipTableSize int
 	fmt.Fprintln(oh, `//! @file tipTable.c`)
 	fmt.Fprintln(oh, "//! @brief Generated code - do not edit!")
 	fmt.Fprintln(oh)
 	fmt.Fprintln(oh, "#include <stdint.h>")
+	fmt.Fprintln(oh, "#include <stddef.h>")
 	fmt.Fprintln(oh)
 	fmt.Fprintln(oh, "//! tipTable is sorted by pattern count and pattern length.")
 	fmt.Fprintln(oh, "//! The pattern position + 1 is the replacement id.")
-	fmt.Fprintf(oh, "uint8_t tipTable = { // from %s (%s)%s-- __ASCII__            |  count  id\n", stat.Name(), stat.ModTime().String()[:16], spaces(7*maxPatternSize-59-len(stat.Name())))
+	fmt.Fprintf(oh, "uint8_t tipTable[] = { // from %s (%s)%s-- __ASCII__          |  count  id\n", stat.Name(), stat.ModTime().String()[:16], spaces(7*maxPatternSize-59-len(stat.Name())))
 	for i, x := range t {
+		before, _, found := strings.Cut(x.s, ",")
+		if !found {
+			fmt.Println("could not split", x.s, "after first ,")
+		}
+		sz, err := strconv.Atoi(strings.TrimSpace(before))
+		if err != nil {
+			fmt.Println(before, "delivered", err)
+		}
+		tipTableSize += 1 + sz
 		sp := spaces(129 + maxPatternSize - len(x.s))
 		if i < 127 {
 			fmt.Fprintf(oh, "\t%s%s|%7d  %02x\n", x.s, sp, x.n, i+1)
@@ -184,7 +196,11 @@ func generateTipTable(fSys *afero.Afero, oFn string, t []pc, stat os.FileInfo, m
 			}
 		}
 	}
-	fmt.Fprintf(oh, "\t  0 // table end marker\n};\n")
+	fmt.Fprintln(oh, "\t  0 // table end marker")
+	fmt.Fprintln(oh, "};")
+	fmt.Fprintln(oh)
+	fmt.Fprintf(oh, "const size_t tipTableSize = %d;", tipTableSize)
+	fmt.Fprintln(oh)
 }
 
 // spaces returns a string consisting of n spaces.
