@@ -16,6 +16,31 @@ extern "C" {
 #include "tip.h"
 #include "tipConfig.h"
 
+#if TIP_SRC_BUFFER_SIZE_MAX > 0xffffffff
+
+#error invalid TIP_SRC_BUFFER_SIZE_MAX value
+
+#elif TIP_SRC_BUFFER_SIZE_MAX > 0xffffff
+
+typedef uint32_t offset_t;
+
+#elif TIP_SRC_BUFFER_SIZE_MAX > 0xffff
+
+typedef uint32_t offset_t;
+//typedef struct offset_tag {
+//    unsigned offset_tag : 24;
+//} __attribute__((packed))offset_t;
+
+#elif TIP_SRC_BUFFER_SIZE_MAX > 0xff
+
+typedef uint16_t offset_t;
+
+#else
+
+typedef uint8_t offset_t;
+
+#endif
+
 //! @brief replacement_t is a replacement type descriptor.
 typedef struct {
     offset_t bo; // bo is the buffer offset, where replacement size starts.
