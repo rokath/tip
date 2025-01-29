@@ -1,24 +1,26 @@
 //! @file pack.c
 //! @brief This is the tip pack code. Works also without unpack.c.
 //! @details Written for ressources constraint embedded devices.
-//! This tip() code is not re-entrant for avoiding heavy stack usage.
+//! This tip() code avoids heavy stack usage by using static buffers and is therefore not re-entrant.
 //! This implementation is optimized for speed in favour RAM usage. 
-//! If RAM usage matters r could be a bit array at the end of the destination buffer just to mark the unreplacable bytes.
+//! If RAM usage matters, the replacement list r could be a bit array at the end of the destination buffer just to mark the unreplacable bytes.
 //! In a loop then the packed data can get constructed directly into the destination buffer by searching for the pattern a second time.
 //! @author thomas.hoehenleitner [at] seerose.net
 
 #include "tipInternal.h"
 
-static size_t shift87bit( uint8_t * buf, size_t len, size_t limit );
 static inline void rInit(size_t len);
 static inline void rInsert( int k, uint8_t by, offset_t offset, uint8_t sz );
+static size_t shift87bit( uint8_t * buf, size_t len, size_t limit );
 static void collectUnreplacableBytes( uint8_t const * src );
 static size_t generateTipPacket( uint8_t * dst );
 
 //! @brief r is the replacement list. It cannot get more elements.
 //! The space between 2 rs is a hay stack.
 static replacement_t r[TIP_SRC_BUFFER_SIZE_MAX/2 + 2];
-static int rc; //!< replacement count
+
+ //! @brief rCount is replacement count inside r.
+static int rCount;
 
 //! @brief u holds all unreplacable bytes from src. It cannot get longer.
 //! @details All unreplacable bytes are stretched inside to 7-bit units.
@@ -42,7 +44,7 @@ size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
         size_t nlen;
         getPatternFromId( id, &needle, &nlen );
         if( nlen == 0 ){
-            break;
+            break; 
         }
         // Traverse r to find hey stacks.
         int k = 0;
@@ -92,7 +94,7 @@ static size_t generateTipPacket( uint8_t * dst ){
         while( sz-- ){
             *dst++ = *pt++;
         }
-    }while(k < rc -1);
+    }while(k < rCount -1);
     return 123;
 }
 
@@ -124,7 +126,7 @@ static size_t shift87bit( uint8_t * buf, size_t len, size_t limit ){
 //! @brief rInit is called when a new unpacked buffer arrived.
 //! @param len is the source buffer size.
 static inline void rInit(size_t len){
-    rc = 2; // The first 2 elements are initialized as boders.
+    rCount = 2; // The first 2 elements are initialized as boders.
     r[0].bo = 0;
     r[0].sz = 0; // r[0].by is never used. 
     // From (r[0].bo + r[0].sz) to r[1].bo is the first hey stack.
@@ -139,15 +141,15 @@ static inline void rInit(size_t len){
 //! @param sz is the replacement pattern size.
 static inline void rInsert( int k, uint8_t by, offset_t offset, uint8_t sz ){
     k++;
-    rc++;
-    memmove( &r[k+1], &r[k], (rc-k)*sizeof(replacement_t));
+    rCount++;
+    memmove( &r[k+1], &r[k], (rCount-k)*sizeof(replacement_t));
     r[k].by = by;
     r[k].bo = offset;
     r[k].sz = sz;
 }
 
 static void collectUnreplacableBytes( uint8_t const * src ){
-    for( int k = 0; k < rc - 1; k++ ){
+    for( int k = 0; k < rCount - 1; k++ ){
         offset_t offset = r[k].bo + r[k].sz;
         uint8_t const * addr = src + offset;
         size_t len = r[k+1].bo - offset; // gap
