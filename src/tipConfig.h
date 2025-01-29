@@ -14,7 +14,7 @@ extern "C" {
 
 //! TIP_PATTERN_SIZE_MAX is the max replacement pattern size.
 //! The tipTable generator uses this value.
-#define TIP_PATTERN_SIZE_MAX 20
+#define TIP_PATTERN_SIZE_MAX 8
 
 #ifdef __cplusplus
 }

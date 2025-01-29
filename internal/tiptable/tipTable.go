@@ -22,7 +22,7 @@ type pat_t struct {
 	key string // key is the pattern as hex string.
 }
 
-// ScanForPatternRepetitions searches data for ptLen bytes sequences
+// scanForPatternRepetitions searches data for ptLen bytes sequences
 // and returns them as key strings hex encoded with their count as values in m.
 // This pattern search algorithm:
 // Start with first ptLen bytes from data as pattern and search data[ptLen:] for a first repetition.
@@ -32,27 +32,24 @@ type pat_t struct {
 // Example: data = 10 times 1,2,3,4 and ptLen = 3: Result map ["123":10"234":10"341":10"412":100]
 // Example: data = 10 times 1,2,3,4 and ptLen = 4: Result map ["1234":10"2341":10"3412":10"4123":100]
 // Example: data = 10 times 1,2,3,4 and ptLen = 5: Result map ["12341":2 "23412":2 "34123":2 "41232":2]
-func ScanForPatternRepetitions(data []byte, ptLen int) map[string]int {
+func scanForPatternRepetitions(data []byte, ptLen int) map[string]int {
 	m := make(map[string]int, 10000)
-	limit := len(data) - (ptLen) + 1 // This is the first position in data not to check for repetitions.
-	for i := 0; i < limit; i++ {     // Loop over all possible pattern.
+	last := len(data) - (ptLen)  // This is the last position in data to check for repetitions.
+	for i := 0; i <= last; i++ { // Loop over all possible pattern.
 		pat := data[i : i+ptLen]
 		key := hex.EncodeToString(pat) // We need to convert pat into a key.
 		if _, ok := m[key]; !ok {      // On first pattern occurance, add it with count 1 to map.
 			m[key] = 1
-		} else { // If pattern is in map, for next pattern it could be such case:
-			// data =[]byte{1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4}
-			// ptLen=4: At offset 4 we find an existing pattern counted before.
-			// ptLen=8: At offset 4 we find an existing pattern not counted before.
-			m[key] += 1 // Not sure about that.
-			continue    // We would find last repetitions more often, so we ignore the data reminder for this pat.
+		} else { 
+			continue 
 		}
-		for n := i + ptLen; n < limit; n++ { // Start search after pattern.
+		var n int
+		for n = i + ptLen; n <= last; n++ { // Start search after pattern.
 			chk := data[n : n+ptLen]
 			if slices.Equal(pat, chk) {
-				m[key] += 1
-				n += ptLen // Continue search after pattern.
-			}
+					m[key] += 1
+					n += ptLen-1 // Continue search after pattern.
+			} // ptLen-1 because of n++
 		}
 	}
 	return m
@@ -68,7 +65,7 @@ func buildPatternHistogram(data []byte, maxPatternLength int) map[string]int {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			subMap[i] = ScanForPatternRepetitions(data, i+2)
+			subMap[i] = scanForPatternRepetitions(data, i+2)
 		}()
 	}
 	wg.Wait()
