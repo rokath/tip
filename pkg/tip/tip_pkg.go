@@ -4,15 +4,8 @@ package tip
 // Copyright 2025 Thomas.Hoehenleitner [at] seerose.net
 // Use of this source code is governed by a license that can be found in the LICENSE file.
 
-// Package tip is a helper for testing the target C-code, but also usable in Go code.
-// Each C function gets a Go wrapper which is tested in appropriate test functions.
+// Package tip is a wwrapper for executing and a helper for testing the target C-code.
 // For some reason inside the tip_test.go an 'import "C"' is not possible.
-
-// The Go functions defined here are not exported. They are called by the Go test functions in this package.
-// This way the test functions are executing the trice C-code compiled with the triceConfig.h here.
-// Inside ./testdata this file is named cgoPackage.go where it is maintained.
-// The ../renewIDs_in_examples_and_test_folder.sh script copies this file under the name generated_cgoPackage.go into various
-// package folders, where it is used separately.package tip
 
 // #cgo CFLAGS: -g -Wall -I../../src
 // #include "tip.h"
@@ -30,16 +23,16 @@ import "unsafe"
 func Pack(out, in []byte) (plen int) {
 	ilen := (C.size_t)(len(in))
 	olen := C.tip((*C.uchar)(unsafe.Pointer(&out[0])),
-		/*     */ (*C.uchar)(unsafe.Pointer(&in[0])), ilen)
+		(*C.uchar)(unsafe.Pointer(&in[0])), ilen)
 	return int(olen)
 }
 
 // Unpack decompresses in to out and returns unpacked size ulen.
 // out needs to have a size of at least TIP_PATTERN_SIZE_MAX*len(in)
-// for the case if in has max possible compression was.
+// for the case if in has max possible compression.
 func Unpack(out, in []byte) (ulen int) {
 	ilen := (C.size_t)(len(in))
 	olen := C.tiu((*C.uchar)(unsafe.Pointer(&out[0])),
-		/*     */ (*C.uchar)(unsafe.Pointer(&in[0])), ilen)
+		(*C.uchar)(unsafe.Pointer(&in[0])), ilen)
 	return int(olen)
 }
