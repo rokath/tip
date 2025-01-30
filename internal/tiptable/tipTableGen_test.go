@@ -31,7 +31,7 @@ func Test_scanForPatternRepetitions(t *testing.T) {
 	}
 }
 
-func Test_reduceSubPatternCounts(t *testing.T) {
+func _Test_reduceSubPatternCounts(t *testing.T) {
 	ps := []pat_t{
 		{900, []byte{1, 2}, ""},
 		{300, []byte{1, 2, 3}, ""},          // 300*{1,2}

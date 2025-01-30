@@ -22,35 +22,56 @@ type pat_t struct {
 	key string // key is the pattern as hex string.
 }
 
+/*
+func addPatternRepetitions(data, pat []byte,m map[string]int){
+	ptLen := len(pat)
+	key := hex.EncodeToString(pat) // We need to convert pat into a key.
+	if _, ok := m[key]; !ok {      // On first pattern occurance, add it with count 1 to map.
+		m[key] = 1
+	} else {
+		return
+	}
+	var n int
+	for n = i + ptLen; n <= last; n++ { // Start search after pattern.
+		chk := data[n : n+ptLen]
+		if slices.Equal(pat, chk) {
+				m[key] += 1
+				n += ptLen-1 // Continue search after pattern.
+		} // ptLen-1 because of n++
+	}
+
+}
+*/
+
 // scanForPatternRepetitions searches data for ptLen bytes sequences
 // and returns them as key strings hex encoded with their count as values in m.
 // This pattern search algorithm:
 // Start with first ptLen bytes from data as pattern and search data[ptLen:] for a first repetition.
 // If a repetition was found at data[n:n+ptLen] continue at data[n+ptLen] and so on.
 // The returned map contains all (<=len(data)-ptLen) pattern with their occurances count.
-// Example: data = 10 times 1,2,3,4 and ptLen = 2: Result map ["12":10"23":10"34":10"41":100]
-// Example: data = 10 times 1,2,3,4 and ptLen = 3: Result map ["123":10"234":10"341":10"412":100]
-// Example: data = 10 times 1,2,3,4 and ptLen = 4: Result map ["1234":10"2341":10"3412":10"4123":100]
-// Example: data = 10 times 1,2,3,4 and ptLen = 5: Result map ["12341":2 "23412":2 "34123":2 "41232":2]
 func scanForPatternRepetitions(data []byte, ptLen int) map[string]int {
 	m := make(map[string]int, 10000)
 	last := len(data) - (ptLen)  // This is the last position in data to check for repetitions.
 	for i := 0; i <= last; i++ { // Loop over all possible pattern.
 		pat := data[i : i+ptLen]
+
+		//addPatternRepetitions(data, pat,m )
+
 		key := hex.EncodeToString(pat) // We need to convert pat into a key.
 		if _, ok := m[key]; !ok {      // On first pattern occurance, add it with count 1 to map.
 			m[key] = 1
-		} else { 
-			continue 
+		} else {
+			continue
 		}
 		var n int
 		for n = i + ptLen; n <= last; n++ { // Start search after pattern.
 			chk := data[n : n+ptLen]
 			if slices.Equal(pat, chk) {
-					m[key] += 1
-					n += ptLen-1 // Continue search after pattern.
+				m[key] += 1
+				n += ptLen - 1 // Continue search after pattern.
 			} // ptLen-1 because of n++
 		}
+
 	}
 	return m
 }
