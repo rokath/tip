@@ -61,15 +61,17 @@ func scanForPatternRepetitions(data []byte, ptLen int) map[string]int {
 		if _, ok := m[key]; !ok {      // On first pattern occurance, add it with count 1 to map.
 			m[key] = 1
 		} else {
-			continue
+			continue // pat was already counted
 		}
 		var n int
-		for n = i + ptLen; n <= last; n++ { // Start search after pattern.
+		for n = i + ptLen; n <= last; { // Search data after pattern.
 			chk := data[n : n+ptLen]
-			if slices.Equal(pat, chk) {
+			if slices.Equal(pat, chk) { // found
 				m[key] += 1
-				n += ptLen - 1 // Continue search after pattern.
-			} // ptLen-1 because of n++
+				n += ptLen // Continue search after pattern.
+			}else{
+				n++ 
+			}
 		}
 
 	}
