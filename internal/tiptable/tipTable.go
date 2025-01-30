@@ -112,6 +112,21 @@ func sliceIndex(s, v []byte) int {
 	return -1
 }
 
+// countSubSlice returns how often sub was found in s.
+// After a match the seach space is reduced to to position after the match.
+// Example: ff ff ff and ff ff returns 1 and not 2.
+func countSubSlice( s, sub []byte )(n int){
+	limit := len(s)-len(sub)
+	for int i :=0; i < limit; i++{
+		x :=sliceIndex(s,sub)
+		if x < 0{
+			return 
+		}
+		n++
+		s:=s[i+len(sub)]
+	}
+}
+
 // reduceSubPatternCounts searches for key being a part of an other key.
 // ps is assumed to be sortet by rising pattern length.
 // If a pattern A is 3 times in pattern B, the pattern A cnt value is decreased by 3.
@@ -121,18 +136,11 @@ func reduceSubPatternCounts(ps []pat_t) []pat_t {
 		if i == len(ps)-1 {
 			continue
 		}
-		chk := x.pat                 // chk is the next (smaller) pattern we want to check.
+		sub := x.pat                 // sub is the next (smaller) pattern we want to check.
 		for k, y := range ps[i+1:] { // range over the next patterns
 			pat := y.pat
-		again:
-			idx := sliceIndex(pat, chk)
-			if idx == -1 { // chk not inside y.pat
-				continue // advance with chk inside ps
-			}
-			// chk found inside ps[k].pat at position idx
-			x.cnt--
-			pat = pat[k+idx:]
-			goto again
+			n := countSubSlice(pat, sub)
+			x.cnt -= n
 		}
 	}
 	return ps
