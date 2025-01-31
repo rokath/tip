@@ -39,6 +39,18 @@ Table of Contents Generation:
 
 <!--
 
+https://jwakely.github.io/pkg-gcc-latest/
+
+```bash
+wget --content-disposition https://kayari.org/gcc-latest/gcc-latest.deb
+cd ~/Downloads
+sudo dpkg -i gcc-latest_15.0.0-20250112gitf4fa0b7d493a.deb
+cd /opt
+ls -l # gcc-latest
+cd /etc/profile.d # ls -l
+sudo echo export PATH=/opt/gcc-latest/bin/:$PATH > # /etc/profile.d/gccpath.go 
+```
+
 With 2 reserved bytes, zA and fA is this possible:
 * 1: 00                            Z1
 * 2: 00 00                         Z2
