@@ -40,7 +40,7 @@ size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
     rInit(len);
     for( int id = 1; id < 0x7f; id++ ){
         // get needle (the next pattern)
-        uint8_t * needle;
+        uint8_t * needle = NULL;
         size_t nlen;
         getPatternFromId( id, &needle, &nlen );
         if( nlen == 0 ){
@@ -89,7 +89,7 @@ static size_t generateTipPacket( uint8_t * dst ){
             k++; // no more replacements, but some unreplacable may still exist.
             continue;
         }
-        uint8_t * pt;
+        uint8_t * pt = NULL;
         getPatternFromId( r[k+1].by, &pt, &sz );
         while( sz-- ){
             *dst++ = *pt++;
