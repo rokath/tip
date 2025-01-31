@@ -4,7 +4,7 @@ import (
 	"slices"
 )
 
-// sliceIndex returns at which index v was found in s or -1
+// Index returns at which index v was first found in s or -1.
 func Index(s, v []byte) int {
 	if len(v) > len(s) {
 		return -1
