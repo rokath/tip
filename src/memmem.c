@@ -1,4 +1,4 @@
-//! @file mmemmem.c
+//! @file memmem.c
 //! @brief From // https://stackoverflow.com/questions/2188914/c-searching-for-a-string-in-a-file
 
 #include <string.h>
@@ -12,7 +12,7 @@
  * @details The return value is a pointer to the beginning of the sub-string, or
  * NULL if the substring is not found.
  */
-void *Memmem(const void *haystack, size_t hlen, const void *needle, size_t nlen)
+void *memmem(const void *haystack, size_t hlen, const void *needle, size_t nlen)
 {
     int needle_first;
     const void *p = haystack;

@@ -31,13 +31,13 @@ size_t tiu( uint8_t * dst, const uint8_t * src, size_t len ){
 //! ret=17: __ __ __ __ __ __ __ b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8
 //!                            (dst) <---              17                     --->
 static size_t shift78bit( uint8_t * buf, size_t len, size_t limit ){
-    int n7 = len; // n7 data index limit.
-    for( int n8 = limit; n8 > 0; ){ // n8 is buf index limit
-        uint8_t msb = 0x7f & buf[n7-8];
-        for( int i = 7; i > 0; i-- && n7 > 0 ){
-            uint8_t m = (msb>>i)<<8;
-            buf[--n8] = m | buf[--n7]; // the last byte 7 LSBs and MSB=1 to the end
-        }
-    }
+    //int n7 = len; // n7 data index limit.
+    //for( int n8 = limit; n8 > 0; ){ // n8 is buf index limit
+    //    uint8_t msb = 0x7f & buf[n7-8];
+    //    for( int i = 7; i > 0; i-- && n7 > 0 ){
+    //        uint8_t m = (msb>>i)<<8;
+    //        buf[--n8] = m | buf[--n7]; // the last byte 7 LSBs and MSB=1 to the end
+    //    }
+    //}
     return 123;
 }

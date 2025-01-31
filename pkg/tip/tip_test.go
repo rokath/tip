@@ -16,7 +16,6 @@ func TestBuffer(t *testing.T) {
 	
 	out := make([]byte, 100)
 	m := Unpack(out, buf)
-	
 	assert.Equal(t, in, out[:m])
 }
 

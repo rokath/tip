@@ -3,4 +3,4 @@
 
 #include <stddef.h>
 
-void *Memmem(const void *haystack, size_t hlen, const void *needle, size_t nlen);
+void *memmem(const void *haystack, size_t hlen, const void *needle, size_t nlen);

@@ -111,15 +111,15 @@ static size_t generateTipPacket( uint8_t * dst ){
 //! ret=20: __ __ __ __ m7 b7 b7 b7 m7 b7 b7 b7 b7 b7 b7 b7 m7 b7 b7 b7 b7 b7 b7 b7
 //!                   (dst) <---                     20                       --->
 static size_t shift87bit( uint8_t * buf, size_t len, size_t limit ){
-    int n7 = limit; // n7 is buf index limit.
-    for( int n8 = len; n8 > 0; ){ // n8 is buf data limit
-        uint8_t msb = 0;
-        for( int i = 7; i > 0; i-- && n8 > 0){
-            msb |= (0x80 & buf[--n8])>>i; // Store the MSB of the current last byte at bit position
-            buf[--n7] = 0x80 | buf[n8]; // the last byte 7 LSBs and MSB=1 to the end
-        }
-        buf[--n7] = 0x80 | msb;
-    }
+    // int n7 = limit; // n7 is buf index limit.
+    // for( int n8 = len; n8 > 0; ){ // n8 is buf data limit
+    //     uint8_t msb = 0;
+    //     for( int i = 7; i > 0; i-- && n8 > 0){
+    //         msb |= (0x80 & buf[--n8])>>i; // Store the MSB of the current last byte at bit position
+    //         buf[--n7] = 0x80 | buf[n8]; // the last byte 7 LSBs and MSB=1 to the end
+    //     }
+    //     buf[--n7] = 0x80 | msb;
+    // }
     return 123;
 }
 
