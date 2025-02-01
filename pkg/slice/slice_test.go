@@ -7,12 +7,11 @@ import (
 )
 
 func TestIndex(t *testing.T) {
-	type e struct {
+	tt := []struct {
 		s   []byte // slice inside to search
 		v   []byte // slice to find
 		exp int    // expected index
-	}
-	tt := []e{
+	}{
 		{[]byte{1, 2, 3, 4, 5}, []byte{1, 2}, 0},
 		{[]byte{1, 2, 3, 4, 5}, []byte{3, 4}, 2},
 		{[]byte{1, 2, 3, 4, 5}, []byte{1, 2, 3, 4, 5}, 0},
@@ -22,7 +21,7 @@ func TestIndex(t *testing.T) {
 		{[]byte{1, 2, 3, 4, 5}, []byte{}, 0},
 		{[]byte{1, 2, 3, 4, 5}, nil, -1},
 		{nil, []byte{1, 2, 3, 4, 5}, -1},
-		{nil,nil},0},
+		{nil, nil, -1},
 	}
 
 	for _, x := range tt {
@@ -32,12 +31,11 @@ func TestIndex(t *testing.T) {
 }
 
 func TestCount(t *testing.T) {
-	type e struct {
+	tt := []struct {
 		s   []byte // slice inside to search
 		v   []byte // slice to count
 		exp int    // expected count
-	}
-	tt := []e{
+	}{
 		{[]byte{1, 2, 3, 4, 5}, []byte{1, 2}, 1},
 		{[]byte{1, 2, 3, 4, 5}, []byte{3, 4}, 1},
 		{[]byte{1, 2, 3, 4, 5}, []byte{1, 2, 3, 4, 5}, 1},

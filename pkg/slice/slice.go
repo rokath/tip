@@ -5,8 +5,10 @@ import (
 )
 
 // Index returns at which index v was first found in s or -1.
+// If s or v are nil -1 is returned.
+// See also mem.Mem() function.
 func Index(s, v []byte) int {
-	if len(v) > len(s) {
+	if len(v) > len(s) || v == nil || s == nil {
 		return -1
 	}
 	for i := 0; i < len(s)-len(v)+1; i++ {
