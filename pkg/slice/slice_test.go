@@ -20,6 +20,9 @@ func TestIndex(t *testing.T) {
 		{[]byte{}, []byte{1, 2, 4}, -1},
 		{[]byte{}, []byte{}, 0},
 		{[]byte{1, 2, 3, 4, 5}, []byte{}, 0},
+		{[]byte{1, 2, 3, 4, 5}, nil, -1},
+		{nil, []byte{1, 2, 3, 4, 5}, -1},
+		{nil,nil},0},
 	}
 
 	for _, x := range tt {
@@ -46,6 +49,9 @@ func TestCount(t *testing.T) {
 		{[]byte{}, []byte{1, 2, 4}, 0},
 		{[]byte{}, []byte{}, 0},
 		{[]byte{1, 2, 3, 4, 5}, []byte{}, 0},
+		{[]byte{1, 2, 3, 4, 5}, nil, 0},
+		{nil, []byte{}, 0},
+		{nil, nil, 0},
 	}
 	for _, x := range tt {
 		idx := Count(x.s, x.v)
