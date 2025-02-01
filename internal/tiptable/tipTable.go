@@ -12,13 +12,12 @@ import (
 	"github.com/spf13/afero"
 )
 
-// GenerateTipTable generates a file oFn containing Go code using list and stat.
-// list is assumed to be sorted by list[i].count in decending order.
+// Generategenerates a file oFn containing C code using iFn and max pattern size.
 func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) {
 
 	data, stat := readData(fSys, iFn)
 	list := pattern.GenerateSortedList(data, maxPatternSize)
-
+        // list is assumed to be sorted by list[i].count in decending order.
 	idCount := min(127, len(list))
 	oh, err := fSys.Create(oFn)
 	if err != nil {
