@@ -17,7 +17,7 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) {
 
 	data, stat := readData(fSys, iFn)
 	list := pattern.GenerateSortedList(data, maxPatternSize)
-        // list is assumed to be sorted by list[i].count in decending order.
+	// list is sorted by list[i].count, len(list[i].Bytes) and alphabetical in decending order.
 	idCount := min(127, len(list))
 	oh, err := fSys.Create(oFn)
 	if err != nil {
