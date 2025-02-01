@@ -90,8 +90,8 @@ func SortByRisingLength(list []Type) []Type {
 	return list
 }
 
-// SortByDescentingCountAndLength returns list ordered for decreasing count and pattern length.
-func SortByDescentingCountAndLength(list []Type) []Type {
+// SortByDescentingCountAndLengthAndAphabetical returns list ordered for decreasing count and pattern length.
+func SortByDescentingCountAndLengthAndAphabetical(list []Type) []Type {
 	compareFn := func(a, b Type) int {
 		if a.Cnt < b.Cnt {
 			return 1
@@ -103,6 +103,12 @@ func SortByDescentingCountAndLength(list []Type) []Type {
 			return 1
 		}
 		if len(a.Bytes) > len(b.Bytes) {
+			return -1
+		}
+		if string(a.Bytes) < string(b.Bytes) {
+			return 1
+		}
+		if string(a.Bytes) > string(b.Bytes) {
 			return -1
 		}
 		return 0
@@ -146,8 +152,8 @@ func HistogramToList(m map[string]int) (list []Type) {
 func GenerateSortedList(data []byte, maxPatternSize int) []Type {
 	m := BuildHistogram(data, maxPatternSize)
 	list := HistogramToList(m)
-	sList := SortByDescentingCountAndLength(list)  // smallest pattern first
-	rList := ReduceSubCounts(sList)                // sub pattern are first
-	dList := SortByDescentingCountAndLength(rList) // biggest cnt first, biggest Length first on equal cnt
+	sList := SortByDescentingCountAndLengthAndAphabetical(list)  // smallest pattern first
+	rList := ReduceSubCounts(sList)                              // sub pattern are first
+	dList := SortByDescentingCountAndLengthAndAphabetical(rList) // biggest cnt first, biggest Length first on equal cnt
 	return dList
 }
