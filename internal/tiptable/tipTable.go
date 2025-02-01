@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/afero"
 )
 
-// Generategenerates a file oFn containing C code using iFn and max pattern size.
+// Generate writes a file oFn containing C code using iFn and max pattern size.
 func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) {
 
 	data, stat := readData(fSys, iFn)
