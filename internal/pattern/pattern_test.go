@@ -7,6 +7,7 @@ import (
 )
 
 func Test_buildHistogram(t *testing.T) {
+	defer Setup(t)() // This executes Setup(t) and puts the returned function into the defer list.
 	tt := []struct {
 		data []byte         // data
 		max  int            // max pattern length
@@ -22,6 +23,7 @@ func Test_buildHistogram(t *testing.T) {
 }
 
 func Test_scanForRepetitions(t *testing.T) {
+	defer Setup(t)() // This executes Setup(t) and puts the returned function into the defer list.
 	tt := []struct {
 		d []byte         // data
 		l int            // ptLen
@@ -46,6 +48,7 @@ func Test_scanForRepetitions(t *testing.T) {
 }
 
 func Test_sortByIncreasingLength(t *testing.T) {
+	defer Setup(t)() // This executes Setup(t) and puts the returned function into the defer list.
 	pat := []patt{
 		{100, []byte{1, 2, 3, 1, 2, 3}, "010203010203"},
 		{900, []byte{1, 2}, "0102"},
@@ -61,6 +64,7 @@ func Test_sortByIncreasingLength(t *testing.T) {
 }
 
 func Test_sortByDescentingCountAndLengthAndAphabetical(t *testing.T) {
+	defer Setup(t)() // This executes Setup(t) and puts the returned function into the defer list.
 	pat := []patt{
 		{100, []byte{1, 2, 3, 1, 2, 3, 4}, "01020301020304"},
 		{100, []byte{1, 2, 3, 4}, "01020304"},
@@ -82,6 +86,7 @@ func Test_sortByDescentingCountAndLengthAndAphabetical(t *testing.T) {
 }
 
 func Test_reduceSubCounts(t *testing.T) {
+	defer Setup(t)() // This executes Setup(t) and puts the returned function into the defer list.
 	ps := []patt{
 		{9, []byte{1, 2}, "0102"},      // {1, 2} is 1 times in each of 3 {1, 2, 3}, and 2 times in one {1, 2, 3, 1, 2, 3}
 		{3, []byte{1, 2, 3}, "010203"}, // {1, 2, 3} is 2 times in one {1, 2, 3, 1, 2, 3}

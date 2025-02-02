@@ -4,19 +4,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/spf13/afero"
 	"github.com/tj/assert"
 )
 
-var FSys *afero.Afero // ram file system for the tests
-
-func init() {
-	// All id tests should be executed only on a memory mapped file system.
-	FSys = &afero.Afero{Fs: afero.NewMemMapFs()}
-}
-
 // todo: Sort results also alphabetically to ensure equal test results.
 func _TestGenerate(t *testing.T) {
+	defer Setup(t)() // This executes Setup(t) and puts the returned function into the defer list.
 	data := []byte{0x01, 0x88, 0xaa, 0xaa, 0x01, 0x88, 0x01, 0x88, 0xaa, 0xbb}
 	patternSizeMax := 4
 	iFn := "testData"

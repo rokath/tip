@@ -168,7 +168,8 @@ func reduceSubCounts(p []patt) []patt {
 	var mu sync.Mutex
 	for i, x := range list[:len(list)-1] {
 		wg.Add(1)
-		go func() {
+		//go
+		func() {
 			defer wg.Done()
 			if Verbose {
 				fmt.Println(i, "...")
@@ -208,7 +209,7 @@ func histogramToList(m map[string]int) (list []patt) {
 func GenerateSortedList(data []byte, maxPatternSize int) []patt {
 	m := buildHistogram(data, maxPatternSize)
 	list := histogramToList(m)
-	rList := reduceSubCounts(list) // sub pattern are first
-	sList := sortByDescentingCountAndLengthAndAphabetical(rList)
+	//rList := reduceSubCounts(list) // sub pattern are first
+	sList := sortByDescentingCountAndLengthAndAphabetical(list)
 	return sList // biggest cnt first, biggest length first on equal cnt
 }
