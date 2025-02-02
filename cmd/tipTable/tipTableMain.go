@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/rokath/tip/internal/pattern"
 	"github.com/rokath/tip/internal/tiptable"
 	"github.com/spf13/afero"
 )
@@ -16,7 +17,6 @@ var (
 	date       string // do not initialize, goreleaser will handle that
 	iFn        string // input file name
 	oFn        string // input file name
-	patSizeMax int
 	help       bool
 	verbose    bool
 )
@@ -26,7 +26,7 @@ func init() {
 	flag.BoolVar(&verbose, "v", false, "help")
 	flag.StringVar(&iFn, "i", "", "input file name")
 	flag.StringVar(&oFn, "o", "tipTable.c", "output file name")
-	flag.IntVar(&patSizeMax, "z", 8, "max pattern size to find")
+	flag.IntVar(&pattern.SizeMax, "z", 8, "max pattern size to find")
 }
 
 func main() {
@@ -36,6 +36,7 @@ func main() {
 }
 
 func doit(w io.Writer, fSys *afero.Afero) {
+	distributeArgs()
 	if help {
 		fmt.Fprintln(w, "Usage: tipTable -i inputFileName [-o outputFileName] [-z max pattern size] [-v]")
 		fmt.Fprintln(w, "Example: `tipTableGen -i trice.bin` creates tipTable.c")
@@ -49,5 +50,9 @@ func doit(w io.Writer, fSys *afero.Afero) {
 	if verbose {
 		fmt.Fprintln(w, version, commit, date)
 	}
-	tiptable.Generate(fSys, oFn, iFn, patSizeMax)
+	tiptable.Generate(fSys, oFn, iFn, pattern.SizeMax)
+}
+
+func distributeArgs() {
+	pattern.Verbose = verbose
 }

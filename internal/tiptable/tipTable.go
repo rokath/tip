@@ -25,14 +25,15 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) {
 	}
 	defer oh.Close()
 	tipTableSize := 1 // TipTable contains at least table end marker
-	fmt.Fprintln(oh, `//! @file tipTable.c`)
-	fmt.Fprintln(oh, "//! @brief Generated code - do not edit!")
-	fmt.Fprintln(oh)
-	fmt.Fprintln(oh, "#include <stdint.h>")
-	fmt.Fprintln(oh, "#include <stddef.h>")
-	fmt.Fprintln(oh)
-	fmt.Fprintln(oh, "//! tipTable is sorted by pattern count and pattern length.")
-	fmt.Fprintln(oh, "//! The pattern position + 1 is the replacement id.")
+	fmt.Fprintln(oh, `//! @file tipTable.c
+//! @brief Generated code - do not edit!
+
+#include <stdint.h>
+#include <stddef.h>
+
+//! tipTable is sorted by pattern count and pattern length.
+//! The pattern position + 1 is the replacement id.
+//! The pattern max size is`, maxPatternSize)
 	start := fmt.Sprintf("uint8_t tipTable[] = { // from %s (%s)", stat.Name(), stat.ModTime().String()[:16])
 	fill := spaces(9 + (6*maxPatternSize - len(start)))
 	fill2 := spaces(maxPatternSize - 9)

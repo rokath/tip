@@ -6,14 +6,28 @@ import (
 	"github.com/tj/assert"
 )
 
+func Test_buildHistogram(t *testing.T) {
+	tt := []struct {
+		data []byte         // data
+		max  int            // max pattern length
+		exp  map[string]int // expected map
+	}{
+		{[]byte{1, 2, 3, 1, 2, 3}, 2, map[string]int{"0102": 2, "0203": 2, "0301": 1}},
+		{[]byte{1, 2, 3, 1, 2, 3}, 3, map[string]int{"0102": 2, "0203": 2, "0301": 1, "010203": 2, "020301": 1, "030102": 1}},
+	}
+	for _, x := range tt {
+		m := buildHistogram(x.data, x.max)
+		assert.Equal(t, x.exp, m)
+	}
+}
+
 func Test_scanForRepetitions(t *testing.T) {
-	type e struct {
+	tt := []struct {
 		d []byte         // data
 		l int            // ptLen
 		m map[string]int // expected map
-	}
-	tt := []e{
-		{[]byte{1, 2, 3, 1, 2, 3}, 2, map[string]int{"0102": 2, "0203": 2, "0301": 1}}, // intended
+	}{
+		{[]byte{1, 2, 3, 1, 2, 3}, 2, map[string]int{"0102": 2, "0203": 2, "0301": 1}},
 		{[]byte{1, 2, 3, 1, 2, 3}, 3, map[string]int{"010203": 2, "020301": 1, "030102": 1}},
 		{[]byte{1, 2, 3, 1, 2, 3}, 4, map[string]int{"01020301": 1, "02030102": 1, "03010203": 1}},
 
@@ -46,14 +60,35 @@ func Test_sortByIncreasingLength(t *testing.T) {
 	assert.Equal(t, exp, act)
 }
 
+func Test_sortByDescentingCountAndLengthAndAphabetical(t *testing.T) {
+	pat := []patt{
+		{100, []byte{1, 2, 3, 1, 2, 3, 4}, "01020301020304"},
+		{100, []byte{1, 2, 3, 4}, "01020304"},
+		{100, []byte{1, 2, 3, 1, 2, 3}, "010203010203"},
+		{900, []byte{1, 2}, "0102"},
+		{100, []byte{8, 2, 3, 1, 2, 3}, "080203010203"},
+		{300, []byte{1, 2, 3}, "010203"},
+	}
+	exp := []patt{
+		{900, []byte{1, 2}, "0102"},
+		{300, []byte{1, 2, 3}, "010203"},
+		{100, []byte{1, 2, 3, 1, 2, 3, 4}, "01020301020304"},
+		{100, []byte{1, 2, 3, 1, 2, 3}, "010203010203"},
+		{100, []byte{8, 2, 3, 1, 2, 3}, "080203010203"},
+		{100, []byte{1, 2, 3, 4}, "01020304"},
+	}
+	act := sortByDescentingCountAndLengthAndAphabetical(pat)
+	assert.Equal(t, exp, act)
+}
+
 func Test_reduceSubCounts(t *testing.T) {
 	ps := []patt{
-		{9, []byte{1, 2}, "0102"},    // {1, 2} is 1 times in each of 3 {1, 2, 3}, and 2 times in one {1, 2, 3, 1, 2, 3}
+		{9, []byte{1, 2}, "0102"},      // {1, 2} is 1 times in each of 3 {1, 2, 3}, and 2 times in one {1, 2, 3, 1, 2, 3}
 		{3, []byte{1, 2, 3}, "010203"}, // {1, 2, 3} is 2 times in one {1, 2, 3, 1, 2, 3}
 		{1, []byte{1, 2, 3, 1, 2, 3}, "010203010203"},
 	}
 	exp := []patt{
-		{4, []byte{1, 2}, "0102"},    // 9-3-2 = 4
+		{4, []byte{1, 2}, "0102"},      // 9-3-2 = 4
 		{1, []byte{1, 2, 3}, "010203"}, // 3-2 = 1
 		{1, []byte{1, 2, 3, 1, 2, 3}, "010203010203"},
 	}
