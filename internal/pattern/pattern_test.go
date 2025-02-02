@@ -100,3 +100,19 @@ func Test_reduceSubCounts(t *testing.T) {
 	act := reduceSubCounts(ps)
 	assert.Equal(t, exp, act)
 }
+
+func Test_histogramToList(t *testing.T) {
+	defer Setup(t)() // This executes Setup(t) and puts the returned function into the defer list.
+	tt := []struct {
+		m   map[string]int // given map
+		exp []patt         // expected list
+	}{
+		{map[string]int{"0102": 2, "0203": 2, "0301": 1}, []patt{{2, []byte{1, 2}, "0102"}, {2, []byte{2, 3}, "0203"}, {1, []byte{3, 1}, "0301"}}},
+		{map[string]int{"0102": 4, "0808": 7}, []patt{{4, []byte{1, 2}, "0102"}, {7, []byte{8, 8}, "0808"}}},
+	}
+
+	for _, x := range tt {
+		act := histogramToList(x.m)
+		assert.Equal(t, x.exp, act)
+	}
+}
