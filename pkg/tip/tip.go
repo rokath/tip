@@ -27,7 +27,6 @@ func Pack(out, in []byte) (plen int) {
 	i := (*C.uchar)(unsafe.Pointer(&in[0]))  //i := unsafe.Pointer((*C.uchar)(&in[0]))
 	ilen := (C.size_t)(len(in))
 	olen := C.tip(o, i, ilen)
-	//olen := C.tip((*C.uchar)(unsafe.Pointer(&out[0])), (*C.uchar)(unsafe.Pointer(&in[0])), ilen)
 	return int(olen)
 }
 
