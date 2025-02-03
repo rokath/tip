@@ -168,7 +168,7 @@ func reduceSubCounts(p []patt) []patt {
 	counts := getCounts(list)
 	var wg sync.WaitGroup
 	var mu sync.Mutex
-	for i, x := range list[:len(list)-1] {
+	for i, x := range list[:len(list)-1] { // last list element is longest pattern
 		wg.Add(1)
 		go func(k int) {
 			defer wg.Done()
@@ -180,7 +180,7 @@ func reduceSubCounts(p []patt) []patt {
 				n := slice.Count(y.Bytes, sub)
 				if n > 0 {
 				        mu.Lock()
-				        list[k].Cnt -= n * y.Cnt
+				        counts[k] -= n * y.Cnt
 				        mu.Unlock()
 				}
 			}
