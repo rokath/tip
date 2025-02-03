@@ -164,8 +164,8 @@ func reduceSubCounts(p []patt) []patt {
 		return p // nothing to do
 	}
 	list := sortByIncreasingLength(p) // smallest pattern first
-	
-	counts := getCounts(list)
+
+	count := getCounts(list) // get a copy to work on
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	for i, x := range list[:len(list)-1] { // last list element is longest pattern
@@ -179,9 +179,9 @@ func reduceSubCounts(p []patt) []patt {
 			for _, y := range list[k+1:] { // range over the next patterns
 				n := slice.Count(y.Bytes, sub)
 				if n > 0 {
-				        mu.Lock()
-				        counts[k] -= n * y.Cnt
-				        mu.Unlock()
+					mu.Lock()
+					count[k] -= n * y.Cnt
+					mu.Unlock()
 				}
 			}
 			if Verbose {
@@ -190,11 +190,25 @@ func reduceSubCounts(p []patt) []patt {
 		}(i)
 	}
 	wg.Wait()
-	setCounts(list,counts)
+	setCounts(list, count)
 	if Verbose {
 		fmt.Println("Reducing sub pattern counts...done")
 	}
 	return list
+}
+
+func getCounts(list []patt) []int {
+	count := make([]int, len(list))
+	for i, x := range list {
+		count[i] = x.Cnt
+	}
+	return count
+}
+
+func setCounts(list []patt, count []int) {
+	for i := range list {
+		list[i].Cnt = count[i]
+	}
 }
 
 // histogramToList converts m into list and restores original patterns.
