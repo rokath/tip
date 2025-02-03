@@ -164,6 +164,8 @@ func reduceSubCounts(p []patt) []patt {
 		return p // nothing to do
 	}
 	list := sortByIncreasingLength(p) // smallest pattern first
+	
+	counts := getCounts(list)
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	for i, x := range list[:len(list)-1] {
@@ -188,6 +190,7 @@ func reduceSubCounts(p []patt) []patt {
 		}(i)
 	}
 	wg.Wait()
+	setCounts(list,counts)
 	if Verbose {
 		fmt.Println("Reducing sub pattern counts...done")
 	}
