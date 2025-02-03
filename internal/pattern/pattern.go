@@ -154,7 +154,7 @@ func sortByIncreasingLength(list []patt) []patt {
 }
 
 // reduceSubCounts searches for p[i].Bytes being a part of an other p[k].Bytes with i < k.
-// If a pattern A is 3 times in pattern B, the pattern A.Cnt value is decreased by 3.
+// Example: If a pattern A is 3 times in pattern B, the pattern A.Cnt value is decreased by 3.
 // Algorithm: check from small to big
 func reduceSubCounts(p []patt) []patt {
 	if Verbose {
