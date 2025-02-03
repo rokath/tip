@@ -168,7 +168,7 @@ func reduceSubCounts(p []patt) []patt {
 	var mu sync.Mutex
 	for i, x := range list[:len(list)-1] {
 		wg.Add(1)
-		go )func(k int) {
+		go func(k int) {
 			defer wg.Done()
 			if Verbose {
 				fmt.Println(k, "...")
