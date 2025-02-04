@@ -13,6 +13,7 @@ extern "C" {
 #include <stdint.h>
 #include <string.h>
 #include "memmem.h"
+#include "shift.h"
 #include "tip.h"
 #include "tipConfig.h"
 
@@ -52,6 +53,8 @@ extern uint8_t tipTable[];
 extern const size_t tipTableSize;
 
 void getPatternFromId( uint8_t id, uint8_t ** pt, size_t * sz );
+void resetPattern(void);
+void getNextPattern(uint8_t ** pt, size_t * sz );
 
 #ifdef __cplusplus
 }

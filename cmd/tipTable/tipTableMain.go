@@ -54,5 +54,6 @@ func doit(w io.Writer, fSys *afero.Afero) {
 }
 
 func distributeArgs() {
+	tiptable.Verbose = verbose
 	pattern.Verbose = verbose
 }

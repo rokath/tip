@@ -11,7 +11,7 @@
 
 static inline void rInit(size_t len);
 static inline void rInsert( int k, uint8_t by, offset_t offset, uint8_t sz );
-static size_t shift87bit( uint8_t * buf, size_t len, size_t limit );
+//static size_t shift87bit( uint8_t * buf, size_t len, size_t limit );
 static void collectUnreplacableBytes( uint8_t const * src );
 static size_t generateTipPacket( uint8_t * dst );
 
@@ -37,12 +37,13 @@ size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
         memcpy(dst, src, len);
         return len;
     }
+    resetPattern();
     rInit(len);
     for( int id = 1; id < 0x7f; id++ ){
-        // get needle (the next pattern)
+        // get biggest needle (the next pattern)
         uint8_t * needle = NULL;
         size_t nlen;
-        getPatternFromId( id, &needle, &nlen );
+        getNextPattern( &needle, &nlen );
         if( nlen == 0 ){
             break; 
         }
@@ -67,7 +68,7 @@ size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
     // The replacement list r contains now the replacement information.
     // Lets collect the unreplacable bytes into a buffer now.
     collectUnreplacableBytes( src );
-    uCount = shift87bit( u, uCount, sizeof(u) );
+   // uCount = shift87bit( u, uCount, sizeof(u) );
     return generateTipPacket( dst );
 }
 
@@ -98,31 +99,6 @@ static size_t generateTipPacket( uint8_t * dst ){
     return 123;
 }
 
-//! shift87bit transforms len 8-bit bytes in buf to 7-bit units.
-//! @param buf is a byte buffer. It is destroyed during operation.
-//! @param len is the 8-bit byte count.
-//! @param limit is the max byte count fitting into buf (limit > len*8/7)
-//! @retval is count 7-bit bytes
-//! @details buf is filled from the end (=buf+limit)
-//! The destination is computable afterwards: dst = buf + limit - retval.
-//! Example: len=17, limit=24
-//!       (buf) <---              17                    --->  [n8]                 [n7]
-//! len=17: b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 __ __ __ __ __ __ __
-//! ret=20: __ __ __ __ m7 b7 b7 b7 m7 b7 b7 b7 b7 b7 b7 b7 m7 b7 b7 b7 b7 b7 b7 b7
-//!                   (dst) <---                     20                       --->
-static size_t shift87bit( uint8_t * buf, size_t len, size_t limit ){
-    // int n7 = limit; // n7 is buf index limit.
-    // for( int n8 = len; n8 > 0; ){ // n8 is buf data limit
-    //     uint8_t msb = 0;
-    //     for( int i = 7; i > 0; i-- && n8 > 0){
-    //         msb |= (0x80 & buf[--n8])>>i; // Store the MSB of the current last byte at bit position
-    //         buf[--n7] = 0x80 | buf[n8]; // the last byte 7 LSBs and MSB=1 to the end
-    //     }
-    //     buf[--n7] = 0x80 | msb;
-    // }
-    return 123;
-}
-
 //! @brief rInit is called when a new unpacked buffer arrived.
 //! @param len is the source buffer size.
 static inline void rInit(size_t len){
@@ -148,6 +124,8 @@ static inline void rInsert( int k, uint8_t by, offset_t offset, uint8_t sz ){
     r[k].sz = sz;
 }
 
+
+// collectUnreplacableBytes uses information in r to construct u from src.
 static void collectUnreplacableBytes( uint8_t const * src ){
     for( int k = 0; k < rCount - 1; k++ ){
         offset_t offset = r[k].bo + r[k].sz;

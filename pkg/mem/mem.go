@@ -1,3 +1,4 @@
+
 package mem
 
 // #cgo CFLAGS: -g -Wall -I../../src
@@ -22,7 +23,7 @@ func Mem(hay, needle []byte) (pos int) {
 	hlen := (C.size_t)(len(hay))
 
 	n := unsafe.Pointer((*C.uchar)(&needle[0]))
-	nlen := (C.size_t)(len(needle))
+	nlen := C.size_t(len(needle))
 
 	pos = int((C.int)(C.MemmemOffset(h, hlen, n, nlen)))
 	return

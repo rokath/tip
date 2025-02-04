@@ -22,3 +22,24 @@ void getPatternFromId( uint8_t id, uint8_t ** pt, size_t * sz ){
         }
     }
 }
+
+static uint8_t nextTipTablePos = 0;
+static unsigned int nextID = 1;
+
+//! resetPattern causes getNextPattern to start from 0.
+void resetPattern(void){
+    nextTipTablePos = 0;
+    nextID = 1;
+}
+
+//! getNextPattern returns next pattern location in pt and size in sz or *sz == 0.
+//! @param pt is filled with the replacement pattern address if exists.
+//! @param sz is filled with the replacement size or 0, if not exists.
+void getNextPattern(uint8_t ** pt, size_t * sz ){
+    *sz = tipTable[nextTipTablePos++];
+    if( *sz ){ // a pattern exists here
+        *pt = &tipTable[nextTipTablePos];
+        nextTipTablePos += *sz;
+        return;
+    }
+}

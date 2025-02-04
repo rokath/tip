@@ -227,7 +227,7 @@ func histogramToList(m map[string]int) (list []patt) {
 func GenerateSortedList(data []byte, maxPatternSize int) []patt {
 	m := buildHistogram(data, maxPatternSize)
 	list := histogramToList(m)
-	rList := reduceSubCounts(list)
+	rList := list // reduceSubCounts(list)
 	sList := sortByDescentingCountAndLengthAndAphabetical(rList)
 	return sList // biggest cnt first, biggest length first on equal cnt
 }

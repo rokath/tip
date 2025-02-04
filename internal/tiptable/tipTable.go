@@ -12,6 +12,10 @@ import (
 	"github.com/spf13/afero"
 )
 
+var (
+	Verbose bool
+)
+
 // Generate writes a file oFn containing C code using iFn and max pattern size.
 func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) {
 
@@ -45,7 +49,7 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) {
 		if i < idCount {
 			fmt.Fprintf(oh, "\t%s|%7d  %02x\n", pls, x.Cnt, i+1)
 		} else {
-			if x.Cnt > 1 {
+			if Verbose /*&& x.Cnt > 1*/ {
 				fmt.Fprintf(oh, "//\t%s|%7d  %6d\n", pls, x.Cnt, i+1)
 			}
 		}
