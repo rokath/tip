@@ -148,7 +148,9 @@ in | bits |     7-bits | out | 7*out | 7*o/8 | out/7 | out%7 | msbits | in%7 | d
 22 |  176 | 25 * 7 + 1 |  26 |       |       |   3   |   5   |   1    |  1   |        +2         | 4
 23 |  184 | 26 * 7 + 2 |  27 |       |       |   3   |   6   |   2    |  2   |        +1         | 4
 
-in = (7*out/8)
+Compute in from out: in = (7*out/8)
+Compute out from in: out = (8*in)/7 + (8*in)%7
+
 msbits = in%7 = (7*out/8)%7
 msbits = msbits ? msbits : 7 
 -->
