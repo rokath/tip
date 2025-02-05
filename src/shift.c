@@ -18,7 +18,7 @@
 //!                   (dst) <---                ret=20                       --->(lst)
 //! In dst all MSBits are set to 1, to avoid any zeroes.
 //! The data are processed from the end, 
-size_t shift87bit( uint8_t* lst, uint8_t * src, size_t len ){
+size_t shift87bit( uint8_t* lst, uint8_t * const src, size_t len ){
     uint8_t * u8 = src + len; // first address behind src buffer
     uint8_t * dst = lst; // destination address
     while( src < u8 ){
@@ -51,7 +51,7 @@ size_t shift87bit( uint8_t* lst, uint8_t * src, size_t len ){
 //! ret=17: b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8
 //!       (dst)<---            dstLen=17               --->(ptr)
 //! dstLen = len*7/8
-size_t shift78bit( uint8_t * dst, uint8_t * src, size_t len ){
+size_t shift78bit( uint8_t * dst, uint8_t const (* src, size_t len ){
     size_t dstLen = (7*len)>>3;
     uint8_t * ptr = dst + dstLen - 1; // ptr is last address in dst buffer
     uint8_t * lst = src + len - 1; // lst is last address in source buffer.
