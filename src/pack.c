@@ -44,10 +44,13 @@ void buildReplacementList( replace_t * r, idTable_t * t, uint8_t const * src, si
     }
 }
 
+size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
+    return TiPack( dst, &TipTable, src, len );
+}
 
 //! @brief tip encodes src buffer with size len into dst buffer and returns encoded len.
 //! @details For the tip encoding it uses the linked tipTable.c object.
-size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
+size_t TiPack( uint8_t* dst, table_t * t, uint8_t const * src, size_t len ){
     if( len < 16 ){
         memcpy(dst, src, len);
         return len;
