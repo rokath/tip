@@ -6,7 +6,7 @@
 
 //! tipTable is sorted by pattern count and pattern length.
 //! The pattern position + 1 is the replacement id.
-uint8_t tipTable[] = { // from trice.bin (2025-01-15 21:45)                                                                        -- __ASCII__          |  count  id
+uint8_t idTable[] = { // from trice.bin (2025-01-15 21:45)                                                                        -- __ASCII__          |  count  id
 	  2, 0xff, 0xff,                                                                                                             //                      |  17140  01
 	  3, 0xff, 0xff, 0xff,                                                                                                       //                      |  11812  02
 	  4, 0xff, 0xff, 0xff, 0xff,                                                                                                 //                      |   6854  03
