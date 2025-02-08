@@ -60,8 +60,17 @@ typedef struct {
     uint8_t * last; //! last is the last address inside the unreplacable bytes buffer. ( = &(buffer[sizeof(buffer)-1]); )
 } unreplacable_t;
 
-extern uint8_t tipTable[];
-extern const size_t tipTableSize;
+typedef struct {
+    uint8_t const length
+    uint8_t const * const sequence;
+} pattern_t;
+
+typedef struct {
+    pattern_t * pattern;
+    size_t const size;
+} idTable_t;
+
+
 
 void getPatternFromId( uint8_t id, uint8_t ** pt, size_t * sz );
 void restartPattern(void);
