@@ -13,24 +13,15 @@ void replacableListInit(replace_t * r, size_t len);
 void replaceableListInsert( replace_t * r, int k, uint8_t by, offset_t offset, uint8_t sz );
 size_t collectUnreplacableBytes( uint8_t * dst, replace_t * r, uint8_t const * src );
 size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t uSize, replace_t * r );
+void buildReplacementList( replace_t * r, idTable_t t, uint8_t const * src, size_t slen) ;
 
-//! @brief tip encodes src buffer with size len into dst buffer and returns encoded len.
-//! @details For the tip encoding it uses the linked tipTable.c object.
-size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
-    if( len < 16 ){
-        memcpy(dst, src, len);
-        return len;
-    }
-    static unreplacable_t u; // unreplacable list
-    u.last = &(u.buffer[sizeof(u.buffer)-1]); 
-    static replace_t r; // replace list
-    replacableListInit(&r, len);
-    restartPattern();
+
+void buildReplacementList( replace_t * r, idTable_t * t, uint8_t const * src, size_t slen){
     for( int id = 1; id < 0x7f; id++ ){
         // get biggest needle (the next pattern)
         uint8_t * needle = NULL;
         size_t nlen;
-        getNextPattern( &needle, &nlen );
+        getNextPattern( &needle, &nlen, t);
         if( nlen == 0 ){
             break; 
         }
@@ -51,7 +42,24 @@ size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
             k++;
         }while( hay+hlen < src+len );
     }
-    // Some bytes groups in the src buffer are replacable with 0x01...0xFF and some not.
+}
+
+
+//! @brief tip encodes src buffer with size len into dst buffer and returns encoded len.
+//! @details For the tip encoding it uses the linked tipTable.c object.
+size_t tip( uint8_t* dst, uint8_t const * src, size_t len ){
+    if( len < 16 ){
+        memcpy(dst, src, len);
+        return len;
+    }
+    static unreplacable_t u; // unreplacable list
+    u.last = &(u.buffer[sizeof(u.buffer)-1]); 
+    static replace_t r; // replace list
+    replacableListInit(&r, len);
+    restartPattern(t);
+    buildReplacementList(&r, &t, src, len);
+    
+    // Some bytes groups in the src buffer are replacable with IDs 0x01...0x7f and some not.
     // The replacement list r contains now the replacement information.
     // Lets collect the unreplacable bytes into a buffer now.
     size_t uSize = collectUnreplacableBytes( u.buffer, &r, src );
