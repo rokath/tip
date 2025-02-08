@@ -10,6 +10,7 @@ package tip
 // #include <stdint.h>
 // #include <stddef.h>
 // #include "memmem.c"
+// #include "shift.c"
 // #include "tipTable.c"
 // #include "tip.c"
 // #include "pack.c"

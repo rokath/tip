@@ -26,8 +26,8 @@ void getPatternFromId( uint8_t id, uint8_t ** pt, size_t * sz ){
 static uint8_t nextTipTablePos = 0;
 static unsigned int nextID = 1;
 
-//! resetPattern causes getNextPattern to start from 0.
-void resetPattern(void){
+//! restartPattern causes getNextPattern to start from 0.
+void restartPattern(void){
     nextTipTablePos = 0;
     nextID = 1;
 }

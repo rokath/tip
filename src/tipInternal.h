@@ -42,18 +42,29 @@ typedef uint8_t offset_t;
 
 #endif
 
-//! @brief replacement_t is a replacement type descriptor.
+//! @brief replace_t is a replacement type descriptor.
 typedef struct {
-    offset_t bo; // bo is the buffer offset, where replacement size starts.
+    offset_t bo; // bo is the buffer offset, where replacement bytes starts.
     uint8_t  sz; // sz is the replacement size (2-255).
-    uint8_t  by; // by is the replacement byte 0x01 to 0xff.
+    uint8_t  id; // id is the replacement byte 0x01 to 0x7f.
 } replacement_t;
+
+typedef struct {
+    replacement_t  list[TIP_SRC_BUFFER_SIZE_MAX/2 + 2]; //!< list is the replacement list. It cannot get more elements. The space between 2 replacemts is a hay stack or finally unreplacable.
+    int count; //!< count is the actual replace count inside replaceList.
+} replace_t;
+
+//! @details All unreplacable bytes are stretched inside to 7-bit units. This makes the data a bit longer.
+typedef struct {
+    uint8_t buffer[TIP_SRC_BUFFER_SIZE_MAX*8/7+1];  //!< buffer holds all unreplacable bytes from src. It cannot get longer.
+    uint8_t * last; //! last is the last address inside the unreplacable bytes buffer. ( = &(buffer[sizeof(buffer)-1]); )
+} unreplacable_t;
 
 extern uint8_t tipTable[];
 extern const size_t tipTableSize;
 
 void getPatternFromId( uint8_t id, uint8_t ** pt, size_t * sz );
-void resetPattern(void);
+void restartPattern(void);
 void getNextPattern(uint8_t ** pt, size_t * sz );
 
 #ifdef __cplusplus
