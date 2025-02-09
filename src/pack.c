@@ -24,8 +24,7 @@ size_t TiPack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t 
         memcpy(dst, src, slen);
         return slen;
     }   
-    replaceList_t * r = newReplacableList(slen);
-    buildReplacementList(r, table, src, slen);
+    replaceList_t * r = buildReplacementList(table, src, slen);
     // All unreplacable bytes are stretched inside to 7-bit units. This makes the data a bit longer.
     static uint8_t ur[TIP_SRC_BUFFER_SIZE_MAX*8/7+1]; 
     size_t ubSize = collectUnreplacableBytes( ur, r, src );
@@ -51,7 +50,8 @@ replaceList_t * newReplacableList(size_t slen){
     return &r;
 };
 
-void buildReplacementList( replaceList_t * r, const uint8_t * table, const uint8_t * src, size_t slen){
+replaceList_t * buildReplacementList( const uint8_t * table, const uint8_t * src, size_t slen){
+    replaceList_t * r = newReplacableList(slen);
     initGetNextPattern(table);
     for( int id = 1; id < 0x80; id++ ){ // traverse te table.
         // get biggest needle (the next pattern)
@@ -77,6 +77,7 @@ void buildReplacementList( replaceList_t * r, const uint8_t * table, const uint8
             k++;
         }while( hay+hlen < src+slen );
     }
+    return r;
 }
 
 // generateTipPacket uses r and u to build the tip.

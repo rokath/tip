@@ -25,7 +25,7 @@ func init() {
 	flag.BoolVar(&help, "h", false, "help")
 	flag.BoolVar(&verbose, "v", false, "help")
 	flag.StringVar(&iFn, "i", "", "input file name")
-	flag.StringVar(&oFn, "o", "tipTable.c", "output file name")
+	flag.StringVar(&oFn, "o", "idTable.c", "output file name")
 	flag.IntVar(&pattern.SizeMax, "z", 8, "max pattern size to find")
 }
 
@@ -39,7 +39,7 @@ func doit(w io.Writer, fSys *afero.Afero) {
 	distributeArgs()
 	if help {
 		fmt.Fprintln(w, "Usage: tipTable -i inputFileName [-o outputFileName] [-z max pattern size] [-v]")
-		fmt.Fprintln(w, "Example: `tipTableGen -i trice.bin` creates tipTable.c")
+		fmt.Fprintln(w, "Example: `tipTable -i trice.bin` creates idTable.c")
 		fmt.Fprintln(w, "The TipUserManual explains details.")
 		return
 	}

@@ -11,7 +11,7 @@ package tip
 // #include <stddef.h>
 // #include "memmem.c"
 // #include "shift.c"
-// #include "tipTable.c"
+// #include "idTable.c"
 // #include "tip.c"
 // #include "pack.c"
 // #include "unpack.c"

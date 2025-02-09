@@ -13,7 +13,7 @@ func _TestGenerate(t *testing.T) {
 	data := []byte{0x01, 0x88, 0xaa, 0xaa, 0x01, 0x88, 0x01, 0x88, 0xaa, 0xbb}
 	patternSizeMax := 4
 	iFn := "testData"
-	oFn := iFn + ".tipTable.c"
+	oFn := iFn + ".idTable.c"
 	assert.Nil(t, FSys.WriteFile(iFn, data, 0777))
 	in, err := FSys.ReadFile(iFn)
 	assert.Nil(t, err)
@@ -26,14 +26,15 @@ func _TestGenerate(t *testing.T) {
 
 	act := string(tt)
 
-	exp := `//! @file tipTable.c
+	exp := `//! @file idTable.c
 //! @brief Generated code - do not edit!
 #include <stdint.h>
 #include <stddef.h>
 
-//! tipTable is sorted by pattern count and pattern length.
+//! idTable is sorted by pattern length and pattern count.
 //! The pattern position + 1 is the replacement id.
-//! The pattern max size is 4\nuint8_t tipTable[] = { // from testData ()-- __ASCII__|  count  id
+//! The pattern max size is 4\nuint8_t tipTable[] = { // from testData ()
+                                 // ASCII|  count  id
 	  4, 0xaa, 0xaa, 0x01, 0x88, // ˙˙˙˙|      1  01
 	  4, 0xaa, 0x01, 0x88, 0x01, // ˙˙˙˙|      1  02
 	  4, 0x88, 0xaa, 0xaa, 0x01, // ˙˙˙˙|      1  03

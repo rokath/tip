@@ -122,14 +122,14 @@ Table of Contents Generation:
 * You need some files containing data you want to tip.
 * Alternatively you can use one of the demo pattern histograms.
 
-### Built TipTable Generator `tipTableGen`
+### Built TipTable Generator `tipTable`
 
-* `cd tipTableGen; go build -ldflags "-w" ./...`
-* Create data files and run tipTableGen on them to get a tipTable.c file.
+* `cd tipTable; go build -ldflags "-w" ./...`
+* Create data files and run tipTable on them to get a idTable.c file.
 
 ### Build `tip` and `tiu`
 
-* After tipTable.c was generated, run `go build ./...`.
+* After idTable.c was generated, run `go build ./...`.
 
 
 ### Installation

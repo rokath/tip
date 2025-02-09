@@ -21,7 +21,7 @@ func Test_doit(t *testing.T) {
 	doit(&b, FSys)
 	act := b.String()
 	exp := `Usage: tipTable -i inputFileName [-o outputFileName] [-z max pattern size] [-v]
-Example: `+"`tipTableGen -i trice.bin`"+` creates tipTable.c
+Example: `+"`tipTable -i trice.bin`"+` creates idTable.c
 The TipUserManual explains details.
 `
 	assert.Equal(t, exp, act)
