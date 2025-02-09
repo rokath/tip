@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 //! idTable is sorted by pattern length and pattern count.
-//! The pattern position + 1 is the replacement id.
+//! The pattern position + 1 is the replace id.
 //! The generator pattern max size was 20 and the list pattern max size is: 10
 const uint8_t idTable[] = { // from dummy.txt (2025-02-08 01:02)
                                                                      // ASCII     |  count  id

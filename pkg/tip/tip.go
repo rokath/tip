@@ -18,6 +18,8 @@ package tip
 import "C"
 
 import (
+	"fmt"
+	"reflect"
 	"unsafe"
 )
 
@@ -40,4 +42,36 @@ func Unpack(out, in []byte) (ulen int) {
 	ilen := (C.size_t)(len(in))
 	olen := C.tiu(o, i, ilen)
 	return int(olen)
+}
+
+//////////////////////////////////////////////////
+
+// ! @brief replace_t is a replace type descriptor.
+type replace struct {
+	bo uint16 //  offset_t bo; // bo is the buffer offset, where replace bytes starts. // todo: adapt to tipConfig.h automatically
+	sz byte   //  uint8_t  sz; // sz is the replace size (2-255).
+	id byte   //  uint8_t  id; // id is the replace byte 0x01 to 0x7f.
+}
+
+// Pack compresses in to out with no zeroes in out and returns packed size plen.
+// out needs to have a size of at least 8*len(in)/7 + 1 for the case in cannot get compressed.
+func buildReplaceList(table, in []byte) (rpl []replace) {
+	tbl := (*C.uchar)(unsafe.Pointer(&table[0])) //o := unsafe.Pointer((*C.uchar)(&out[0]))
+	src := (*C.uchar)(unsafe.Pointer(&in[0]))    //i := unsafe.Pointer((*C.uchar)(&in[0]))
+	slen := (C.size_t)(len(in))
+
+	p := C.buildReplaceList(tbl, src, slen)
+	fmt.Printf("p=%v\n", p)
+	fmt.Printf("rpl=%v\n", rpl)
+
+	// https://go.dev/wiki/cgo
+	var theCArray *C.replace_t = C.buildReplaceList(tbl, src, slen)
+	length := 10                             // C.getTheArrayLength()
+	slice := unsafe.Slice(theCArray, length) // Go 1.17
+
+	fmt.Printf("slice=%v\n", slice)
+
+	fmt.Println("type of slice", reflect.TypeOf(slice))
+	//rpl = &slice[0]
+	return
 }

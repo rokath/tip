@@ -32,7 +32,7 @@ func _TestGenerate(t *testing.T) {
 #include <stddef.h>
 
 //! idTable is sorted by pattern length and pattern count.
-//! The pattern position + 1 is the replacement id.
+//! The pattern position + 1 is the replace id.
 //! The pattern max size is 4\nuint8_t tipTable[] = { // from testData ()
                                  // ASCII|  count  id
 	  4, 0xaa, 0xaa, 0x01, 0x88, // ˙˙˙˙|      1  01

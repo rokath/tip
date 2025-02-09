@@ -37,9 +37,9 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) {
 #include <stddef.h>
 
 //! idTable is sorted by pattern length and pattern count.
-//! The pattern position + 1 is the replacement id.
+//! The pattern position + 1 is the replace id.
 //! The generator pattern max size was`, maxPatternSize, `and the list pattern max size is:`, maxListPatternSize)
-start := fmt.Sprintf("const uint8_t idTable[] = { // from %s (%s)\n", stat.Name(), stat.ModTime().String()[:16])
+	start := fmt.Sprintf("const uint8_t idTable[] = { // from %s (%s)\n", stat.Name(), stat.ModTime().String()[:16])
 	fill := spaces(9 + 6*maxListPatternSize)
 	fill2 := spaces(maxListPatternSize - 5)
 	fmt.Fprintf(oh, start+"%s// ASCII%s|  count  id\n", fill, fill2)
