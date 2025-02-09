@@ -153,6 +153,28 @@ func sortByIncreasingLength(list []patt) []patt {
 	return list
 }
 
+// SortByDescendingLength returns list ordered for descending pattern length.
+// It also sorts alphabetical to get reproducable results.
+func SortByDescendingLength(list []patt) []patt {
+	compareFn := func(a, b patt) int {
+		if len(a.Bytes) < len(b.Bytes) {
+			return 1
+		}
+		if len(a.Bytes) > len(b.Bytes) {
+			return -1
+		}
+		if a.key > b.key {
+			return 1
+		}
+		if a.key < b.key {
+			return -1
+		}
+		return 0
+	}
+	slices.SortFunc(list, compareFn)
+	return list
+}
+
 // reduceSubCounts searches for p[i].Bytes being a part of an other p[k].Bytes with i < k.
 // Example: If a pattern A is 3 times in pattern B, the pattern A.Cnt value is decreased by 3.
 // Algorithm: check from small to big
@@ -224,7 +246,7 @@ func histogramToList(m map[string]int) (list []patt) {
 	return
 }
 
-func GenerateSortedList(data []byte, maxPatternSize int) []patt {
+func GenerateDescendingCountSortedList(data []byte, maxPatternSize int) []patt {
 	m := buildHistogram(data, maxPatternSize)
 	list := histogramToList(m)
 	rList := list // reduceSubCounts(list)
