@@ -4,137 +4,139 @@
 #include <stdint.h>
 #include <stddef.h>
 
-extern const uint8_t idTable[];
-
-//! idTable is sorted by pattern pattern length and count.
+//! idTable is sorted by pattern length and pattern count.
 //! The pattern position + 1 is the replacement id.
-const uint8_t idTable[] = { // from trice.bin (2025-01-15 21:45)    idTableSize is 847                                              -- __ASCII__          |  count  id
-	  2, 0xff, 0xff,                                                                                                             //                      |  17140  01
-	  3, 0xff, 0xff, 0xff,                                                                                                       //                      |  11812  02
-	  4, 0xff, 0xff, 0xff, 0xff,                                                                                                 //                      |   6854  03
-	  2, 0x41, 0x41,                                                                                                             // AA                   |   5092  04
-	  3, 0x41, 0x41, 0x41,                                                                                                       // AAA                  |   4948  05
-	  4, 0x41, 0x41, 0x41, 0x41,                                                                                                 // AAAA                 |   4808  06
-	  5, 0xff, 0xff, 0xff, 0xff, 0xff,                                                                                           //                      |   4800  07
-	  5, 0x41, 0x41, 0x41, 0x41, 0x41,                                                                                           // AAAAA                |   4672  08
-	  6, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,                                                                                     // AAAAAA               |   4540  09
-	  7, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,                                                                               // AAAAAAA              |   4412  0a
-	  8, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,                                                                         // AAAAAAAA             |   4288  0b
-	  9, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,                                                                   // AAAAAAAAA            |   4168  0c
-	 10, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,                                                             // AAAAAAAAAA           |   4052  0d
-	 11, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,                                                       // AAAAAAAAAAA          |   3940  0e
-	 12, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,                                                 // AAAAAAAAAAAA         |   3832  0f
-	 13, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,                                           // AAAAAAAAAAAAA        |   3728  10
-	 14, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,                                     // AAAAAAAAAAAAAA       |   3654  11
-	 15, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,                               // AAAAAAAAAAAAAAA      |   3584  12
-	 16, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,                         // AAAAAAAAAAAAAAAA     |   3518  13
-	 17, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,                   // AAAAAAAAAAAAAAAAA    |   3456  14
-	 18, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,             // AAAAAAAAAAAAAAAAAA   |   3398  15
-	 19, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,       // AAAAAAAAAAAAAAAAAAA  |   3344  16
-	 20, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, // AAAAAAAAAAAAAAAAAAAA |   3294  17
-	  6, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,                                                                                     //                      |   3284  18
-	  2, 0x00, 0x00,                                                                                                             //                      |   2126  19
-	  7, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,                                                                               //                      |   1768  1a
-	  2, 0xff, 0xfe,                                                                                                             //                      |   1258  1b
-	  2, 0xfe, 0xff,                                                                                                             //                      |   1107  1c
-	  3, 0x00, 0x00, 0x00,                                                                                                       //                      |   1018  1d
-	  3, 0xff, 0xff, 0xfe,                                                                                                       //                      |    999  1e
-	  4, 0xff, 0xff, 0xfe, 0xff,                                                                                                 //                      |    993  1f
-	  3, 0xff, 0xfe, 0xff,                                                                                                       //                      |    993  20
-	  2, 0xfd, 0xff,                                                                                                             //                      |    882  21
-	  2, 0xff, 0xfd,                                                                                                             //                      |    859  22
-	  3, 0xff, 0xfd, 0xff,                                                                                                       //                      |    852  23
-	  2, 0xfc, 0xff,                                                                                                             //                      |    795  24
-	  2, 0xff, 0xfc,                                                                                                             //                      |    795  25
-	  3, 0xff, 0xfc, 0xff,                                                                                                       //                      |    792  26
-	  3, 0xfe, 0xff, 0xff,                                                                                                       //                      |    773  27
-	  4, 0xfe, 0xff, 0xff, 0xff,                                                                                                 //                      |    767  28
-	  2, 0xfb, 0xff,                                                                                                             //                      |    714  29
-	  2, 0xff, 0xfb,                                                                                                             //                      |    714  2a
-	  3, 0xff, 0xfb, 0xff,                                                                                                       //                      |    708  2b
-	  4, 0xff, 0xff, 0xff, 0xfe,                                                                                                 //                      |    689  2c
-	  5, 0xff, 0xff, 0xff, 0xff, 0xfe,                                                                                           //                      |    687  2d
-	  8, 0xff, 0xff, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff,                                                                         //                      |    683  2e
-	  7, 0xff, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff,                                                                               //                      |    683  2f
-	  7, 0xff, 0xff, 0xff, 0xff, 0xfe, 0xff, 0xff,                                                                               //                      |    683  30
-	  6, 0xff, 0xff, 0xff, 0xff, 0xfe, 0xff,                                                                                     //                      |    683  31
-	  6, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff,                                                                                     //                      |    683  32
-	  6, 0xff, 0xff, 0xff, 0xfe, 0xff, 0xff,                                                                                     //                      |    683  33
-	  5, 0xff, 0xff, 0xff, 0xfe, 0xff,                                                                                           //                      |    683  34
-	  5, 0xff, 0xff, 0xfe, 0xff, 0xff,                                                                                           //                      |    683  35
-	  5, 0xff, 0xfe, 0xff, 0xff, 0xff,                                                                                           //                      |    683  36
-	  4, 0xff, 0xfe, 0xff, 0xff,                                                                                                 //                      |    683  37
-	  2, 0xff, 0xfa,                                                                                                             //                      |    625  38
-	  3, 0xff, 0xfa, 0xff,                                                                                                       //                      |    624  39
-	  2, 0xfa, 0xff,                                                                                                             //                      |    624  3a
-	  4, 0xfd, 0xff, 0xff, 0xff,                                                                                                 //                      |    616  3b
-	  3, 0xfd, 0xff, 0xff,                                                                                                       //                      |    616  3c
-	  4, 0xff, 0xff, 0xff, 0xfd,                                                                                                 //                      |    590  3d
-	  3, 0xff, 0xff, 0xfd,                                                                                                       //                      |    590  3e
-	  7, 0xff, 0xff, 0xff, 0xfd, 0xff, 0xff, 0xff,                                                                               //                      |    586  3f
-	  6, 0xff, 0xff, 0xff, 0xfd, 0xff, 0xff,                                                                                     //                      |    586  40
-	  6, 0xff, 0xff, 0xfd, 0xff, 0xff, 0xff,                                                                                     //                      |    586  41
-	  5, 0xff, 0xfd, 0xff, 0xff, 0xff,                                                                                           //                      |    586  42
-	  5, 0xff, 0xff, 0xfd, 0xff, 0xff,                                                                                           //                      |    586  43
-	  5, 0xff, 0xff, 0xff, 0xfd, 0xff,                                                                                           //                      |    586  44
-	  4, 0xff, 0xff, 0xfd, 0xff,                                                                                                 //                      |    586  45
-	  4, 0xff, 0xfd, 0xff, 0xff,                                                                                                 //                      |    586  46
-	  4, 0xff, 0xff, 0xff, 0xfc,                                                                                                 //                      |    555  47
-	  3, 0xff, 0xff, 0xfc,                                                                                                       //                      |    555  48
-	  4, 0xfc, 0xff, 0xff, 0xff,                                                                                                 //                      |    554  49
-	  3, 0xfc, 0xff, 0xff,                                                                                                       //                      |    554  4a
-	  7, 0xff, 0xff, 0xff, 0xfc, 0xff, 0xff, 0xff,                                                                               //                      |    552  4b
-	  6, 0xff, 0xff, 0xfc, 0xff, 0xff, 0xff,                                                                                     //                      |    552  4c
-	  6, 0xff, 0xff, 0xff, 0xfc, 0xff, 0xff,                                                                                     //                      |    552  4d
-	  5, 0xff, 0xfc, 0xff, 0xff, 0xff,                                                                                           //                      |    552  4e
-	  5, 0xff, 0xff, 0xff, 0xfc, 0xff,                                                                                           //                      |    552  4f
-	  5, 0xff, 0xff, 0xfc, 0xff, 0xff,                                                                                           //                      |    552  50
-	  4, 0xff, 0xfc, 0xff, 0xff,                                                                                                 //                      |    552  51
-	  4, 0xff, 0xff, 0xfc, 0xff,                                                                                                 //                      |    552  52
-	  2, 0xff, 0xf9,                                                                                                             //                      |    522  53
-	  3, 0xff, 0xf9, 0xff,                                                                                                       //                      |    516  54
-	  2, 0xf9, 0xff,                                                                                                             //                      |    516  55
-	  3, 0xfb, 0xff, 0xff,                                                                                                       //                      |    500  56
-	  4, 0xff, 0xff, 0xff, 0xfb,                                                                                                 //                      |    497  57
-	  3, 0xff, 0xff, 0xfb,                                                                                                       //                      |    497  58
-	  4, 0xfb, 0xff, 0xff, 0xff,                                                                                                 //                      |    496  59
-	  7, 0xff, 0xff, 0xff, 0xfb, 0xff, 0xff, 0xff,                                                                               //                      |    494  5a
-	  6, 0xff, 0xff, 0xfb, 0xff, 0xff, 0xff,                                                                                     //                      |    494  5b
-	  6, 0xff, 0xff, 0xff, 0xfb, 0xff, 0xff,                                                                                     //                      |    494  5c
-	  5, 0xff, 0xfb, 0xff, 0xff, 0xff,                                                                                           //                      |    494  5d
-	  5, 0xff, 0xff, 0xff, 0xfb, 0xff,                                                                                           //                      |    494  5e
-	  5, 0xff, 0xff, 0xfb, 0xff, 0xff,                                                                                           //                      |    494  5f
-	  4, 0xff, 0xfb, 0xff, 0xff,                                                                                                 //                      |    494  60
-	  4, 0xff, 0xff, 0xfb, 0xff,                                                                                                 //                      |    494  61
-	  2, 0x17, 0x00,                                                                                                             //                      |    467  62
-	  2, 0xf8, 0xff,                                                                                                             //                      |    456  63
-	  2, 0x18, 0x00,                                                                                                             //                      |    444  64
-	  4, 0xff, 0xff, 0xff, 0xfa,                                                                                                 //                      |    437  65
-	  3, 0xff, 0xff, 0xfa,                                                                                                       //                      |    437  66
-	  2, 0xff, 0xf8,                                                                                                             //                      |    437  67
-	  7, 0xff, 0xff, 0xff, 0xfa, 0xff, 0xff, 0xff,                                                                               //                      |    436  68
-	  6, 0xff, 0xff, 0xff, 0xfa, 0xff, 0xff,                                                                                     //                      |    436  69
-	  6, 0xff, 0xff, 0xfa, 0xff, 0xff, 0xff,                                                                                     //                      |    436  6a
-	  5, 0xff, 0xff, 0xfa, 0xff, 0xff,                                                                                           //                      |    436  6b
-	  5, 0xff, 0xfa, 0xff, 0xff, 0xff,                                                                                           //                      |    436  6c
-	  5, 0xff, 0xff, 0xff, 0xfa, 0xff,                                                                                           //                      |    436  6d
-	  4, 0xfa, 0xff, 0xff, 0xff,                                                                                                 //                      |    436  6e
-	  4, 0xff, 0xfa, 0xff, 0xff,                                                                                                 //                      |    436  6f
-	  4, 0xff, 0xff, 0xfa, 0xff,                                                                                                 //                      |    436  70
-	  3, 0xfa, 0xff, 0xff,                                                                                                       //                      |    436  71
-	  3, 0xff, 0xf8, 0xff,                                                                                                       //                      |    432  72
-	  4, 0x00, 0x00, 0x00, 0x00,                                                                                                 //                      |    426  73
-	 12, 0xff, 0xff, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xfd, 0xff, 0xff, 0xff,                                                 //                      |    407  74
-	 11, 0xff, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xfd, 0xff, 0xff, 0xff,                                                       //                      |    407  75
-	 11, 0xff, 0xff, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xfd, 0xff, 0xff,                                                       //                      |    407  76
-	 10, 0xff, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xfd, 0xff, 0xff,                                                             //                      |    407  77
-	 10, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xfd, 0xff, 0xff, 0xff,                                                             //                      |    407  78
-	 10, 0xff, 0xff, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xfd, 0xff,                                                             //                      |    407  79
-	  9, 0xff, 0xff, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xfd,                                                                   //                      |    407  7a
-	  9, 0xff, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xfd, 0xff,                                                                   //                      |    407  7b
-	  9, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xfd, 0xff, 0xff, 0xff,                                                                   //                      |    407  7c
-	  9, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xfd, 0xff, 0xff,                                                                   //                      |    407  7d
-	  8, 0xfe, 0xff, 0xff, 0xff, 0xfd, 0xff, 0xff, 0xff,                                                                         //                      |    407  7e
-	  8, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xfd, 0xff, 0xff,                                                                         //                      |    407  7f
+//! The generator pattern max size was 20 and the list pattern max size is: 10
+const uint8_t idTable[] = { // from dummy.txt (2025-02-08 01:02)
+                                                                     // ASCII     |  count  id
+	 10, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, //           |     89  01
+	  9, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,       //           |     94  02
+	  8, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,             //           |    143  03
+	  7, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,                   //           |    151  04
+	  6, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,                         //           |    165  05
+	  6, 0x20, 0x74, 0x68, 0x61, 0x74, 0x20,                         //  that     |     86  06
+	  5, 0x20, 0x20, 0x20, 0x20, 0x20,                               //           |    222  07
+	  5, 0x20, 0x61, 0x6e, 0x64, 0x20,                               //  and      |    163  08
+	  5, 0x20, 0x74, 0x68, 0x61, 0x74,                               //  that     |     90  09
+	  5, 0x20, 0x74, 0x68, 0x65, 0x20,                               //  the      |    187  0a
+	  5, 0x74, 0x68, 0x61, 0x74, 0x20,                               // that      |     87  0b
+	  4, 0x20, 0x20, 0x20, 0x20,                                     //           |    290  0c
+	  4, 0x20, 0x61, 0x6e, 0x64,                                     //  and      |    163  0d
+	  4, 0x20, 0x6f, 0x66, 0x20,                                     //  of       |    121  0e
+	  4, 0x20, 0x74, 0x68, 0x61,                                     //  tha      |     97  0f
+	  4, 0x20, 0x74, 0x68, 0x65,                                     //  the      |    248  10
+	  4, 0x20, 0x74, 0x6f, 0x20,                                     //  to       |    116  11
+	  4, 0x20, 0x77, 0x6f, 0x72,                                     //  wor      |     90  12
+	  4, 0x61, 0x6e, 0x64, 0x20,                                     // and       |    170  13
+	  4, 0x68, 0x61, 0x74, 0x20,                                     // hat       |    105  14
+	  4, 0x69, 0x6e, 0x67, 0x20,                                     // ing       |    144  15
+	  4, 0x74, 0x68, 0x61, 0x74,                                     // that      |     90  16
+	  4, 0x74, 0x68, 0x65, 0x20,                                     // the       |    189  17
+	  3, 0x20, 0x20, 0x20,                                           //           |    375  18
+	  3, 0x20, 0x61, 0x20,                                           //  a        |     86  19
+	  3, 0x20, 0x61, 0x6e,                                           //  an       |    191  1a
+	  3, 0x20, 0x69, 0x6e,                                           //  in       |    116  1b
+	  3, 0x20, 0x6f, 0x66,                                           //  of       |    129  1c
+	  3, 0x20, 0x74, 0x68,                                           //  th       |    419  1d
+	  3, 0x20, 0x74, 0x6f,                                           //  to       |    127  1e
+	  3, 0x20, 0x77, 0x6f,                                           //  wo       |     99  1f
+	  3, 0x61, 0x6e, 0x64,                                           // and       |    178  20
+	  3, 0x61, 0x74, 0x20,                                           // at        |    130  21
+	  3, 0x65, 0x64, 0x20,                                           // ed        |     93  22
+	  3, 0x68, 0x61, 0x74,                                           // hat       |    108  23
+	  3, 0x68, 0x65, 0x20,                                           // he        |    210  24
+	  3, 0x69, 0x6e, 0x67,                                           // ing       |    186  25
+	  3, 0x69, 0x73, 0x20,                                           // is        |    111  26
+	  3, 0x6e, 0x64, 0x20,                                           // nd        |    204  27
+	  3, 0x6e, 0x67, 0x20,                                           // ng        |    158  28
+	  3, 0x6f, 0x66, 0x20,                                           // of        |    121  29
+	  3, 0x72, 0x65, 0x20,                                           // re        |    107  2a
+	  3, 0x73, 0x20, 0x61,                                           // s a       |     92  2b
+	  3, 0x74, 0x20, 0x74,                                           // t t       |     85  2c
+	  3, 0x74, 0x68, 0x61,                                           // tha       |     97  2d
+	  3, 0x74, 0x68, 0x65,                                           // the       |    269  2e
+	  3, 0x74, 0x6f, 0x20,                                           // to        |    131  2f
+	  3, 0x77, 0x6f, 0x72,                                           // wor       |     91  30
+	  2, 0x0d, 0x0a,                                                 // ˙˙        |    190  31
+	  2, 0x20, 0x20,                                                 //           |    583  32
+	  2, 0x20, 0x61,                                                 //  a        |    478  33
+	  2, 0x20, 0x62,                                                 //  b        |    166  34
+	  2, 0x20, 0x63,                                                 //  c        |    158  35
+	  2, 0x20, 0x65,                                                 //  e        |     97  36
+	  2, 0x20, 0x66,                                                 //  f        |    135  37
+	  2, 0x20, 0x68,                                                 //  h        |    109  38
+	  2, 0x20, 0x69,                                                 //  i        |    257  39
+	  2, 0x20, 0x6c,                                                 //  l        |    169  3a
+	  2, 0x20, 0x6d,                                                 //  m        |    150  3b
+	  2, 0x20, 0x6f,                                                 //  o        |    292  3c
+	  2, 0x20, 0x70,                                                 //  p        |    124  3d
+	  2, 0x20, 0x73,                                                 //  s        |    204  3e
+	  2, 0x20, 0x74,                                                 //  t        |    608  3f
+	  2, 0x20, 0x77,                                                 //  w        |    319  40
+	  2, 0x2c, 0x20,                                                 // ,         |    207  41
+	  2, 0x61, 0x20,                                                 // a         |     91  42
+	  2, 0x61, 0x67,                                                 // ag        |     92  43
+	  2, 0x61, 0x6c,                                                 // al        |    144  44
+	  2, 0x61, 0x6e,                                                 // an        |    371  45
+	  2, 0x61, 0x72,                                                 // ar        |    127  46
+	  2, 0x61, 0x73,                                                 // as        |     97  47
+	  2, 0x61, 0x74,                                                 // at        |    247  48
+	  2, 0x62, 0x65,                                                 // be        |     90  49
+	  2, 0x63, 0x6f,                                                 // co        |     93  4a
+	  2, 0x64, 0x20,                                                 // d         |    414  4b
+	  2, 0x64, 0x65,                                                 // de        |    102  4c
+	  2, 0x65, 0x20,                                                 // e         |    748  4d
+	  2, 0x65, 0x61,                                                 // ea        |    164  4e
+	  2, 0x65, 0x64,                                                 // ed        |    118  4f
+	  2, 0x65, 0x6e,                                                 // en        |    202  50
+	  2, 0x65, 0x72,                                                 // er        |    247  51
+	  2, 0x65, 0x73,                                                 // es        |    212  52
+	  2, 0x66, 0x20,                                                 // f         |    141  53
+	  2, 0x67, 0x20,                                                 // g         |    159  54
+	  2, 0x67, 0x65,                                                 // ge        |    101  55
+	  2, 0x68, 0x20,                                                 // h         |     98  56
+	  2, 0x68, 0x61,                                                 // ha        |    199  57
+	  2, 0x68, 0x65,                                                 // he        |    345  58
+	  2, 0x68, 0x69,                                                 // hi        |    134  59
+	  2, 0x69, 0x6e,                                                 // in        |    404  5a
+	  2, 0x69, 0x6f,                                                 // io        |     87  5b
+	  2, 0x69, 0x73,                                                 // is        |    192  5c
+	  2, 0x69, 0x74,                                                 // it        |    151  5d
+	  2, 0x6c, 0x20,                                                 // l         |     94  5e
+	  2, 0x6c, 0x61,                                                 // la        |    124  5f
+	  2, 0x6c, 0x65,                                                 // le        |    107  60
+	  2, 0x6c, 0x69,                                                 // li        |    114  61
+	  2, 0x6d, 0x65,                                                 // me        |    132  62
+	  2, 0x6e, 0x20,                                                 // n         |    255  63
+	  2, 0x6e, 0x64,                                                 // nd        |    257  64
+	  2, 0x6e, 0x65,                                                 // ne        |    108  65
+	  2, 0x6e, 0x67,                                                 // ng        |    292  66
+	  2, 0x6e, 0x74,                                                 // nt        |    161  67
+	  2, 0x6f, 0x20,                                                 // o         |    180  68
+	  2, 0x6f, 0x66,                                                 // of        |    133  69
+	  2, 0x6f, 0x6e,                                                 // on        |    216  6a
+	  2, 0x6f, 0x72,                                                 // or        |    242  6b
+	  2, 0x6f, 0x75,                                                 // ou        |    218  6c
+	  2, 0x70, 0x65,                                                 // pe        |     89  6d
+	  2, 0x72, 0x20,                                                 // r         |    200  6e
+	  2, 0x72, 0x64,                                                 // rd        |     85  6f
+	  2, 0x72, 0x65,                                                 // re        |    275  70
+	  2, 0x72, 0x69,                                                 // ri        |     99  71
+	  2, 0x73, 0x20,                                                 // s         |    498  72
+	  2, 0x73, 0x65,                                                 // se        |    124  73
+	  2, 0x73, 0x74,                                                 // st        |    139  74
+	  2, 0x74, 0x20,                                                 // t         |    377  75
+	  2, 0x74, 0x65,                                                 // te        |    135  76
+	  2, 0x74, 0x68,                                                 // th        |    507  77
+	  2, 0x74, 0x69,                                                 // ti        |    167  78
+	  2, 0x74, 0x6f,                                                 // to        |    162  79
+	  2, 0x75, 0x72,                                                 // ur        |    106  7a
+	  2, 0x75, 0x74,                                                 // ut        |     89  7b
+	  2, 0x76, 0x65,                                                 // ve        |    127  7c
+	  2, 0x77, 0x6f,                                                 // wo        |    102  7d
+	  2, 0x79, 0x20,                                                 // y         |    172  7e
+	  2, 0xe2, 0x80,                                                 // ˙˙        |     89  7f
 	  0 // table end marker
 };
+
+// tipTableSize is 480.
