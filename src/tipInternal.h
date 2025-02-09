@@ -50,24 +50,22 @@ typedef struct {
 } replacement_t;
 
 typedef struct {
-    replacement_t  list[TIP_SRC_BUFFER_SIZE_MAX/2 + 2]; //!< list is the replacement list. It cannot get more elements. The space between 2 replacemts is a hay stack or finally unreplacable.
+    replacement_t  list[TIP_SRC_BUFFER_SIZE_MAX/2 + 2]; //!< list is the replacement list. It cannot get more elements. 
+                                                        //! The space between 2 replacemts is a hay stack or finally unreplacable.
     int count; //!< count is the actual replace count inside replaceList.
-} replace_t;
+} replaceList_t;
 
-//! @details All unreplacable bytes are stretched inside to 7-bit units. This makes the data a bit longer.
-typedef struct {
-    uint8_t buffer[TIP_SRC_BUFFER_SIZE_MAX*8/7+1];  //!< buffer holds all unreplacable bytes from src. It cannot get longer.
-    uint8_t * last; //! last is the last address inside the unreplacable bytes buffer. ( = &(buffer[sizeof(buffer)-1]); )
-} unreplacable_t;
+extern const uint8_t idTable[];
 
-typedef struct {
-    uint8_t const * const pattern;
-    size_t const size;
-} idTable_t;
-
-void getPatternFromId( uint8_t id, uint8_t ** pt, size_t * sz );
-void restartPattern(void);
-void getNextPattern(uint8_t ** pt, size_t * sz );
+void getPatternFromId( const uint8_t ** pt, size_t * sz, uint8_t id, const uint8_t * table );
+void initGetNextPattern( const uint8_t * table );
+void getNextPattern(const uint8_t ** pt, size_t * sz );
+replaceList_t * newReplacableList(size_t slen);
+void replaceableListInsert( replaceList_t * r, int k, uint8_t by, offset_t offset, uint8_t sz );
+size_t collectUnreplacableBytes( uint8_t * dst, replaceList_t * r, const uint8_t * src );
+size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t uSize, replaceList_t * r );
+void buildReplacementList( replaceList_t * r, const uint8_t * table, const uint8_t * src, size_t slen) ;
+size_t TiPack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen );
 
 #ifdef __cplusplus
 }

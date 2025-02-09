@@ -1,12 +1,14 @@
-//! @file tipTable.c
+//! @file idTable.c
 //! @brief Generated code - do not edit!
 
 #include <stdint.h>
 #include <stddef.h>
 
-//! tipTable is sorted by pattern count and pattern length.
+extern const uint8_t idTable[];
+
+//! idTable is sorted by pattern pattern length and count.
 //! The pattern position + 1 is the replacement id.
-uint8_t pattern[] = { // from trice.bin (2025-01-15 21:45)                                                                        -- __ASCII__          |  count  id
+const uint8_t idTable[] = { // from trice.bin (2025-01-15 21:45)    idTableSize is 847                                              -- __ASCII__          |  count  id
 	  2, 0xff, 0xff,                                                                                                             //                      |  17140  01
 	  3, 0xff, 0xff, 0xff,                                                                                                       //                      |  11812  02
 	  4, 0xff, 0xff, 0xff, 0xff,                                                                                                 //                      |   6854  03
@@ -135,11 +137,4 @@ uint8_t pattern[] = { // from trice.bin (2025-01-15 21:45)                      
 	  8, 0xfe, 0xff, 0xff, 0xff, 0xfd, 0xff, 0xff, 0xff,                                                                         //                      |    407  7e
 	  8, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xfd, 0xff, 0xff,                                                                         //                      |    407  7f
 	  0 // table end marker
-};
-
-const size_t idTableSize = 847;
-
-idTable_t idTable = {
-    &pattern;
-    idTableSize;
 };
