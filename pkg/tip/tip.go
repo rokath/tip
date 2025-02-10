@@ -18,8 +18,8 @@ package tip
 import "C"
 
 import (
+	"encoding/binary"
 	"fmt"
-	"reflect"
 	"unsafe"
 )
 
@@ -65,13 +65,29 @@ func buildReplaceList(table, in []byte) (rpl []replace) {
 	fmt.Printf("rpl=%v\n", rpl)
 
 	// https://go.dev/wiki/cgo
-	var theCArray *C.replace_t = C.buildReplaceList(tbl, src, slen)
-	length := 10                             // C.getTheArrayLength()
-	slice := unsafe.Slice(theCArray, length) // Go 1.17
+	// https://stackoverflow.com/questions/11924196/convert-between-slices-of-different-types
+	cArray := unsafe.Pointer(C.buildReplaceList(tbl, src, slen))
+	const sizeof_bo = 2                        // bytes
+	const sizeof_replace = sizeof_bo + 2       // bytes
+	bytes := C.GoBytes(cArray, sizeof_replace) // just the first one to get the rpl count
+	rplCount := int(binary.LittleEndian.Uint16(bytes[0:sizeof_bo]))
+	length := rplCount * sizeof_replace // C.getTheArrayLength()
+	bytes = C.GoBytes(cArray, C.int(length))
+	rpl = make([]replace, rplCount)
+	for i := range rpl {
+		start := i * sizeof_replace
+		limit := i*sizeof_replace + sizeof_bo
+		rpl[i].bo = uint16(binary.LittleEndian.Uint16(bytes[start:limit]))
+	}
 
-	fmt.Printf("slice=%v\n", slice)
+	// This does not work:
+	// xArray := C.buildReplaceList(tbl, src, slen)
+	// slice := unsafe.Slice((*replace)(xArray), length) // Go 1.17
+	// fmt.Printf("slice=%v\n", slice)
+	// rpl = &slice[0]
+	// That is ok:
+	// slice := unsafe.Slice(&rpl[0], rplCount) // Go 1.17
+	// fmt.Printf("slice=%v\n", slice)
 
-	fmt.Println("type of slice", reflect.TypeOf(slice))
-	//rpl = &slice[0]
 	return
 }

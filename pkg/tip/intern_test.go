@@ -11,7 +11,7 @@ func TestX(t *testing.T) {
 	table := []byte{2, 0xff, 0xff, 0}
 	in := []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
 	exp := []replace{
-		{4, 0, 0}, // count = 4, sz & id unused
+		{5, 0, 0}, // count = 5, sz & id unused
 		{0, 2, 1},
 		{2, 2, 1},
 		{4, 2, 1},

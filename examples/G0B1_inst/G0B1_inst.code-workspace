@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../src"
+		},
+		{
+			"path": "../../../trice/src"
+		},
+		{
+			"path": "../.."
+		}
+	],
+	"settings": {}
+}

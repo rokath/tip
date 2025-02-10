@@ -118,11 +118,11 @@ size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t u7Size, replace_t*
 //! @param offset is the location to be extended with.
 //! @param sz is the replace pattern size.
 void replaceableListInsert(replace_t * rlist, int k, uint8_t id, offset_t offset, uint8_t sz){
-    k++;
-    int rcount = rlist[0].bo; 
+    int rcount = rlist[0].bo;
     rcount++;
     rlist[0].bo = rcount;
-    memmove( &(rlist[k+1]), &(rlist[k]), (rcount-k)*sizeof(replace_t));
+    k++;
+    memmove( &(rlist[k+1]), &(rlist[k]), (rcount-k-1)*sizeof(replace_t));
     rlist[k].id = id;
     rlist[k].bo = offset;
     rlist[k].sz = sz;

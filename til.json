@@ -1,0 +1,18 @@
+{
+	"13335": {
+		"Type": "TRice",
+		"Strg": "msg:StartDefaultTask\\n"
+	},
+	"13693": {
+		"Type": "triceB",
+		"Strg": "msg:%02x "
+	},
+	"14690": {
+		"Type": "TRice",
+		"Strg": "msg:StartTask02:Diagnostics and TriceTransfer\\n"
+	},
+	"15431": {
+		"Type": "trice8B",
+		"Strg": "msg:%02x "
+	}
+}
