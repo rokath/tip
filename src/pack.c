@@ -8,7 +8,9 @@
 //! It is possible to use different tables at the same time, but the code needs to be changed a bit then.
 //! @author thomas.hoehenleitner [at] seerose.net
 
+#include "tip.h"
 #include "tipInternal.h"
+#include "trice.h"
 
 size_t tip( uint8_t* dst, const uint8_t * src, size_t len ){
     return TiPack( dst, idTable, src, len );
@@ -23,15 +25,20 @@ size_t TiPack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t 
     if( slen < 6 ){
         memcpy(dst, src, slen);
         return slen;
-    }   
-    replace_t * rlist = buildReplaceList(table, src, slen);
+    }
+    int rcount;
+    replace_t * rlist = buildReplaceList(&rcount, table, src, slen);
+    for( int i = 0; i < rcount; i++ ){
+        trice( "d:%2d: bo=%d, sz=%d, id=%02x\n", i, rlist[i].bo, rlist[i].sz, rlist[i].id);
+    }
+    
     // All unreplacable bytes are stretched inside to 7-bit units. This makes the data a bit longer.
     static uint8_t ur[TIP_SRC_BUFFER_SIZE_MAX*8/7+1]; 
-    size_t ubSize = collectUnreplacableBytes( ur, rlist, src );
+    size_t ubSize = collectUnreplacableBytes( ur, rlist, rcount, src );
     uint8_t * urLast = &(ur[sizeof(ur)-1]); // last address inside the ur buffer.
     size_t urSize = shift87bit( urLast, ur, ubSize );
     uint8_t * u7 = urLast - urSize;
-    size_t tipSize = generateTipPacket( dst, u7, urSize, rlist );
+    size_t tipSize = generateTipPacket( dst, u7, urSize, rlist, rcount );
     return tipSize;
 }
 
@@ -45,14 +52,17 @@ replace_t * newReplaceList(size_t slen){
     // The first 2 elements are initialized as boders.
     list[0].bo = 2; // byte offset r[0].b0 is never needed and holds therfore the list element count. 
     list[0].sz = 0; // 
+    list[0].id = 0; // no replacement
     // From (r[0].bo + r[0].sz) to r[1].bo is the first hey stack.
     list[1].bo = slen; // byte offset
     list[1].sz = 0; // needed as end marker. r[1].by is never used.
+    list[1].id = 0; // no replacement
     return list;
 };
 
-replace_t * buildReplaceList( const uint8_t * table, const uint8_t * src, size_t slen){
+replace_t * buildReplaceList(int * rcount, const uint8_t * table, const uint8_t * src, size_t slen){
     replace_t * rlist = newReplaceList(slen);
+    *rcount = 2;
     initGetNextPattern(table);
     for( int id = 1; id < 0x80; id++ ){ // traverse te table.
         // get biggest needle (the next pattern)
@@ -72,7 +82,7 @@ replace_t * buildReplaceList( const uint8_t * table, const uint8_t * src, size_t
             uint8_t * loc = memmem( hay, hlen, needle, nlen ); // search hay for the needle
             if( loc ){ // found, id is the replace byte.
                 offset_t offset = loc - src; // offset is the needle (=pattern) position.
-                replaceableListInsert( rlist, k, id, offset, nlen );
+                replaceableListInsert( rlist, rcount, k, id, offset, nlen );
                 k--; // Same k needs processing again.
             } // The r insert takes part inside the already processed rs.
             k++;
@@ -87,9 +97,8 @@ replace_t * buildReplaceList( const uint8_t * table, const uint8_t * src, size_t
 //! @param u7Size count of 7 lsbits bytes
 //! @param rl replace list
 //! @retval length of tip packet
-size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t u7Size, replace_t* rlist ){ 
+size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t u7Size, replace_t* rlist, int rcount ){ 
     size_t tipSize = 0;
-    int rcount = rlist[0].bo;
     int k = 0;  // Traverse r to find relacement pattern.
     do { // r->list[k] is done here, we need to fill the space and insert r[k+1] pattern.
         int uBytes = rlist[k+1].bo - (rlist[k].bo + rlist[k].sz);
@@ -117,15 +126,13 @@ size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t u7Size, replace_t*
 //! @param id is the replace byte for the location.
 //! @param offset is the location to be extended with.
 //! @param sz is the replace pattern size.
-void replaceableListInsert(replace_t * rlist, int k, uint8_t id, offset_t offset, uint8_t sz){
-    int rcount = rlist[0].bo;
-    rcount++;
-    rlist[0].bo = rcount;
+void replaceableListInsert(replace_t * rlist, int * rcount, int k, uint8_t id, offset_t offset, uint8_t sz){
     k++;
-    memmove( &(rlist[k+1]), &(rlist[k]), (rcount-k-1)*sizeof(replace_t));
+    memmove( &(rlist[k+1]), &(rlist[k]), (*rcount-k)*sizeof(replace_t));
     rlist[k].id = id;
     rlist[k].bo = offset;
     rlist[k].sz = sz;
+    (*rcount)++;
 }
 
 //! collectUnreplacableBytes uses information in rl to construct dst (->u) from src.
@@ -133,9 +140,8 @@ void replaceableListInsert(replace_t * rlist, int k, uint8_t id, offset_t offset
 //! @param r is the replace list. Its holes are the unreplacable bytes information.
 //! @param src is the data buffer containing repacable and unreplacable bytes.
 //! @retval is the dst size.
-size_t collectUnreplacableBytes( uint8_t * dst, replace_t * rlist, const uint8_t * src ){
+size_t collectUnreplacableBytes( uint8_t * dst, replace_t * rlist, int rcount, const uint8_t * src ){
     size_t dstCount = 0;
-    int rcount = rlist[0].bo;
     for( int k = 0; k < rcount - 1; k++ ){
         offset_t offset = rlist[k].bo + rlist[k].sz;
         const uint8_t * addr = src + offset;

@@ -10,6 +10,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <stddef.h>
 
 //! tip is NOT re-entrant or parallel usable, because there are some static objects!
 size_t tip( uint8_t* dst, const uint8_t * src, size_t len );

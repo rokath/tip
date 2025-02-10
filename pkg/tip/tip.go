@@ -6,7 +6,7 @@ package tip
 // Package tip is a wwrapper for executing and a helper for testing the target C-code.
 // For some reason inside the tip_test.go an 'import "C"' is not possible.
 
-// #cgo CFLAGS: -g -Wall -I../../src
+// #cgo CFLAGS: -g -Wall -I../../src -I../../../trice/src -I../../examples/L432_inst/Core/inc
 // #include <stdint.h>
 // #include <stddef.h>
 // #include "memmem.c"
@@ -19,7 +19,6 @@ import "C"
 
 import (
 	"encoding/binary"
-	"fmt"
 	"unsafe"
 )
 
@@ -59,21 +58,22 @@ func buildReplaceList(table, in []byte) (rpl []replace) {
 	tbl := (*C.uchar)(unsafe.Pointer(&table[0])) //o := unsafe.Pointer((*C.uchar)(&out[0]))
 	src := (*C.uchar)(unsafe.Pointer(&in[0]))    //i := unsafe.Pointer((*C.uchar)(&in[0]))
 	slen := (C.size_t)(len(in))
-
-	p := C.buildReplaceList(tbl, src, slen)
-	fmt.Printf("p=%v\n", p)
-	fmt.Printf("rpl=%v\n", rpl)
+	var rlen int
+	rcount := (*C.int)(unsafe.Pointer(&rlen))
+	//p := C.buildReplaceList(rcount, tbl, src, slen)
+	//fmt.Printf("p=%v\n", p)
+	//fmt.Printf("rpl=%v\n", rpl)
 
 	// https://go.dev/wiki/cgo
 	// https://stackoverflow.com/questions/11924196/convert-between-slices-of-different-types
-	cArray := unsafe.Pointer(C.buildReplaceList(tbl, src, slen))
-	const sizeof_bo = 2                        // bytes
-	const sizeof_replace = sizeof_bo + 2       // bytes
-	bytes := C.GoBytes(cArray, sizeof_replace) // just the first one to get the rpl count
-	rplCount := int(binary.LittleEndian.Uint16(bytes[0:sizeof_bo]))
-	length := rplCount * sizeof_replace // C.getTheArrayLength()
-	bytes = C.GoBytes(cArray, C.int(length))
-	rpl = make([]replace, rplCount)
+	cArray := unsafe.Pointer(C.buildReplaceList(rcount, tbl, src, slen))
+	const sizeof_bo = 2                  // bytes
+	const sizeof_replace = sizeof_bo + 2 // bytes
+	//bytes := C.GoBytes(cArray, sizeof_replace) // just the first one to get the rpl count
+	//rplCount := int(binary.LittleEndian.Uint16(bytes[0:sizeof_bo]))
+	length := int(*rcount) * sizeof_replace // C.getTheArrayLength()
+	bytes := C.GoBytes(cArray, C.int(length))
+	rpl = make([]replace, *rcount)
 	for i := range rpl {
 		start := i * sizeof_replace
 		limit := i*sizeof_replace + sizeof_bo

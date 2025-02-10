@@ -8,3 +8,4 @@ TRICE_CMD_LINE+="-liPath relative "  # Prefix base filenames in li.json with rel
 TRICE_CMD_LINE+="-src ../trice/examples/exampleData "
 TRICE_CMD_LINE+="-src ./examples/G0B1_inst/Core "
 TRICE_CMD_LINE+="-src ./examples/L432_inst/Core "
+TRICE_CMD_LINE+="-src ./src "

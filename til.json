@@ -275,6 +275,10 @@
 		"Type": "TRice",
 		"Strg": "att:🐁 Speedy Gonzales b  32-bit time stamp\\n"
 	},
+	"16147": {
+		"Type": "trice",
+		"Strg": "d:%2d: bo=%d, sz=%d, id=%02x\\n"
+	},
 	"16163": {
 		"Type": "trice16",
 		"Strg": "err:TriceErrorCount = %u\\n"

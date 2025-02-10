@@ -22,8 +22,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "trice.h"
 #include "tip.h"
+#include "trice.h"
 //#include <limits.h> // INT_MAX
 /* USER CODE END Includes */
 
@@ -117,7 +117,7 @@ int main(void)
   LogTriceConfiguration();
 #endif
   static uint8_t dst[100] = {0};
-  static uint8_t src[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+  static uint8_t src[] = { 0x0d, 0x0a, 0x0d, 0x0a, 0x0d, 0x0a, 0x0d, 0x0a };
   size_t slen = sizeof(src);
   size_t dlen = tip(dst, src, slen);
   trice8B("rd:%02x \n", src, slen);

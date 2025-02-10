@@ -275,6 +275,10 @@
 		"File": "../trice/examples/exampleData/triceExamples.c",
 		"Line": 30
 	},
+	"16147": {
+		"File": "src/pack.c",
+		"Line": 32
+	},
 	"16163": {
 		"File": "../trice/examples/exampleData/triceLogDiagData.c",
 		"Line": 26
