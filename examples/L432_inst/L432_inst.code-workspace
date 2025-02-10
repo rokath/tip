@@ -4,19 +4,19 @@
 			"path": "."
 		},
 		{
-			"path": "../exampleData"
-		},
-		{
 			"path": "../../src"
-		},
-		{
-			"path": "../../_test/testdata"
 		},
 		{
 			"path": "../../docs"
 		},
 		{
 			"path": "../.."
+		},
+		{
+			"path": "../../../trice/src"
+		},
+		{
+			"path": "../../../trice/examples/exampleData"
 		}
 	],
 	"settings": {

@@ -15,6 +15,10 @@
 		"Type": "Trice",
 		"Strg": "msg:%f (default rounded float)\\n"
 	},
+	"13278": {
+		"Type": "TriceS",
+		"Strg": "w: Hello! 👋🙂 \\n\\n        ✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨        \\n        🎈🎈🎈🎈%s🎈🎈🎈🎈\\n        🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃        \\n\\n\\n"
+	},
 	"13335": {
 		"Type": "TRice",
 		"Strg": "msg:StartDefaultTask\\n"
@@ -103,6 +107,10 @@
 		"Type": "trice",
 		"Strg": "deb:TRICE_MULTI_PACK_MODE\\n"
 	},
+	"14128": {
+		"Type": "trice8B",
+		"Strg": "wr:%02x \\n"
+	},
 	"14141": {
 		"Type": "TRice",
 		"Strg": "att:🐁 Speedy Gonzales a  32-bit time stamp\\n"
@@ -158,6 +166,10 @@
 	"14505": {
 		"Type": "TRice",
 		"Strg": "att:🐁 Speedy Gonzales d  32-bit time stamp\\n"
+	},
+	"14506": {
+		"Type": "trice8B",
+		"Strg": "rd:%02x \\n"
 	},
 	"14597": {
 		"Type": "Trice16F",

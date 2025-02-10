@@ -20,7 +20,7 @@ size_t tip( uint8_t* dst, const uint8_t * src, size_t len ){
 // - The replace list r holds the replace information.
 // - The unreplacable bytes are collected into a buffer.
 size_t TiPack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen ){
-    if( slen < 16 ){
+    if( slen < 6 ){
         memcpy(dst, src, slen);
         return slen;
     }   

@@ -8,10 +8,10 @@
 
 
 //! @brief tiu decodes src buffer with size len into dst buffer and returns decoded len.
-size_t tiu( uint8_t * dst, const uint8_t * src, size_t len ){
-    if( len < 16 ){
-        memcpy(dst, src, len);
-        return len;
+size_t tiu( uint8_t * dst, const uint8_t * src, size_t slen ){
+    if( slen < 6 ){
+        memcpy(dst, src, slen);
+        return slen;
     }
 
     // todo

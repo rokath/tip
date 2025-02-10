@@ -116,6 +116,12 @@ int main(void)
 #if !TRICE_OFF  
   LogTriceConfiguration();
 #endif
+  static uint8_t dst[100] = {0};
+  static uint8_t src[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+  size_t slen = sizeof(src);
+  size_t dlen = tip(dst, src, slen);
+  trice8B("rd:%02x \n", src, slen);
+  trice8B("wr:%02x \n", dst, dlen);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -340,12 +346,6 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    static uint8_t dst[100] = {0};
-    static uint8_t src[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-    size_t slen = sizeof(src);
-    size_t dlen = tip(dst, src, slen);
-    trice8B("rd:%02x ", src, slen);
-    trice8B("wr:%02x ", dst, dlen);
     osDelay(1000);
   }
   /* USER CODE END 5 */
