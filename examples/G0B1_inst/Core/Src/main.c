@@ -24,7 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include "trice.h"
 #include "tip.h"
-#include <limits.h> // INT_MAX
+//#include <limits.h> // INT_MAX
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -47,8 +47,6 @@
 osThreadId defaultTaskHandle;
 osThreadId myTask02_DiagnoHandle;
 /* USER CODE BEGIN PV */
-int LoopCount = 0;
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -82,7 +80,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 #if !TRICE_OFF
   TriceInit(); // This so early, to allow trice logs inside interrupts from the beginning. Only needed for RTT.
-  //TriceHeadLine("  NUCLEO-G0B1RE   ");
+  TriceHeadLine("  NUCLEO-G0B1RE with tip  ");
 #endif
   /* USER CODE END 1 */
 
@@ -311,21 +309,16 @@ void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
   TRICE_UNUSED(argument)
-  TRice("msg:StartDefaultTask\n");
+  TRice(iD(13335), "msg:StartDefaultTask\n");
   /* Infinite loop */
   for(;;)
   {
-    static uint8_t dst[100];
+    static uint8_t dst[100] = {0};
     static uint8_t src[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-    size_t dlen = tip(dst, src, sizeof(src));
-    trice8B("msg:%02x ",  dst, dlen);
-// #if !TRICE_OFF
-//     static int i = 0;
-//     if( i++ > 2500 ){
-//       i = 0;
-//     }
-//     TriceCheck( i ); // this generates trice data
-// #endif
+    size_t slen = sizeof(src);
+    size_t dlen = tip(dst, src, slen);
+    trice8B(iD(13714), "rd:%02x ", src, slen);
+    trice8B(iD(13990), "wr:%02x ", dst, dlen);
     osDelay(1000);
   }
   /* USER CODE END 5 */
@@ -342,7 +335,7 @@ void StartTask02(void const * argument)
 {
   /* USER CODE BEGIN StartTask02 */
   TRICE_UNUSED(argument)
-  TRice("msg:StartTask02:Diagnostics and TriceTransfer\n" );
+  TRice(iD(14690), "msg:StartTask02:Diagnostics and TriceTransfer\n" );
   /* Infinite loop */
   for(;;)
   {
@@ -356,7 +349,7 @@ void StartTask02(void const * argument)
 //    }
 //#endif // #if TRICE_DIAGNOSTICS == 1
 
-    //Tri_ceTransfer();
+    //TriceTransfer();
     osDelay(100);
 
 #if TRICE_BUFFER == TRICE_RING_BUFFER && TRICE_RING_BUFFER_OVERFLOW_WATCH == 1

@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../exampleData"
+		},
+		{
+			"path": "../../src"
+		},
+		{
+			"path": "../../_test/testdata"
+		},
+		{
+			"path": "../../docs"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"stdint.h": "c"
+		}
+	}
+}

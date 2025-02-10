@@ -1,18 +1,290 @@
 {
+	"13066": {
+		"Type": "TRICE32_0",
+		"Strg": "att:🐁 Speedy Gonzales B  32-bit time stamp\\n"
+	},
+	"13112": {
+		"Type": "trice",
+		"Strg": "deb:TRICE_DIRECT_OUTPUT == %d, TRICE_DEFERRED_OUTPUT == %d\\n"
+	},
+	"13191": {
+		"Type": "TRICE32_0",
+		"Strg": "att:🐁 Speedy Gonzales G  16-bit time stamp\\n"
+	},
+	"13218": {
+		"Type": "Trice",
+		"Strg": "msg:%f (default rounded float)\\n"
+	},
 	"13335": {
 		"Type": "TRice",
 		"Strg": "msg:StartDefaultTask\\n"
+	},
+	"13365": {
+		"Type": "trice16",
+		"Strg": "err:triceRingBufferDepthMax =%4u of%5d (overflow!)\\n"
+	},
+	"13474": {
+		"Type": "TRICE32_0",
+		"Strg": "att:🐁 Speedy Gonzales F  16-bit time stamp\\n"
+	},
+	"13489": {
+		"Type": "trice",
+		"Strg": "att:🐁 Speedy Gonzales k without time stamp\\n"
+	},
+	"13503": {
+		"Type": "Trice64",
+		"Strg": "msg:%.20f (double with more ciphers than precision)\\n"
+	},
+	"13508": {
+		"Type": "trice16",
+		"Strg": "diag:TriceHalfBufferDepthMax =%4u of%5d\\n"
+	},
+	"13660": {
+		"Type": "trice16",
+		"Strg": "diag:RTT0_writeDepthMax=%u (BUFFER_SIZE_UP=%u)\\n"
+	},
+	"13676": {
+		"Type": "trice",
+		"Strg": "deb:TRICE_STACK_BUFFER, "
 	},
 	"13693": {
 		"Type": "triceB",
 		"Strg": "msg:%02x "
 	},
+	"13714": {
+		"Type": "trice8B",
+		"Strg": "rd:%02x "
+	},
+	"13828": {
+		"Type": "trice",
+		"Strg": "deb:TRICE_SINGLE_PACK_MODE\\n"
+	},
+	"13851": {
+		"Type": "Trice8B",
+		"Strg": "msg:%02x \\n"
+	},
+	"13864": {
+		"Type": "TRICE32_0",
+		"Strg": "att:🐁 Speedy Gonzales K without time stamp\\n"
+	},
+	"13923": {
+		"Type": "trice16",
+		"Strg": "wrn:TriceDynBufTruncateCount = %u\\n"
+	},
+	"13977": {
+		"Type": "trice8B",
+		"Strg": "rd:%02x "
+	},
+	"13990": {
+		"Type": "trice8B",
+		"Strg": "wr:%02x "
+	},
+	"14007": {
+		"Type": "TRICE32_0",
+		"Strg": "att:🐁 Speedy Gonzales E  16-bit time stamp\\n"
+	},
+	"14023": {
+		"Type": "trice",
+		"Strg": "deb:TRICE_STATIC_BUFFER, "
+	},
+	"14118": {
+		"Type": "TRICE32_0",
+		"Strg": "att:🐁 Speedy Gonzales D  32-bit time stamp\\n"
+	},
+	"14119": {
+		"Type": "TRice",
+		"Strg": "msg:StartDefaultTask\\n"
+	},
+	"14121": {
+		"Type": "Trice",
+		"Strg": "att:🐁 Speedy Gonzales e  16-bit time stamp\\n"
+	},
+	"14123": {
+		"Type": "trice",
+		"Strg": "deb:TRICE_MULTI_PACK_MODE\\n"
+	},
+	"14141": {
+		"Type": "TRice",
+		"Strg": "att:🐁 Speedy Gonzales a  32-bit time stamp\\n"
+	},
+	"14180": {
+		"Type": "trice16",
+		"Strg": "diag:triceSingleDepthMax =%4u of %d (TRICE_BUFFER_SIZE)\\n"
+	},
+	"14183": {
+		"Type": "trice",
+		"Strg": "att:🐁 Speedy Gonzales j without time stamp\\n"
+	},
+	"14225": {
+		"Type": "Trice",
+		"Strg": "att:🐁 Speedy Gonzales h  16-bit time stamp\\n"
+	},
+	"14277": {
+		"Type": "trice8B",
+		"Strg": "wr:%02x "
+	},
+	"14302": {
+		"Type": "TRICE32_0",
+		"Strg": "att:🐁 Speedy Gonzales I without time stamp\\n"
+	},
+	"14328": {
+		"Type": "TRICE_S",
+		"Strg": "rx:received command:%s\\n"
+	},
+	"14342": {
+		"Type": "trice16",
+		"Strg": "wrn:TriceDynStringBufTruncateCount = %u\\n"
+	},
+	"14370": {
+		"Type": "TRice",
+		"Strg": "msg:StartTask02:Diagnostics and TriceTransfer\\n"
+	},
+	"14392": {
+		"Type": "Trice",
+		"Strg": "att:🐁 Speedy Gonzales g  16-bit time stamp\\n"
+	},
+	"14416": {
+		"Type": "Trice",
+		"Strg": "msg:%.20f (float  with more ciphers than precision)\\n"
+	},
+	"14420": {
+		"Type": "TRICE32_0",
+		"Strg": "att:🐁 Speedy Gonzales H  16-bit time stamp\\n"
+	},
+	"14499": {
+		"Type": "Trice",
+		"Strg": "i=%x %x\\n"
+	},
+	"14505": {
+		"Type": "TRice",
+		"Strg": "att:🐁 Speedy Gonzales d  32-bit time stamp\\n"
+	},
+	"14597": {
+		"Type": "Trice16F",
+		"Strg": "att:ARemoteFunctionName"
+	},
 	"14690": {
 		"Type": "TRice",
 		"Strg": "msg:StartTask02:Diagnostics and TriceTransfer\\n"
 	},
+	"14739": {
+		"Type": "Trice",
+		"Strg": "info:A Buffer:\\n"
+	},
+	"14744": {
+		"Type": "TRICE32_0",
+		"Strg": "att:🐁 Speedy Gonzales C  32-bit time stamp\\n"
+	},
+	"14768": {
+		"Type": "TRICE32_0",
+		"Strg": "att:🐁 Speedy Gonzales J without time stamp\\n"
+	},
+	"14838": {
+		"Type": "trice",
+		"Strg": "d:_SINGLE_MAX_SIZE=%d, _BUFFER_SIZE=%d, _DEFERRED_BUFFER_SIZE=%d\\n"
+	},
+	"14846": {
+		"Type": "trice16",
+		"Strg": "diag:TriceDataOffsetDepthMax = %d of %d (TRICE_DATA_OFFSET)\\n"
+	},
+	"15013": {
+		"Type": "trice16",
+		"Strg": "err:TriceHalfBufferDepthMax =%4u of%5d (overflow!)\\n"
+	},
+	"15019": {
+		"Type": "TRICE32_0",
+		"Strg": "att:🐁 Speedy Gonzales L without time stamp\\n"
+	},
+	"15093": {
+		"Type": "trice",
+		"Strg": "deb:TRICE_DOUBLE_BUFFER, "
+	},
+	"15138": {
+		"Type": "trice16",
+		"Strg": "err:TriceDataOffsetDepthMax = %d of %d (TRICE_DATA_OFFSET)\\n"
+	},
+	"15259": {
+		"Type": "TriceS",
+		"Strg": "rd:%s \u003c- float number as string\\n"
+	},
+	"15344": {
+		"Type": "trice",
+		"Strg": "att:🐁 Speedy Gonzales l without time stamp\\n"
+	},
+	"15379": {
+		"Type": "Trice",
+		"Strg": "att:🐁 Speedy Gonzales f  16-bit time stamp\\n"
+	},
 	"15431": {
 		"Type": "trice8B",
 		"Strg": "msg:%02x "
+	},
+	"15442": {
+		"Type": "TRice",
+		"Strg": "WARNING:USARTq OverRun Error Flag is set!\\n"
+	},
+	"15460": {
+		"Type": "trice",
+		"Strg": "deb:_CYCLE == %d, _PROTECT == %d, _DIAG == %d, XTEA == %d\\n"
+	},
+	"15567": {
+		"Type": "trice16",
+		"Strg": "err:TriceDeferredOverflowCount = %u\\n"
+	},
+	"15644": {
+		"Type": "TriceS",
+		"Strg": "w: Hello! 👋🙂\\n\\n        ✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨        \\n        🎈🎈🎈🎈%s🎈🎈🎈🎈\\n        🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃        \\n\\n\\n"
+	},
+	"15679": {
+		"Type": "trice16",
+		"Strg": "diag:triceRingBufferDepthMax =%4u of%5d\\n"
+	},
+	"15770": {
+		"Type": "trice",
+		"Strg": "isr:TIM17_FDCAN_IT1_IRQHandler! (%u ms)\\n"
+	},
+	"15819": {
+		"Type": "TRICE32_0",
+		"Strg": "att:🐁 Speedy Gonzales A  32-bit time stamp\\n"
+	},
+	"15862": {
+		"Type": "trice",
+		"Strg": "info:%d times a 16 byte long Trice messages, which may not be written all if the buffer is too small:\\n"
+	},
+	"15912": {
+		"Type": "trice16",
+		"Strg": "err:triceSingleDepthMax =%4u of %d (TRICE_BUFFER_SIZE overflow!)\\n"
+	},
+	"15938": {
+		"Type": "Trice32B",
+		"Strg": "msg:%08x  \\n"
+	},
+	"16055": {
+		"Type": "TRice",
+		"Strg": "att:🐁 Speedy Gonzales b  32-bit time stamp\\n"
+	},
+	"16163": {
+		"Type": "trice16",
+		"Strg": "err:TriceErrorCount = %u\\n"
+	},
+	"16252": {
+		"Type": "TRice",
+		"Strg": "att:🐁 Speedy Gonzales c  32-bit time stamp\\n"
+	},
+	"16265": {
+		"Type": "trice",
+		"Strg": "att:🐁 Speedy Gonzales i without time stamp\\n"
+	},
+	"16297": {
+		"Type": "trice",
+		"Strg": "deb:TRICE_RING_BUFFER, "
+	},
+	"16300": {
+		"Type": "trice16",
+		"Strg": "err:TriceDirectOverflowCount = %u\\n"
+	},
+	"16364": {
+		"Type": "trice16",
+		"Strg": "WARNING:RTT0_writeDepthMax=%u (BUFFER_SIZE_UP=%u)\\n"
 	}
 }
