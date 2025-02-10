@@ -309,7 +309,7 @@ void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
   TRICE_UNUSED(argument)
-  TRice(iD(13335), "msg:StartDefaultTask\n");
+  TRice("msg:StartDefaultTask\n");
   /* Infinite loop */
   for(;;)
   {
@@ -317,8 +317,8 @@ void StartDefaultTask(void const * argument)
     static uint8_t src[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
     size_t slen = sizeof(src);
     size_t dlen = tip(dst, src, slen);
-    trice8B(iD(13714), "rd:%02x ", src, slen);
-    trice8B(iD(13990), "wr:%02x ", dst, dlen);
+    trice8B("rd:%02x ", src, slen);
+    trice8B("wr:%02x ", dst, dlen);
     osDelay(1000);
   }
   /* USER CODE END 5 */
@@ -335,7 +335,7 @@ void StartTask02(void const * argument)
 {
   /* USER CODE BEGIN StartTask02 */
   TRICE_UNUSED(argument)
-  TRice(iD(14690), "msg:StartTask02:Diagnostics and TriceTransfer\n" );
+  TRice("msg:StartTask02:Diagnostics and TriceTransfer\n" );
   /* Infinite loop */
   for(;;)
   {
