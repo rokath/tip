@@ -103,11 +103,13 @@ size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t u7Size, replace_t*
     int k = 0;  // Traverse rlist to find relacement pattern.
     do { // r->list[k] is done here, we need to fill the space and insert r[k+1] pattern.
         int uBytes = rlist[k+1].bo - (rlist[k].bo + rlist[k].sz);
-        while(u7Size-- && uBytes--){ hier weiter
+        while(u7Size > 0 && uBytes > 0){
             // Each inserted u7 byte is also a place holder for a u8 byte.
             // u7 count is >= u8 count, sowe can cover all u8 positions.
             // The u7 we have more, we append ant the end.
             *dst++ = *u7++;
+            uBytes--;
+            u7Size--;
             tipSize++;
         }
         k++;
@@ -118,6 +120,11 @@ size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t u7Size, replace_t*
         *dst++ = rlist[k].id;
         tipSize++;
     }while(k < rcount-1);
+    while(u7Size > 0){ // append remaining u7 bytes
+        *dst++ = *u7++;
+        u7Size--;
+        tipSize++;
+    }
     return tipSize;
 }
 
