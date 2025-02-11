@@ -59,7 +59,8 @@ replace_t * buildReplaceList(int * rcount, const uint8_t * table, const uint8_t 
 void replaceableListInsert( replace_t * r, int * rcount, int k, uint8_t by, offset_t offset, uint8_t sz );
 size_t collectUnreplacableBytes( uint8_t * dst, replace_t * rlist, int rcount, const uint8_t * src );
 size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t uSize, replace_t * rlist, int rcount );
-size_t TiPack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen );
+size_t tiPack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen );
+size_t tiUnpack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen );
 
 #ifdef __cplusplus
 }

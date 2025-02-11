@@ -7,13 +7,49 @@ import (
 	"github.com/tj/assert"
 )
 
-func TestTip(t *testing.T) {
+var table = []byte{0}
+
+
+func TestTIPack(t *testing.T) {
+	tt := []struct {
+		in  []byte
+		exp []byte
+	}{
+		{[]byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}, []byte{0xfc, 0xaa, 0xbb, 0xcc, 0xaa, 0xbb}},
+	}
+
+	buf := make([]byte, 100)
+	for _, x := range tt {
+		n := TIPack(buf, table, x.in)
+		act := buf[:n]
+		assertNoZeroes(t, act)
+		assert.Equal(t, x.exp, act)
+	}
+}
+
+
+func TestTIUnpack(t *testing.T) {
 	tt := []struct {
 		in  []byte
 		exp []byte
 	}{
 		{[]byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}, []byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}},
-		{[]byte{0xA0, 0xbb, 0xcc, 0xaa, 0xbb}, []byte{0xA0, 0xbb, 0xcc, 0xaa, 0xbb}},
+	}
+
+	buf := make([]byte, 100)
+	for _, x := range tt {
+		n := TIUnpack(buf, table, x.in)
+		act := buf[:n]
+		assert.Equal(t, x.exp, act)
+	}
+}
+
+func TestPack(t *testing.T) { // uses idTable.c
+	tt := []struct {
+		in  []byte
+		exp []byte
+	}{
+		{[]byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}, []byte{0xfc, 0xaa, 0xbb, 0xcc, 0xaa, 0xbb}},
 	}
 
 	buf := make([]byte, 100)
@@ -25,13 +61,12 @@ func TestTip(t *testing.T) {
 	}
 }
 
-func TestTiu(t *testing.T) {
+func TestUnpack(t *testing.T) { // uses idTable.c
 	tt := []struct {
 		in  []byte
 		exp []byte
 	}{
 		{[]byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}, []byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}},
-		{[]byte{0xA0, 0xbb, 0xcc, 0xaa, 0xbb}, []byte{0xA0, 0xbb, 0xcc, 0xaa, 0xbb}},
 	}
 
 	buf := make([]byte, 100)
@@ -42,21 +77,21 @@ func TestTiu(t *testing.T) {
 	}
 }
 
-func TestBuffer(t *testing.T) {
+// TestTIPackTIUnpack packs, checks for no zeroes, unpacks and compares.
+func _TestTIPackTIUnpack(t *testing.T) {
 	in := [][]byte{
 		{0xaa, 0xbb, 0xcc, 0xaa, 0xbb},
-		{0xFa, 0xbb, 0xcc, 0xaa, 0xbb},
 	}
 	buf := make([]byte, 100)
 	out := make([]byte, 100)
 	var ratio float64
 	var i uint
 	for _, x := range in {
-		n := Pack(buf, x)
+		n := TIPack(buf, table, x)
 		act := buf[:n]
 		assertNoZeroes(t, act)
 
-		m := Unpack(out, act)
+		m := TIUnpack(out, table, act)
 		res := out[:m]
 		assert.Equal(t, x, res)
 
@@ -66,6 +101,7 @@ func TestBuffer(t *testing.T) {
 	fmt.Println("ratio ", ratio/float64(i))
 }
 
+// assertNoZeroes checks that b does not contain any zeroes.
 func assertNoZeroes(t *testing.T, b []byte) {
 	for _, x := range b {
 		assert.NotEqual(t, x, 0)

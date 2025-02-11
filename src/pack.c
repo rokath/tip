@@ -13,25 +13,20 @@
 #include "trice.h"
 
 size_t tip( uint8_t* dst, const uint8_t * src, size_t len ){
-    return TiPack( dst, idTable, src, len );
+    return tiPack( dst, idTable, src, len );
 }
 
-//! @brief tip encodes src buffer with size len into dst buffer and returns encoded len.
+//! @brief tiPack encodes src buffer with size len into dst buffer and returns encoded len.
 //! @details For the tip encoding it uses the linked idTable.c object.
 // - Some bytes groups in the src buffer are replacable with IDs 0x01...0x7f and some not.
 // - The replace list r holds the replace information.
 // - The unreplacable bytes are collected into a buffer.
-size_t TiPack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen ){
-    //if( slen < 6 ){
-    //    memcpy(dst, src, slen);
-    //    return slen;
-    //}
+size_t tiPack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen ){
     int rcount;
     replace_t * rlist = buildReplaceList(&rcount, table, src, slen);
-    for( int i = 0; i < rcount; i++ ){
-        trice( "d:%2d: bo=%d, sz=%d, id=%02x\n", i, rlist[i].bo, rlist[i].sz, rlist[i].id);
-    }
-    
+                                                                                        //  for( int i = 0; i < rcount; i++ ){
+                                                                                        //      trice( "d:%2d: bo=%d, sz=%d, id=%02x\n", i, rlist[i].bo, rlist[i].sz, rlist[i].id);
+                                                                                        //  }
     // All unreplacable bytes are stretched inside to 7-bit units. This makes the data a bit longer.
     static uint8_t ur[TIP_SRC_BUFFER_SIZE_MAX*8/7+1]; 
     size_t ubSize = collectUnreplacableBytes( ur, rlist, rcount, src );
