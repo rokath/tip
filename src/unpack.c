@@ -13,15 +13,15 @@ size_t tiu( uint8_t * dst, const uint8_t * src, size_t slen ){
 //! @brief tiUnpack decodes src buffer with size slen into dst buffer and returns decoded dlen.
 //! @details For the tip decoding it uses the passed idTable object.
 size_t tiUnpack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen ){
-    if( slen < 6 ){
+    /*if( slen < 6 ){
         memcpy(dst, src, slen);
         return slen;
-    }
-    static uint8_t u7[256]; // todo
-    size_t u7len = collectU7Bytes( u7, src, slen );
+    }*/
+    static uint8_t u78[256]; // todo
+    size_t u7len = collectU7Bytes( u78, src, slen );
 
-    static uint8_t u8[256]; // todo
-    size_t u8len = shift78bit( u8, u7, u7len );
+    //static uint8_t u8[256]; // todo
+    size_t u8len = shift78bit( u78, u78, u7len );
 
     size_t dlen = restorePacket( dst, table, u8, u8len, src, slen );
     return dlen;
@@ -42,9 +42,10 @@ size_t collectU7Bytes( uint8_t * dst, const uint8_t * src, size_t slen ){
 size_t restorePacket( uint8_t * dst, const uint8_t * table, const uint8_t * u8, size_t u8len, const uint8_t * src, size_t slen ){
     uint8_t * p = dst;
     for( int i = 0; i < slen; i++ ){
-        if( 0x80 & src[i] ){ // an u7 byte
-            if( u8len-- > 0){
+        if( 0x80 & src[i] ){ // an u78 byte
+            if( u8len > 0){
                 *p++ = *u8++;
+                u8len--;
             }
         }else{ // an id
             size_t sz = getPatternFromId( p, table, src[i] );
