@@ -22,10 +22,10 @@ size_t tip( uint8_t* dst, const uint8_t * src, size_t len ){
 // - The replace list r holds the replace information.
 // - The unreplacable bytes are collected into a buffer.
 size_t TiPack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen ){
-    if( slen < 6 ){
-        memcpy(dst, src, slen);
-        return slen;
-    }
+    //if( slen < 6 ){
+    //    memcpy(dst, src, slen);
+    //    return slen;
+    //}
     int rcount;
     replace_t * rlist = buildReplaceList(&rcount, table, src, slen);
     for( int i = 0; i < rcount; i++ ){
@@ -35,9 +35,9 @@ size_t TiPack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t 
     // All unreplacable bytes are stretched inside to 7-bit units. This makes the data a bit longer.
     static uint8_t ur[TIP_SRC_BUFFER_SIZE_MAX*8/7+1]; 
     size_t ubSize = collectUnreplacableBytes( ur, rlist, rcount, src );
-    uint8_t * urLast = &(ur[sizeof(ur)-1]); // last address inside the ur buffer.
-    size_t urSize = shift87bit( urLast, ur, ubSize );
-    uint8_t * u7 = urLast - urSize;
+    uint8_t * urLimit = &ur[sizeof(ur)]; // first address after the ur buffer.
+    size_t urSize = shift87bit( urLimit - 1, ur, ubSize );
+    uint8_t * u7 = urLimit - urSize;
     size_t tipSize = generateTipPacket( dst, u7, urSize, rlist, rcount );
     return tipSize;
 }
@@ -103,7 +103,7 @@ size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t u7Size, replace_t*
     int k = 0;  // Traverse rlist to find relacement pattern.
     do { // r->list[k] is done here, we need to fill the space and insert r[k+1] pattern.
         int uBytes = rlist[k+1].bo - (rlist[k].bo + rlist[k].sz);
-        while(u7Size-- && uBytes--){
+        while(u7Size-- && uBytes--){ hier weiter
             // Each inserted u7 byte is also a place holder for a u8 byte.
             // u7 count is >= u8 count, sowe can cover all u8 positions.
             // The u7 we have more, we append ant the end.
