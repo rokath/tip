@@ -39,6 +39,17 @@ size_t collectU7Bytes( uint8_t * dst, const uint8_t * src, size_t slen ){
 }
 
 //! restorePacket reconstructs original data using src, slen, u8, u8len and table into dst and returns the count.
-size_t restorePacket( uint8_t * dst, uint8_t * table, uint8_t * u8, size_t u8len, uint8_t * src, size_t slen ){
-    return 0; // todo
+size_t restorePacket( uint8_t * dst, const uint8_t * table, const uint8_t * u8, size_t u8len, const uint8_t * src, size_t slen ){
+    uint8_t * p = dst;
+    for( int i = 0; i < slen; i++ ){
+        if( 0x80 & src[i] ){ // an u7 byte
+            if( u8len-- > 0){
+                *p++ = *u8++;
+            }
+        }else{ // an id
+            size_t sz = getPatternFromId( p, table, src[i] );
+            p += sz;
+        }
+    }
+    return p - dst;
 }

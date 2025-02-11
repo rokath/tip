@@ -51,7 +51,7 @@ typedef struct {
     uint8_t  id; // id is the replace byte 0x01 to 0x7f.
 } replace_t;
 
-void getPatternFromId( const uint8_t ** pt, size_t * sz, uint8_t id, const uint8_t * table );
+size_t getPatternFromId( uint8_t * pt, const uint8_t * table, uint8_t id );
 void initGetNextPattern( const uint8_t * table );
 void getNextPattern(const uint8_t ** pt, size_t * sz );
 replace_t * newReplaceList(size_t slen);
@@ -63,7 +63,7 @@ size_t tiPack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t 
 size_t tiUnpack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen );
 
 size_t collectU7Bytes( uint8_t * dst, const uint8_t * src, size_t slen );
-size_t restorePacket( uint8_t * dst, uint8_t * table, uint8_t * u8, size_t u8len, uint8_t * src, size_t slen );
+size_t restorePacket( uint8_t * dst, const uint8_t * table, const uint8_t * u8, size_t u8len, const uint8_t * src, size_t slen );
 
 #ifdef __cplusplus
 }

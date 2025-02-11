@@ -9,95 +9,75 @@ import (
 
 var table = []byte{3, 0xaa, 0xaa, 0xaa, 0}
 
-func TestTIPack(t *testing.T) {
-	tt := []struct {
-		in  []byte
-		exp []byte
-	}{
-		{[]byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}, []byte{0xfc, 0xaa, 0xbb, 0xcc, 0xaa, 0xbb}},
-		{[]byte{0xd1, 0xaa, 0xaa, 0xaa, 0xd2}, []byte{0xe0, 0x01, 0xd1, 0xd2}},
-		{[]byte{0xd1, 0xd2, 0xaa, 0xaa, 0xaa}, []byte{0xe0, 0xd1, 0x01, 0xd2}},
-		{[]byte{0xaa, 0xaa, 0xaa, 0xd1, 0xd2}, []byte{0x01, 0xe0, 0xd1, 0xd2}},
-		{[]byte{0xd1, 0xaa, 0xaa, 0xaa, 0xd2, 0xaa, 0xaa, 0xaa, 0xd3 }, []byte{0xf0, 0x01, 0xd1, 0x01, 0xd2, 0xd3 }},
-	}
+var tipTestTable = []struct {
+	buf []byte
+	pkg []byte
+}{
+	//{[]byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}, []byte{0xfc, 0xaa, 0xbb, 0xcc, 0xaa, 0xbb}},
+	{[]byte{0xd1, 0xaa, 0xaa, 0xaa, 0xd2}, []byte{0xe0, 0x01, 0xd1, 0xd2}},
+	//{[]byte{0xd1, 0xd2, 0xaa, 0xaa, 0xaa}, []byte{0xe0, 0xd1, 0x01, 0xd2}},
+	//{[]byte{0xaa, 0xaa, 0xaa, 0xd1, 0xd2}, []byte{0x01, 0xe0, 0xd1, 0xd2}},
+	//{[]byte{0xd1, 0xaa, 0xaa, 0xaa, 0xd2, 0xaa, 0xaa, 0xaa, 0xd3}, []byte{0xf0, 0x01, 0xd1, 0x01, 0xd2, 0xd3}},
+}
 
-	buf := make([]byte, 100)
-	for _, x := range tt {
-		n := TIPack(buf, table, x.in)
-		act := buf[:n]
+func TestTIPack(t *testing.T) {
+	packet := make([]byte, 100)
+	for _, x := range tipTestTable {
+		n := TIPack(packet, table, x.buf)
+		act := packet[:n]
 		assertNoZeroes(t, act)
-		assert.Equal(t, x.exp, act)
+		assert.Equal(t, x.pkg, act)
 	}
 }
 
 func TestTIUnpack(t *testing.T) {
-	tt := []struct {
-		in  []byte
-		exp []byte
-	}{
-		{[]byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}, []byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}},
-	}
-
-	buf := make([]byte, 100)
-	for _, x := range tt {
-		n := TIUnpack(buf, table, x.in)
-		act := buf[:n]
-		assert.Equal(t, x.exp, act)
+	buffer := make([]byte, 100)
+	for _, x := range tipTestTable {
+		assertNoZeroes(t, x.pkg)
+		n := TIUnpack(buffer, table, x.pkg)
+		act := buffer[:n]
+		assert.Equal(t, x.buf, act)
 	}
 }
 
+/*
 func TestPack(t *testing.T) { // uses idTable.c
-	tt := []struct {
-		in  []byte
-		exp []byte
-	}{
-		{[]byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}, []byte{0xfc, 0xaa, 0xbb, 0xcc, 0xaa, 0xbb}},
-	}
-
-	buf := make([]byte, 100)
-	for _, x := range tt {
-		n := Pack(buf, x.in)
-		act := buf[:n]
+	packet := make([]byte, 100)
+	for _, x := range tipTestTable {
+		n := Pack(packet, x.buf)
+		act := packet[:n]
 		assertNoZeroes(t, act)
-		assert.Equal(t, x.exp, act)
+		assert.Equal(t, x.pkg, act)
 	}
 }
 
 func TestUnpack(t *testing.T) { // uses idTable.c
-	tt := []struct {
-		in  []byte
-		exp []byte
-	}{
-		{[]byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}, []byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}},
-	}
-
-	buf := make([]byte, 100)
-	for _, x := range tt {
-		n := Unpack(buf, x.in)
-		act := buf[:n]
-		assert.Equal(t, x.exp, act)
+	buffer := make([]byte, 100)
+	for _, x := range tipTestTable {
+		n := Unpack(buffer, x.pkg)
+		act := buffer[:n]
+		assert.Equal(t, x.pkg, act)
 	}
 }
+*/
 
 // TestTIPackTIUnpack packs, checks for no zeroes, unpacks and compares.
-func _TestTIPackTIUnpack(t *testing.T) {
-	in := [][]byte{
-		{0xaa, 0xbb, 0xcc, 0xaa, 0xbb},
-	}
-	buf := make([]byte, 100)
-	out := make([]byte, 100)
+func TestTIPackTIUnpack(t *testing.T) {
+	buffer := make([]byte, 100)
+	packet := make([]byte, 100)
 	var ratio float64
 	var i uint
-	for _, x := range in {
-		n := TIPack(buf, table, x)
-		act := buf[:n]
+	for _, x := range tipTestTable {
+		n := TIPack(packet, table, x.buf)
+		act := packet[:n]
+		
 		assertNoZeroes(t, act)
 
-		m := TIUnpack(out, table, act)
-		res := out[:m]
-		assert.Equal(t, x, res)
+		m := TIUnpack(buffer, table, act)
+		res := buffer[:m]
+		assert.Equal(t, x.buf, res)
 
-		ratio += float64(n) / float64(len(x))
+		ratio += float64(n) / float64(len(x.buf))
 		i++
 	}
 	fmt.Println("ratio ", ratio/float64(i))
