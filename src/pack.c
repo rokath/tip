@@ -50,12 +50,12 @@ replace_t * newReplaceList(size_t slen){
     //static replaceList_t r; // replace list
     static replace_t list[TIP_SRC_BUFFER_SIZE_MAX/2 + 2]; //!< The whole src buffer could be replacable with 2-byte pattern.
     // The first 2 elements are initialized as boders.
-    list[0].bo = 2; // byte offset r[0].b0 is never needed and holds therfore the list element count. 
-    list[0].sz = 0; // 
+    list[0].bo = 0; // byte offset start
+    list[0].sz = 0; // size
     list[0].id = 0; // no replacement
     // From (r[0].bo + r[0].sz) to r[1].bo is the first hey stack.
-    list[1].bo = slen; // byte offset
-    list[1].sz = 0; // needed as end marker. r[1].by is never used.
+    list[1].bo = slen; // byte offset limit
+    list[1].sz = 0; // needed as end marker
     list[1].id = 0; // no replacement
     return list;
 };
@@ -77,13 +77,14 @@ replace_t * buildReplaceList(int * rcount, const uint8_t * table, const uint8_t 
         const uint8_t * hay;
         size_t hlen;
         do{ // get next hay stack
+            repeat:
             hay = src + rlist[k].bo + rlist[k].sz;
             hlen = rlist[k+1].bo - rlist[k].bo - rlist[k].sz;  
             uint8_t * loc = memmem( hay, hlen, needle, nlen ); // search hay for the needle
             if( loc ){ // found, id is the replace byte.
                 offset_t offset = loc - src; // offset is the needle (=pattern) position.
                 replaceableListInsert( rlist, rcount, k, id, offset, nlen );
-                k--; // Same k needs processing again.
+                goto repeat; // Same k and same  (needle) needs processing again but in the next hay stack.
             } // The r insert takes part inside the already processed rs.
             k++;
         }while( hay+hlen < src+slen );
@@ -99,7 +100,7 @@ replace_t * buildReplaceList(int * rcount, const uint8_t * table, const uint8_t 
 //! @retval length of tip packet
 size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t u7Size, replace_t* rlist, int rcount ){ 
     size_t tipSize = 0;
-    int k = 0;  // Traverse r to find relacement pattern.
+    int k = 0;  // Traverse rlist to find relacement pattern.
     do { // r->list[k] is done here, we need to fill the space and insert r[k+1] pattern.
         int uBytes = rlist[k+1].bo - (rlist[k].bo + rlist[k].sz);
         while(u7Size-- && uBytes--){
@@ -109,12 +110,12 @@ size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t u7Size, replace_t*
             *dst++ = *u7++;
             tipSize++;
         }
-        size_t sz = rlist[k+1].sz; // Size of next replace.
+        k++;
+        size_t sz = rlist[k].sz; // Size of next replace.
         if( sz == 0 ){
-            k++; // no more replaces, but some unreplacable may still exist.
-            continue;
+            continue; // no more replaces, but some unreplacable may still exist.
         }
-        *dst++ = rlist[k+1].id;
+        *dst++ = rlist[k].id;
         tipSize++;
     }while(k < rcount-1);
     return tipSize;

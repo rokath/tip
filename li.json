@@ -97,7 +97,7 @@
 	},
 	"14119": {
 		"File": "examples/L432_inst/Core/Src/main.c",
-		"Line": 345
+		"Line": 346
 	},
 	"14121": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
@@ -109,7 +109,7 @@
 	},
 	"14128": {
 		"File": "examples/L432_inst/Core/Src/main.c",
-		"Line": 124
+		"Line": 125
 	},
 	"14141": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
@@ -145,7 +145,7 @@
 	},
 	"14370": {
 		"File": "examples/L432_inst/Core/Src/main.c",
-		"Line": 365
+		"Line": 366
 	},
 	"14392": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
@@ -169,7 +169,7 @@
 	},
 	"14506": {
 		"File": "examples/L432_inst/Core/Src/main.c",
-		"Line": 123
+		"Line": 124
 	},
 	"14597": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
@@ -302,5 +302,9 @@
 	"16364": {
 		"File": "../trice/examples/exampleData/triceLogDiagData.c",
 		"Line": 19
+	},
+	"16374": {
+		"File": "examples/L432_inst/Core/Src/main.c",
+		"Line": 92
 	}
 }

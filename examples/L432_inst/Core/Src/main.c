@@ -89,7 +89,8 @@ int main(void)
 
 #if !TRICE_OFF
   TriceInit(); // This so early, to allow trice logs inside interrupts from the beginning.
-  TriceHeadLine("  𝕹𝖀𝕮𝕷𝕰𝕺-L432KC with tip  ");
+  trice("Hi!\n");
+//TriceHeadLine("  𝕹𝖀𝕮𝕷𝕰𝕺-L432KC with tip  ");
 #endif
   /* USER CODE END 1 */
 
@@ -114,10 +115,10 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 #if !TRICE_OFF  
-  LogTriceConfiguration();
+//LogTriceConfiguration();
 #endif
   static uint8_t dst[100] = {0};
-  static uint8_t src[] = { 0x0d, 0x0a, 0x0d, 0x0a, 0x0d, 0x0a, 0x0d, 0x0a };
+  static uint8_t src[] = { 0x0d, 0x0a, 0x0d, 0x0a, 0x74, 0x68, 0x65, 0x20, 0x0d, 0x0a };
   size_t slen = sizeof(src);
   size_t dlen = tip(dst, src, slen);
   trice8B("rd:%02x \n", src, slen);

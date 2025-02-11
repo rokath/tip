@@ -302,5 +302,9 @@
 	"16364": {
 		"Type": "trice16",
 		"Strg": "WARNING:RTT0_writeDepthMax=%u (BUFFER_SIZE_UP=%u)\\n"
+	},
+	"16374": {
+		"Type": "trice",
+		"Strg": "Hi!\\n"
 	}
 }
