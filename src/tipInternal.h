@@ -62,8 +62,8 @@ size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t uSize, replace_t *
 size_t tiPack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen );
 size_t tiUnpack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen );
 
-size_t collectU7Bytes( uint8_t * dst, uint8_t * src, size_t slen );
-size_t restorePacket( uint8_t * dst, uint8_t * table, uint8_t u8, size_t u8len, uint8_t * src, size_t slen );
+size_t collectU7Bytes( uint8_t * dst, const uint8_t * src, size_t slen );
+size_t restorePacket( uint8_t * dst, uint8_t * table, uint8_t * u8, size_t u8len, uint8_t * src, size_t slen );
 
 #ifdef __cplusplus
 }
