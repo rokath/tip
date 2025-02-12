@@ -1,6 +1,7 @@
 package tip
 
-// #include "tipinternal.h"
+// #include "tip.h"
+// replace_t * buildReplaceList(int * rcount, const uint8_t * table, const uint8_t * src, size_t slen);
 import "C"
 
 import "unsafe"
@@ -12,7 +13,7 @@ type replace struct {
 	id byte //  uint8_t  id; // id is the replace byte 0x01 to 0x7f.
 }
 
-// buildReplaceList is only for tests 
+// buildReplaceList is only for tests
 func buildReplaceList(table, in []byte) (rpl []replace) {
 	tbl := (*C.uchar)(unsafe.Pointer(&table[0])) //o := unsafe.Pointer((*C.uchar)(&out[0]))
 	src := (*C.uchar)(unsafe.Pointer(&in[0]))    //i := unsafe.Pointer((*C.uchar)(&in[0]))
@@ -27,11 +28,11 @@ func buildReplaceList(table, in []byte) (rpl []replace) {
 	const sizeof_sz = 1                                      // byte
 	const sizeof_id = 1                                      // byte
 	const sizeof_replace = sizeof_bo + sizeof_sz + sizeof_id // bytes
-	length := int(*rcount) * sizeof_replace // C.getTheArrayLength()
+	length := int(*rcount) * sizeof_replace                  // C.getTheArrayLength()
 	bytes := C.GoBytes(cArray, C.int(length))
 	rpl = make([]replace, *rcount)
 	for i := range rpl {
-		pos := i*sizeof_replace 
+		pos := i * sizeof_replace
 		rpl[i].bo = bytes[pos]
 		rpl[i].sz = bytes[pos+1]
 		rpl[i].id = bytes[pos+2]

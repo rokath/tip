@@ -10,9 +10,7 @@ package tip
 // #include <stdint.h>
 // #include <stddef.h>
 // #include "memmem.c"
-// #include "shift.c"
 // #include "idTable.c"
-// #include "tip.c"
 // #include "pack.c"
 // #include "unpack.c"
 import "C"
@@ -33,7 +31,6 @@ func TIPack(out, table, in []byte) (plen int) {
 }
 
 // TIUnpack decompresses in to out and returns unpacked size ulen.
-// out needs to have a size of at least TIP_PATTERN_SIZE_MAX*len(in)
 // for the case if in has max possible compression.
 func TIUnpack(out, table, in []byte) (ulen int) {
 	dst := (*C.uchar)(unsafe.Pointer(&out[0]))
@@ -55,7 +52,6 @@ func Pack(out, in []byte) (plen int) {
 }
 
 // Unpack decompresses in to out and returns unpacked size ulen.
-// out needs to have a size of at least TIP_PATTERN_SIZE_MAX*len(in)
 // for the case if in has max possible compression.
 func Unpack(out, in []byte) (ulen int) {
 	o := (*C.uchar)(unsafe.Pointer(&out[0]))

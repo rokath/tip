@@ -3,7 +3,10 @@ package shift // package shift is used to test the shift C-functions.
 // #cgo CFLAGS: -g -Wall -I../../src
 // #include <stdint.h>
 // #include <stddef.h>
-// #include "shift.c"
+// #include "pack.c"
+// #include "unpack.c"
+// #include "memmem.c"  // needed for pack.c code
+// #include "idTable.c" // needed for pack.c code
 import "C"
 
 import (
@@ -19,13 +22,13 @@ func Shift87bit(u8 []byte) (u7 []byte) {
 	sLen := C.size_t(len(u8))
 	u7 = make([]byte, 2*len(u8))
 	lst := (*C.uchar)(unsafe.Pointer(&u7[len(u7)-1]))
-	cnt := int(C.shift87bit( lst, src, sLen))
+	cnt := int(C.shift87bit(lst, src, sLen))
 	u7 = u7[len(u7)-cnt:]
 	return
 }
 
 // Shift78bit is reverting the Shift87bit operation.
-func Shift78bit(u7 []byte)(u8 []byte) {
+func Shift78bit(u7 []byte) (u8 []byte) {
 	src := (*C.uchar)(unsafe.Pointer(&u7[0]))
 	sLen := (C.size_t)(len(u7))
 	u8 = make([]byte, len(u7))
@@ -34,4 +37,3 @@ func Shift78bit(u7 []byte)(u8 []byte) {
 	u8 = u8[:cnt]
 	return
 }
-

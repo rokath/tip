@@ -8,9 +8,19 @@
 //! It is possible to use different tables at the same time, but the code needs to be changed a bit then.
 //! @author thomas.hoehenleitner [at] seerose.net
 
+#include <string.h>
+#include "pack.h"
 #include "tip.h"
-#include "tipInternal.h"
-#include "trice.h"
+#include "memmem.h"
+
+/*static*/ replace_t * buildReplaceList(int * rcount, const uint8_t * table, const uint8_t * src, size_t slen);
+static size_t collectUnreplacableBytes( uint8_t * dst, replace_t * rlist, int rcount, const uint8_t * src );
+/*static*/ size_t shift87bit( uint8_t* lst, const uint8_t * src, size_t slen );
+static void initGetNextPattern( const uint8_t * table );
+static void getNextPattern(const uint8_t ** pt, size_t * sz );
+static replace_t * newReplaceList(size_t slen);
+static void replaceableListInsert( replace_t * r, int * rcount, int k, uint8_t by, offset_t offset, uint8_t sz );
+static size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t uSize, replace_t * rlist, int rcount );
 
 size_t tip( uint8_t* dst, const uint8_t * src, size_t len ){
     return tiPack( dst, idTable, src, len );
@@ -22,11 +32,11 @@ size_t tip( uint8_t* dst, const uint8_t * src, size_t len ){
 // - The replace list r holds the replace information.
 // - The unreplacable bytes are collected into a buffer.
 size_t tiPack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen ){
+    if( slen > TIP_SRC_BUFFER_SIZE_MAX ){
+        return 0;
+    }
     int rcount;
     replace_t * rlist = buildReplaceList(&rcount, table, src, slen);
-                                                                                        //  for( int i = 0; i < rcount; i++ ){
-                                                                                        //      trice( "d:%2d: bo=%d, sz=%d, id=%02x\n", i, rlist[i].bo, rlist[i].sz, rlist[i].id);
-                                                                                        //  }
     // All unreplacable bytes are stretched inside to 7-bit units. This makes the data a bit longer.
     static uint8_t ur[TIP_SRC_BUFFER_SIZE_MAX*8/7+1]; 
     size_t ubSize = collectUnreplacableBytes( ur, rlist, rcount, src );
@@ -37,25 +47,8 @@ size_t tiPack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t 
     return tipSize;
 }
 
-//! @brief newReplacableList is called when a new unpacked buffer arrived.
-//! @details It returns always the same static object to avoid memory allocation.
-//! @param slen is the source buffer size.
-//! @retval is a pointer to the replace list.
-replace_t * newReplaceList(size_t slen){
-    //static replaceList_t r; // replace list
-    static replace_t list[TIP_SRC_BUFFER_SIZE_MAX/2 + 2]; //!< The whole src buffer could be replacable with 2-byte pattern.
-    // The first 2 elements are initialized as boders.
-    list[0].bo = 0; // byte offset start
-    list[0].sz = 0; // size
-    list[0].id = 0; // no replacement
-    // From (r[0].bo + r[0].sz) to r[1].bo is the first hey stack.
-    list[1].bo = slen; // byte offset limit
-    list[1].sz = 0; // needed as end marker
-    list[1].id = 0; // no replacement
-    return list;
-};
 
-replace_t * buildReplaceList(int * rcount, const uint8_t * table, const uint8_t * src, size_t slen){
+/*static*/ replace_t * buildReplaceList(int * rcount, const uint8_t * table, const uint8_t * src, size_t slen){
     replace_t * rlist = newReplaceList(slen);
     *rcount = 2;
     initGetNextPattern(table);
@@ -87,13 +80,51 @@ replace_t * buildReplaceList(int * rcount, const uint8_t * table, const uint8_t 
     return rlist;
 }
 
+static const uint8_t * nextTablePos = 0;
+static unsigned int nextID = 1;
+
+//! initGetNextPattern causes getNextPattern to start from 0.
+static void initGetNextPattern( const uint8_t * table ){
+    nextTablePos = table;
+    nextID = 1;
+}
+
+//! getNextPattern returns next pattern location in pt and size in sz or *sz == 0.
+//! @param pt is filled with the replace pattern address if exists.
+//! @param sz is filled with the replace size or 0, if not exists.
+static void getNextPattern(const uint8_t ** pt, size_t * sz ){
+    if( (*sz = *nextTablePos++) != 0 ){ // a pattern exists here
+        *pt = nextTablePos;
+        nextTablePos += *sz;
+        return;
+    }
+}
+
+//! @brief newReplacableList is called when a new unpacked buffer arrived.
+//! @details It returns always the same static object to avoid memory allocation.
+//! @param slen is the source buffer size.
+//! @retval is a pointer to the replace list.
+static replace_t * newReplaceList(size_t slen){
+    //static replaceList_t r; // replace list
+    static replace_t list[TIP_SRC_BUFFER_SIZE_MAX/2 + 2]; //!< The whole src buffer could be replacable with 2-byte pattern.
+    // The first 2 elements are initialized as boders.
+    list[0].bo = 0; // byte offset start
+    list[0].sz = 0; // size
+    list[0].id = 0; // no replacement
+    // From (r[0].bo + r[0].sz) to r[1].bo is the first hey stack.
+    list[1].bo = slen; // byte offset limit
+    list[1].sz = 0; // needed as end marker
+    list[1].id = 0; // no replacement
+    return list;
+};
+
 // generateTipPacket uses r and u to build the tip.
 //! @param dst start of result data
 //! @param u7 start of buffer with 7 lsbits btes
 //! @param u7Size count of 7 lsbits bytes
 //! @param rl replace list
 //! @retval length of tip packet
-size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t u7Size, replace_t* rlist, int rcount ){ 
+static size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t u7Size, replace_t* rlist, int rcount ){ 
     size_t tipSize = 0;
     int k = 0;  // Traverse rlist to find relacement pattern.
     do { // r->list[k] is done here, we need to fill the space and insert r[k+1] pattern.
@@ -129,7 +160,7 @@ size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t u7Size, replace_t*
 //! @param id is the replace byte for the location.
 //! @param offset is the location to be extended with.
 //! @param sz is the replace pattern size.
-void replaceableListInsert(replace_t * rlist, int * rcount, int k, uint8_t id, offset_t offset, uint8_t sz){
+static void replaceableListInsert(replace_t * rlist, int * rcount, int k, uint8_t id, offset_t offset, uint8_t sz){
     k++;
     memmove( &(rlist[k+1]), &(rlist[k]), (*rcount-k)*sizeof(replace_t));
     rlist[k].id = id;
@@ -143,7 +174,7 @@ void replaceableListInsert(replace_t * rlist, int * rcount, int k, uint8_t id, o
 //! @param r is the replace list. Its holes are the unreplacable bytes information.
 //! @param src is the data buffer containing repacable and unreplacable bytes.
 //! @retval is the dst size.
-size_t collectUnreplacableBytes( uint8_t * dst, replace_t * rlist, int rcount, const uint8_t * src ){
+static size_t collectUnreplacableBytes( uint8_t * dst, replace_t * rlist, int rcount, const uint8_t * src ){
     size_t dstCount = 0;
     for( int k = 0; k < rcount - 1; k++ ){
         offset_t offset = rlist[k].bo + rlist[k].sz;
@@ -153,4 +184,39 @@ size_t collectUnreplacableBytes( uint8_t * dst, replace_t * rlist, int rcount, c
         dstCount += len;
     }
     return dstCount;
+}
+
+//! shift87bit transforms slen 8-bit bytes in src to 7-bit units.
+//! @param src is the bytes source buffer.
+//! @param slen is the 8-bit byte count.
+//! @param lst is the last address inside the dst buffer.
+//! @retval is count of 7-bit bytes after operation. 
+//! @details The dst buffer is filled from the end.Thas allows to do an in-buffer conversion.
+//! The destination address is computable afterwards: dst = lim - retval.
+//! lim is allowed to be "close" behind buf + slen, thus making in-place conversion possible.
+//! Example: slen=17, limit=24
+//!       (src) <---            slen=17                   --->(u8)
+//! slen=17: b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 __ __ __ __ __ __ __
+//! ret =20: __ __ __ __ m7 b7 b7 b7 m7 b7 b7 b7 b7 b7 b7 b7 m7 b7 b7 b7 b7 b7 b7 b7
+//!                   (dst) <---                ret=20                       --->(lst)
+//! In dst all MSBits are set to 1, to avoid any zeroes.
+//! The data are processed from the end.
+/*static*/ size_t shift87bit( uint8_t* lst, const uint8_t * src, size_t slen ){
+    const uint8_t * u8 = src + slen; // first address behind src buffer
+    uint8_t * dst = lst; // destination address
+    while( src < u8 ){
+        uint8_t msb = 0x80;
+        for( int i = 1; i < 8; i++ ){
+            u8--; // next value address
+            uint8_t ms = 0x80 & *u8; // most significant bit                i     12345678
+            msb |= ms >> i; // Store most significant bit at bit position:  8 -> _76543210 
+            *dst-- = (0x7F & *u8) | 0x80; // the last byte 7 LSBs and set MSB=1 to the end
+            if(src == u8){
+                break;
+            }
+        }
+        *dst-- = msb;
+        msb = 0x80;
+    }
+    return lst - dst;
 }
