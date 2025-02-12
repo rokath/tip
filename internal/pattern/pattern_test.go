@@ -100,7 +100,7 @@ func Test_sortByIncreasingLength(t *testing.T) {
 		{300, []byte{1, 2, 3}, "010203"},
 		{100, []byte{1, 2, 3, 1, 2, 3}, "010203010203"},
 	}
-	act := sortByIncreasingLength(pat)
+	act := SortByIncreasingLengthAndAlphabetical(pat)
 	assert.Equal(t, exp, act)
 }
 

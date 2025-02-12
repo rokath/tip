@@ -16,7 +16,6 @@ var (
 
 // Generate writes a file oFn containing C code using iFn and max pattern size.
 func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error) {
-	//data, stat := readData(fSys, iFn)
 	data, err := fSys.ReadFile(iFn)
 	if err != nil {
 		return err
@@ -29,30 +28,14 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 		fmt.Println(i, sentence)
 		clist = append(clist, pattern.GenerateDescendingCountSortedList([]byte(sentence), maxPatternSize)...)
 	}
-	list := pattern.SortByDescentingCountAndLengthAndAphabetical(clist)
+	list := pattern.SortByIncreasingLengthAndAlphabetical(clist)
 	fmt.Println(len(list))
-	compareFn := func(a, b pattern.Patt) int {
-		if a.Cnt < b.Cnt {
-			return 1
-		}
-		if a.Cnt > b.Cnt {
-			return -1
-		}
-		if len(a.Bytes) < len(b.Bytes) {
-			return 1
-		}
-		if len(a.Bytes) > len(b.Bytes) {
-			return -1
-		}
-		if a.Key > b.Key {
-			return 1
-		}
-		if a.Key < b.Key {
-			return -1
-		}
-		return 0
+	compareFn := func(a, b pattern.Patt) bool {
+		return a.Key == b.Key
 	}
 	list = slices.CompactFunc(list, compareFn)
+	fmt.Println(len(list))
+	list = pattern.SortByDescentingCountAndLengthAndAphabetical(list)
 	fmt.Println(len(list))
 	// list is sorted by list[i].count, len(list[i].Bytes) and alphabetical in decending order.
 	idCount := min(127, len(list))

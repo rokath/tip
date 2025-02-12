@@ -5,6 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "tipTable launch app",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/tipTable",
+            "env": {},
+            "args": ["-v",
+                     "-i",
+                     "${workspaceFolder}/dummy.txt"
+            ]
+        },
+        {
             "name": "tip launch app",
             "type": "go",
             "request": "launch",
@@ -13,7 +25,7 @@
             "env": {},
             "args": ["-v",
                      "-i",
-                     "CHANGELOG.md"
+                     "${workspaceFolder}/dummy.txt"
             ]
         }
     ]

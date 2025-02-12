@@ -131,9 +131,9 @@ func SortByDescentingCountAndLengthAndAphabetical(list []Patt) []Patt {
 	return list
 }
 
-// sortByIncreasingLength returns list ordered for increasing pattern length.
+// SortByIncreasingLengthAndAlphabetical returns list ordered for increasing pattern length.
 // It also sorts alphabetical to get reproducable results.
-func sortByIncreasingLength(list []Patt) []Patt {
+func SortByIncreasingLengthAndAlphabetical(list []Patt) []Patt {
 	compareFn := func(a, b Patt) int {
 		if len(a.Bytes) > len(b.Bytes) {
 			return 1
@@ -185,7 +185,7 @@ func reduceSubCounts(p []Patt) []Patt {
 	if len(p) <= 1 {
 		return p // nothing to do
 	}
-	list := sortByIncreasingLength(p) // smallest pattern first
+	list := SortByIncreasingLengthAndAlphabetical(p) // smallest pattern first
 
 	count := getCounts(list) // get a copy to work on
 	var wg sync.WaitGroup

@@ -57,14 +57,14 @@ func doit(w io.Writer, fSys *afero.Afero) (err error) {
 
 	buffer, err := fSys.ReadFile(iFn)
 	if err != nil {
-		return afero.ErrDestinationExists
+		return
 	}
 	packet := make([]byte, 2*len(buffer))
 	n := tip.Pack(packet, buffer)
 	if verbose {
 		fmt.Println(hex.Dump(buffer))
 		fmt.Println(hex.Dump(packet[:n]))
-		fmt.Println( "Pack rate is", 100*n/len(buffer), "percent.")
+		fmt.Println("Pack rate is", 100*n/len(buffer), "percent.")
 	}
 
 	return fSys.WriteFile(oFn, packet[:n], 0644)
