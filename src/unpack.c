@@ -23,7 +23,7 @@ size_t tiUnpack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_
     //static uint8_t u8[256]; // todo
     size_t u8len = shift78bit( u78, u78, u7len );
 
-    size_t dlen = restorePacket( dst, table, u8, u8len, src, slen );
+    size_t dlen = restorePacket( dst, table, u78, u8len, src, slen );
     return dlen;
 }
 
