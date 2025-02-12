@@ -4,19 +4,20 @@
 
 #include "tipInternal.h"
 
-//! getPatternFromId seaches in testTable for id and returns its pattern location in pt.
+//! getPatternFromId seaches in testTable for id.
 //! @param pt is filled with the replace pattern if id was found.
 //! @param table is the pattern table.
 //! @param id is the replace byte. Valid values for id are 1...0x7f.
 //! @retval is the pattern size or 0, if id was not found.
 size_t getPatternFromId( uint8_t * pt, const uint8_t * table, uint8_t id ){
     size_t sz;
-    unsigned int idx = 0;
+    unsigned int idx = 0x01;
     while( (sz = *table++) && sz){  // a pattern exists here
-        if( ++idx == id ){ // id found
+        if( idx == id ){ // id found
             memcpy(pt, table, sz);
             return sz;
         }
+        idx++;
         table += sz;
     }
     return 0;
