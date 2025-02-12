@@ -3,6 +3,7 @@ package tiptable
 import (
 	"fmt"
 	"log"
+	"slices"
 	"strings"
 
 	"github.com/rokath/tip/internal/pattern"
@@ -20,7 +21,39 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 	if err != nil {
 		return err
 	}
-	list := pattern.GenerateDescendingCountSortedList(data, maxPatternSize)
+
+	ss := strings.Split(string(data), ". ")
+	var clist []pattern.Patt
+
+	for i, sentence := range ss {
+		fmt.Println(i, sentence)
+		clist = append(clist, pattern.GenerateDescendingCountSortedList([]byte(sentence), maxPatternSize)...)
+	}
+	list := pattern.SortByDescentingCountAndLengthAndAphabetical(clist)
+	fmt.Println(len(list))
+	compareFn := func(a, b pattern.Patt) int {
+		if a.Cnt < b.Cnt {
+			return 1
+		}
+		if a.Cnt > b.Cnt {
+			return -1
+		}
+		if len(a.Bytes) < len(b.Bytes) {
+			return 1
+		}
+		if len(a.Bytes) > len(b.Bytes) {
+			return -1
+		}
+		if a.Key > b.Key {
+			return 1
+		}
+		if a.Key < b.Key {
+			return -1
+		}
+		return 0
+	}
+	list = slices.CompactFunc(list, compareFn)
+	fmt.Println(len(list))
 	// list is sorted by list[i].count, len(list[i].Bytes) and alphabetical in decending order.
 	idCount := min(127, len(list))
 	idList := pattern.SortByDescendingLength(list[:idCount])
@@ -32,14 +65,14 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 	defer oh.Close()
 	tipTableSize := 1 // TipTable contains at least table end marker
 	fmt.Fprintln(oh, `//! @file idTable.c
-//! @brief Generated code - do not edit!
+	   //! @brief Generated code - do not edit!
 
-#include <stdint.h>
-#include <stddef.h>
+	   #include <stdint.h>
+	   #include <stddef.h>
 
-//! idTable is sorted by pattern length and pattern count.
-//! The pattern position + 1 is the replace id.
-//! The generator pattern max size was`, maxPatternSize, `and the list pattern max size is:`, maxListPatternSize)
+	   //! idTable is sorted by pattern length and pattern count.
+	   //! The pattern position + 1 is the replace id.
+	   //! The generator pattern max size was`, maxPatternSize, `and the list pattern max size is:`, maxListPatternSize)
 	start := fmt.Sprintf("const uint8_t idTable[] = { // from %s\n", iFn)
 	fill := spaces(9 + 6*maxListPatternSize)
 	fill2 := spaces(maxListPatternSize - 5)
@@ -51,7 +84,7 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 		if i < idCount {
 			fmt.Fprintf(oh, "\t%s|%7d  %02x\n", pls, x.Cnt, i+1)
 		} else {
-			if Verbose /*&& x.Cnt > 1*/ {
+			if Verbose && x.Cnt > 1 {
 				fmt.Fprintf(oh, "//\t%s|%7d  %6d\n", pls, x.Cnt, i+1)
 			}
 		}

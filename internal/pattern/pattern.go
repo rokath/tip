@@ -15,11 +15,11 @@ var (
 	Verbose bool
 )
 
-// patt contains a pattern and its occurances count.
-type patt struct {
+// Patt contains a pattern and its occurances count.
+type Patt struct {
 	Cnt   int    // cnt is the count of occurances.
 	Bytes []byte // Bytes is the pattern as byte slice.
-	key   string // key is the pattern as hex string.
+	Key   string // key is the pattern as hex string.
 }
 
 // buildHistogram searches data for any 2-to-max bytes sequences
@@ -103,10 +103,10 @@ func scanForRepetitions(data []byte, ptLen int) map[string]int {
 	return m
 }
 
-// sortByDescentingCountAndLengthAndAphabetical returns list ordered for decreasing count and pattern length.
+// SortByDescentingCountAndLengthAndAphabetical returns list ordered for decreasing count and pattern length.
 // It also sorts alphabetical to get reproducable results.
-func sortByDescentingCountAndLengthAndAphabetical(list []patt) []patt {
-	compareFn := func(a, b patt) int {
+func SortByDescentingCountAndLengthAndAphabetical(list []Patt) []Patt {
+	compareFn := func(a, b Patt) int {
 		if a.Cnt < b.Cnt {
 			return 1
 		}
@@ -119,10 +119,10 @@ func sortByDescentingCountAndLengthAndAphabetical(list []patt) []patt {
 		if len(a.Bytes) > len(b.Bytes) {
 			return -1
 		}
-		if a.key > b.key {
+		if a.Key > b.Key {
 			return 1
 		}
-		if a.key < b.key {
+		if a.Key < b.Key {
 			return -1
 		}
 		return 0
@@ -133,18 +133,18 @@ func sortByDescentingCountAndLengthAndAphabetical(list []patt) []patt {
 
 // sortByIncreasingLength returns list ordered for increasing pattern length.
 // It also sorts alphabetical to get reproducable results.
-func sortByIncreasingLength(list []patt) []patt {
-	compareFn := func(a, b patt) int {
+func sortByIncreasingLength(list []Patt) []Patt {
+	compareFn := func(a, b Patt) int {
 		if len(a.Bytes) > len(b.Bytes) {
 			return 1
 		}
 		if len(a.Bytes) < len(b.Bytes) {
 			return -1
 		}
-		if a.key > b.key {
+		if a.Key > b.Key {
 			return 1
 		}
-		if a.key < b.key {
+		if a.Key < b.Key {
 			return -1
 		}
 		return 0
@@ -155,18 +155,18 @@ func sortByIncreasingLength(list []patt) []patt {
 
 // SortByDescendingLength returns list ordered for descending pattern length.
 // It also sorts alphabetical to get reproducable results.
-func SortByDescendingLength(list []patt) []patt {
-	compareFn := func(a, b patt) int {
+func SortByDescendingLength(list []Patt) []Patt {
+	compareFn := func(a, b Patt) int {
 		if len(a.Bytes) < len(b.Bytes) {
 			return 1
 		}
 		if len(a.Bytes) > len(b.Bytes) {
 			return -1
 		}
-		if a.key > b.key {
+		if a.Key > b.Key {
 			return 1
 		}
-		if a.key < b.key {
+		if a.Key < b.Key {
 			return -1
 		}
 		return 0
@@ -178,7 +178,7 @@ func SortByDescendingLength(list []patt) []patt {
 // reduceSubCounts searches for p[i].Bytes being a part of an other p[k].Bytes with i < k.
 // Example: If a pattern A is 3 times in pattern B, the pattern A.Cnt value is decreased by 3.
 // Algorithm: check from small to big
-func reduceSubCounts(p []patt) []patt {
+func reduceSubCounts(p []Patt) []Patt {
 	if Verbose {
 		fmt.Println("Reducing sub pattern counts...")
 	}
@@ -219,7 +219,7 @@ func reduceSubCounts(p []patt) []patt {
 	return list
 }
 
-func getCounts(list []patt) []int {
+func getCounts(list []Patt) []int {
 	count := make([]int, len(list))
 	for i, x := range list {
 		count[i] = x.Cnt
@@ -227,29 +227,29 @@ func getCounts(list []patt) []int {
 	return count
 }
 
-func setCounts(list []patt, count []int) {
+func setCounts(list []Patt, count []int) {
 	for i := range list {
 		list[i].Cnt = count[i]
 	}
 }
 
 // histogramToList converts m into list and restores original patterns.
-func histogramToList(m map[string]int) (list []patt) {
-	list = make([]patt, len(m))
+func histogramToList(m map[string]int) (list []Patt) {
+	list = make([]Patt, len(m))
 	var i int
 	for key, cnt := range m {
 		list[i].Cnt = cnt
 		list[i].Bytes, _ = hex.DecodeString(key)
-		list[i].key = key
+		list[i].Key = key
 		i++
 	}
 	return
 }
 
-func GenerateDescendingCountSortedList(data []byte, maxPatternSize int) []patt {
+func GenerateDescendingCountSortedList(data []byte, maxPatternSize int) []Patt {
 	m := buildHistogram(data, maxPatternSize)
 	list := histogramToList(m)
-	rList := list // reduceSubCounts(list)
-	sList := sortByDescentingCountAndLengthAndAphabetical(rList)
-	return sList // biggest cnt first, biggest length first on equal cnt
+	//rList := list // reduceSubCounts(list)
+	//sList := SortByDescentingCountAndLengthAndAphabetical(rList)
+	return list // biggest cnt first, biggest length first on equal cnt
 }

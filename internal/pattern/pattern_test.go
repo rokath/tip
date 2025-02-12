@@ -32,12 +32,12 @@ func Test_buildHistogram(t *testing.T) {
 
 func Test_reduceSubCounts(t *testing.T) {
 	defer Setup(t)() // This executes Setup(t) and puts the returned function into the defer list.
-	ps := []patt{
+	ps := []Patt{
 		{9, []byte{1, 2}, "0102"},      // {1, 2} is 1 times in each of 3 {1, 2, 3}, and 2 times in one {1, 2, 3, 1, 2, 3}
 		{3, []byte{1, 2, 3}, "010203"}, // {1, 2, 3} is 2 times in one {1, 2, 3, 1, 2, 3}
 		{1, []byte{1, 2, 3, 1, 2, 3}, "010203010203"},
 	}
-	exp := []patt{
+	exp := []Patt{
 		{4, []byte{1, 2}, "0102"},      // 9-3-2 = 4
 		{1, []byte{1, 2, 3}, "010203"}, // 3-2 = 1
 		{1, []byte{1, 2, 3, 1, 2, 3}, "010203010203"},
@@ -75,27 +75,27 @@ func Test_histogramToList(t *testing.T) {
 	defer Setup(t)() // This executes Setup(t) and puts the returned function into the defer list.
 	tt := []struct {
 		m   map[string]int // given map
-		exp []patt         // expected list
+		exp []Patt         // expected list
 	}{
-		{map[string]int{"0102": 2, "0203": 2, "0301": 1}, []patt{{2, []byte{1, 2}, "0102"}, {2, []byte{2, 3}, "0203"}, {1, []byte{3, 1}, "0301"}}},
-		{map[string]int{"0102": 4, "0808": 7}, []patt{{7, []byte{8, 8}, "0808"}, {4, []byte{1, 2}, "0102"}}},
+		{map[string]int{"0102": 2, "0203": 2, "0301": 1}, []Patt{{2, []byte{1, 2}, "0102"}, {2, []byte{2, 3}, "0203"}, {1, []byte{3, 1}, "0301"}}},
+		{map[string]int{"0102": 4, "0808": 7}, []Patt{{7, []byte{8, 8}, "0808"}, {4, []byte{1, 2}, "0102"}}},
 	}
 
 	for _, x := range tt {
 		result := histogramToList(x.m)
-		act := sortByDescentingCountAndLengthAndAphabetical(result)
+		act := SortByDescentingCountAndLengthAndAphabetical(result)
 		assert.Equal(t, x.exp, act)
 	}
 }
 
 func Test_sortByIncreasingLength(t *testing.T) {
 	defer Setup(t)() // This executes Setup(t) and puts the returned function into the defer list.
-	pat := []patt{
+	pat := []Patt{
 		{100, []byte{1, 2, 3, 1, 2, 3}, "010203010203"},
 		{900, []byte{1, 2}, "0102"},
 		{300, []byte{1, 2, 3}, "010203"},
 	}
-	exp := []patt{
+	exp := []Patt{
 		{900, []byte{1, 2}, "0102"},
 		{300, []byte{1, 2, 3}, "010203"},
 		{100, []byte{1, 2, 3, 1, 2, 3}, "010203010203"},
@@ -104,9 +104,9 @@ func Test_sortByIncreasingLength(t *testing.T) {
 	assert.Equal(t, exp, act)
 }
 
-func Test_sortByDescentingCountAndLengthAndAphabetical(t *testing.T) {
+func Test_SortByDescentingCountAndLengthAndAphabetical(t *testing.T) {
 	defer Setup(t)() // This executes Setup(t) and puts the returned function into the defer list.
-	pat := []patt{
+	pat := []Patt{
 		{100, []byte{1, 2, 3, 1, 2, 3, 4}, "01020301020304"},
 		{100, []byte{1, 2, 3, 4}, "01020304"},
 		{100, []byte{1, 2, 3, 1, 2, 3}, "010203010203"},
@@ -114,7 +114,7 @@ func Test_sortByDescentingCountAndLengthAndAphabetical(t *testing.T) {
 		{100, []byte{8, 2, 3, 1, 2, 3}, "080203010203"},
 		{300, []byte{1, 2, 3}, "010203"},
 	}
-	exp := []patt{
+	exp := []Patt{
 		{900, []byte{1, 2}, "0102"},
 		{300, []byte{1, 2, 3}, "010203"},
 		{100, []byte{1, 2, 3, 1, 2, 3, 4}, "01020301020304"},
@@ -122,6 +122,6 @@ func Test_sortByDescentingCountAndLengthAndAphabetical(t *testing.T) {
 		{100, []byte{8, 2, 3, 1, 2, 3}, "080203010203"},
 		{100, []byte{1, 2, 3, 4}, "01020304"},
 	}
-	act := sortByDescentingCountAndLengthAndAphabetical(pat)
+	act := SortByDescentingCountAndLengthAndAphabetical(pat)
 	assert.Equal(t, exp, act)
 }
