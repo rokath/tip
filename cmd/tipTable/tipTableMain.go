@@ -16,7 +16,7 @@ var (
 	commit     string // do not initialize, goreleaser will handle that
 	date       string // do not initialize, goreleaser will handle that
 	iFn        string // input file name
-	oFn        string // input file name
+	oFn        string // ouput file name
 	help       bool
 	verbose    bool
 )
