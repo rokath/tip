@@ -18,8 +18,8 @@
 //!                   (dst) <---                ret=20                       --->(lst)
 //! In dst all MSBits are set to 1, to avoid any zeroes.
 //! The data are processed from the end.
-size_t shift87bit( uint8_t* lst, uint8_t * const src, size_t slen ){
-    uint8_t * u8 = src + slen; // first address behind src buffer
+size_t shift87bit( uint8_t* lst, const uint8_t * src, size_t slen ){
+    const uint8_t * u8 = src + slen; // first address behind src buffer
     uint8_t * dst = lst; // destination address
     while( src < u8 ){
         uint8_t msb = 0x80;
@@ -42,7 +42,7 @@ size_t shift87bit( uint8_t* lst, uint8_t * const src, size_t slen ){
 //! shift78bit transforms slen 7-bit bytes in src to 8-bit units in dst.
 //! @param src is a byte buffer.
 //! @param slen is the 7-bit byte count.
-//! @param dst is the destination buffer. It is allowed to be equal src.
+//! @param dst is the destination buffer. It is NOT allowed to be equal src for in-place conversion.
 //! @retval is count 8-bit bytes
 //! @details buf is filled from the end (=buf+limit)
 //! Example: slen=20, limit=24
@@ -61,7 +61,7 @@ size_t shift78bit( uint8_t * dst, const uint8_t * src, size_t slen ){
         for( int i = 0; i < 7; i++ ){ 
             uint8_t bits6_0 = 0x7f & *lst--; // _111 1111 == 0x7f
             uint8_t mask = 0x40 >> i;        // _100 0000
-            uint8_t b7bit = msbyte & mask; // _100 0000 & _100 0000 == 0x40
+            uint8_t b7bit = msbyte & mask;   // _100 0000 & _100 0000 == 0x40
             b7bit = b7bit ? 0x80 : 0;
             *ptr-- = b7bit | bits6_0;
         }

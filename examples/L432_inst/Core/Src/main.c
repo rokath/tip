@@ -117,14 +117,19 @@ int main(void)
 #if !TRICE_OFF  
 //LogTriceConfiguration();
 #endif
-  static uint8_t dst[100] = {0};
+static uint8_t buf[100] = {0};
+static uint8_t pkg[100] = {0};
 //static uint8_t src[] = { 0x0d, 0x0a, 0x0d, 0x0a, 0x74, 0x68, 0x65, 0x20, 0x0d, 0x0a }; // ok
 //static uint8_t src[] = { 0x55, 0x74, 0x68, 0x65, 0x20, 0x55, 0x74, 0x68, 0x65, 0x20 }; // ok
   static uint8_t src[] = { 0xd1, 0x74, 0x68, 0x65, 0x20, 0xd2, 0x74, 0x68, 0x65, 0x20, 0xd3, 0x0d, 0x0a, 0xd4, 0xd5 };
+//static uint8_t src[] = { 0xd1, 0xd5 };
   size_t slen = sizeof(src);
   trice8B("rd:%02x \n", src, slen);
-  size_t dlen = tip(dst, src, slen);
-  trice8B("wr:%02x \n", dst, dlen);
+  size_t plen = tip(pkg, src, slen);
+  trice8B("wr:%02x \n", pkg, plen);
+  size_t blen = tiu(buf, pkg, plen);
+  trice8B("att:%02x \n", buf, blen);
+
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */

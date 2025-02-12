@@ -79,6 +79,10 @@
 		"Type": "trice8B",
 		"Strg": "rd:%02x "
 	},
+	"13987": {
+		"Type": "trice8B",
+		"Strg": "att:%02x \\n"
+	},
 	"13990": {
 		"Type": "trice8B",
 		"Strg": "wr:%02x "
