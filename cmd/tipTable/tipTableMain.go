@@ -40,6 +40,7 @@ func doit(w io.Writer, fSys *afero.Afero) {
 	if help {
 		fmt.Fprintln(w, "Usage: tipTable -i inputFileName [-o outputFileName] [-z max pattern size] [-v]")
 		fmt.Fprintln(w, "Example: `tipTable -i trice.bin` creates idTable.c")
+		flag.PrintDefaults()
 		fmt.Fprintln(w, "The TipUserManual explains details.")
 		return
 	}

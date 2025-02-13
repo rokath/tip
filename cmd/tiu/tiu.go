@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/hex"
 	"flag"
 	"fmt"
 	"io"
@@ -40,7 +39,8 @@ func main() {
 func doit(w io.Writer, fSys *afero.Afero) (err error) {
 	if help {
 		fmt.Fprintln(w, "Usage: tiu -i inputFileName [-o outputFileName] [-v]")
-		fmt.Fprintln(w, "Example: `tiu -i trice.bin` creates trice.bin.untip")
+		fmt.Fprintln(w, "Example: `tiu -i trice.bin.tip` creates trice.bin.tip.untip")
+		flag.PrintDefaults()
 		fmt.Fprintln(w, "The TipUserManual explains details.")
 		return
 	}
@@ -51,10 +51,13 @@ func doit(w io.Writer, fSys *afero.Afero) (err error) {
 	if oFn == "" {
 		oFn = iFn + ".untip"
 	}
-	if verbose {
-		fmt.Fprintln(w, version, commit, date)
+	//  if verbose {
+	//  	fmt.Fprintln(w, version, commit, date)
+	//  }
+	fi, err := fSys.Stat(iFn)
+	if err != nil {
+		return
 	}
-
 	packet, err := fSys.ReadFile(iFn)
 	if err != nil {
 		return err
@@ -67,10 +70,9 @@ func doit(w io.Writer, fSys *afero.Afero) (err error) {
 	buffer := make([]byte, 24*len(packet)) // assuming 24-bytes pattern matching exactly
 	n := tip.Unpack(buffer, packet)
 	if verbose {
-		fmt.Println(hex.Dump(packet))
-		fmt.Println(hex.Dump(buffer[:n]))
-		fmt.Println("Unpack rate is", 100*n/len(packet), "percent.")
+		//fmt.Println(hex.Dump(packet))
+		//fmt.Println(hex.Dump(buffer[:n]))
+		fmt.Fprintln(w, "file size", fi.Size(), "changed to", n, "(rate", 100*int64(n)/fi.Size(), "percent)")
 	}
-
 	return fSys.WriteFile(oFn, buffer[:n], 0644)
 }
