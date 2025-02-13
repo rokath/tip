@@ -59,6 +59,11 @@ func doit(w io.Writer, fSys *afero.Afero) (err error) {
 	if err != nil {
 		return err
 	}
+	for i, x := range packet {
+		if x == 0 {
+			return fmt.Errorf("%s contains a 0 at offset %d (invalid tip packet)", iFn, i)
+		}
+	}
 	buffer := make([]byte, 24*len(packet)) // assuming 24-bytes pattern matching exactly
 	n := tip.Unpack(buffer, packet)
 	if verbose {

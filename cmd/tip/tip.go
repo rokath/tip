@@ -55,9 +55,25 @@ func doit(w io.Writer, fSys *afero.Afero) (err error) {
 		fmt.Fprintln(w, version, commit, date)
 	}
 
+	fi, err := fSys.Stat(iFn)
+	if err != nil {
+		return
+	}
+	if verbose {
+		fmt.Fprintln(w, "file size", fi.Size())
+	}
+
+	const maxSize = 200
+	if fi.Size() > maxSize {
+		return fmt.Errorf("cannot pack %d bytes. maximum is %d", fi.Size(), maxSize)
+	}
+
 	buffer, err := fSys.ReadFile(iFn)
 	if err != nil {
 		return
+	}
+	if verbose {
+		fmt.Fprintln(w, "len", len(buffer))
 	}
 	packet := make([]byte, 2*len(buffer))
 	n := tip.Pack(packet, buffer)
