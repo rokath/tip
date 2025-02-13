@@ -1,6 +1,8 @@
 package pattern
 
 import (
+	"fmt"
+	"maps"
 	"testing"
 
 	"github.com/tj/assert"
@@ -126,7 +128,6 @@ func Test_SortByDescentingCountAndLengthAndAphabetical(t *testing.T) {
 	assert.Equal(t, exp, act)
 }
 
-/*
 func Test_extendHistorgamMap(t *testing.T) {
 	tt := []struct {
 		dst, src, exp map[string]int // expected map
@@ -136,6 +137,26 @@ func Test_extendHistorgamMap(t *testing.T) {
 			map[string]int{"0301": 2},
 			map[string]int{"0102": 5, "0301": 2},
 		},
+		{
+			map[string]int{"0102": 5},
+			map[string]int{"0102": 2},
+			map[string]int{"0102": 7},
+		},
+		{
+			map[string]int{},
+			map[string]int{"0102": 2},
+			map[string]int{"0102": 2},
+		},
+		{
+			map[string]int{"0102": 2},
+			map[string]int{},
+			map[string]int{"0102": 2},
+		},
+		{
+			map[string]int{},
+			map[string]int{},
+			map[string]int{},
+		},
 	}
 
 	for i, x := range tt {
@@ -143,9 +164,8 @@ func Test_extendHistorgamMap(t *testing.T) {
 		maps.Copy(act, x.dst)
 		extendHistorgamMap(act, x.src)
 
-		assert.Equal(t, tt[i], x.dst)
+		assert.Equal(t, tt[i].exp, act)
 	}
 
 	fmt.Println(tt)
 }
-*/

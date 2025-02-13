@@ -21,13 +21,24 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 		return err
 	}
 
-	ss := strings.Split(string(data), ". ") // split ASCII text into sentences
-	var clist []pattern.Patt
+	hist := make(map[string]int, 10000)
+	ss := strings.Split(string(data), ". ") // split ASCII text into sentences (todo)
 
 	for i, sentence := range ss {
-		fmt.Println(i, sentence)
-		clist = append(clist, pattern.GenerateDescendingCountSortedList([]byte(sentence), maxPatternSize)...)
+		if Verbose {
+			fmt.Println(i, sentence)
+		}
+		pattern.ExtendHistogram(hist, []byte(sentence), maxPatternSize)
 	}
+
+	list := histogramToList(m)
+	//rList := list // reduceSubCounts(list)
+	sList := SortByDescentingCountAndLengthAndAphabetical(rList)
+	
+	// var clist []pattern.Patt
+
+	clist = append(clist, pattern.GenerateDescendingCountSortedList([]byte(sentence), maxPatternSize)...)
+
 	list := pattern.SortByIncreasingLengthAndAlphabetical(clist)
 	fmt.Println(len(list))
 	compareFn := func(a, b pattern.Patt) bool {

@@ -21,7 +21,7 @@ type Patt struct {
 	Bytes []byte // Bytes is the pattern as byte slice.
 	Key   string // key is the pattern as hex string.
 }
-
+/*
 // BuildHistogram searches data for any 2-to-max bytes sequences
 // and returns them as key strings hex encoded with their count as values in m.
 // Pattern of size 1 are skipped, because they give no compression effect when replaced by an id.
@@ -48,13 +48,13 @@ func BuildHistogram(data []byte, max int) map[string]int {
 	}
 	return m
 }
-/*
+*/
 // ExtendHistogram searches data for any 2-to-max bytes sequences
 // and extends m with them as key strings hex encoded with their increased count as values in m.
 // Pattern of size 1 are skipped, because they give no compression effect when replaced by an id.
 func ExtendHistogram(hist map[string]int, data []byte, max int) {
 	if Verbose {
-		fmt.Println("Extending histogram...")
+		fmt.Println("Extending histogram with length", len(hist), "...")
 	}
 	subMap := make([]map[string]int, max) // maps slice
 	var wg sync.WaitGroup
@@ -67,21 +67,22 @@ func ExtendHistogram(hist map[string]int, data []byte, max int) {
 	}
 	wg.Wait()
 	for i := 0; i < max; i++ { // loop over pattern sizes
-		maps.Copy(hist, subMap[i]) //
+		extendHistorgamMap(hist, subMap[i])
 	}
 	if Verbose {
-		fmt.Println("Building histogram...done. Length is", len(m))
+		fmt.Println("Extending histogram...done. New length is", len(hist))
 	}
 }
 
+
 // extendHistorgamMap copies all keys with their values from src into dst.
-// if dst contains a kay already, the values are added.
+// If dst contains a key already, the values are added.
 func extendHistorgamMap(dst, src map[string]int) {
 	for k, v := range src {
 		dst[k] = dst[k] + v
 	}
 }
-*/
+
 
 // scanForRepetitions searches data for ptLen bytes sequences
 // and returns them as key strings hex encoded with their count as values in m.
@@ -280,6 +281,7 @@ func histogramToList(m map[string]int) (list []Patt) {
 	return
 }
 
+/*
 func GenerateDescendingCountSortedList(data []byte, maxPatternSize int) []Patt {
 	m := BuildHistogram(data, maxPatternSize)
 	list := histogramToList(m)
@@ -287,3 +289,4 @@ func GenerateDescendingCountSortedList(data []byte, maxPatternSize int) []Patt {
 	//sList := SortByDescentingCountAndLengthAndAphabetical(rList)
 	return list // biggest cnt first, biggest length first on equal cnt
 }
+*/
