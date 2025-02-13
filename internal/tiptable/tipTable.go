@@ -21,7 +21,7 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 		return err
 	}
 
-	ss := strings.Split(string(data), ". ")
+	ss := strings.Split(string(data), ". ") // split ASCII text into sentences
 	var clist []pattern.Patt
 
 	for i, sentence := range ss {

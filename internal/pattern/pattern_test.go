@@ -25,7 +25,7 @@ func Test_buildHistogram(t *testing.T) {
 		}},
 	}
 	for _, x := range tt {
-		m := buildHistogram(x.data, x.max)
+		m := BuildHistogram(x.data, x.max)
 		assert.Equal(t, x.exp, m)
 	}
 }
@@ -125,3 +125,27 @@ func Test_SortByDescentingCountAndLengthAndAphabetical(t *testing.T) {
 	act := SortByDescentingCountAndLengthAndAphabetical(pat)
 	assert.Equal(t, exp, act)
 }
+
+/*
+func Test_extendHistorgamMap(t *testing.T) {
+	tt := []struct {
+		dst, src, exp map[string]int // expected map
+	}{
+		{
+			map[string]int{"0102": 5},
+			map[string]int{"0301": 2},
+			map[string]int{"0102": 5, "0301": 2},
+		},
+	}
+
+	for i, x := range tt {
+		act := make(map[string]int)
+		maps.Copy(act, x.dst)
+		extendHistorgamMap(act, x.src)
+
+		assert.Equal(t, tt[i], x.dst)
+	}
+
+	fmt.Println(tt)
+}
+*/

@@ -22,10 +22,10 @@ type Patt struct {
 	Key   string // key is the pattern as hex string.
 }
 
-// buildHistogram searches data for any 2-to-max bytes sequences
+// BuildHistogram searches data for any 2-to-max bytes sequences
 // and returns them as key strings hex encoded with their count as values in m.
 // Pattern of size 1 are skipped, because they give no compression effect when replaced by an id.
-func buildHistogram(data []byte, max int) map[string]int {
+func BuildHistogram(data []byte, max int) map[string]int {
 	if Verbose {
 		fmt.Println("Building histogram...")
 	}
@@ -48,6 +48,40 @@ func buildHistogram(data []byte, max int) map[string]int {
 	}
 	return m
 }
+/*
+// ExtendHistogram searches data for any 2-to-max bytes sequences
+// and extends m with them as key strings hex encoded with their increased count as values in m.
+// Pattern of size 1 are skipped, because they give no compression effect when replaced by an id.
+func ExtendHistogram(hist map[string]int, data []byte, max int) {
+	if Verbose {
+		fmt.Println("Extending histogram...")
+	}
+	subMap := make([]map[string]int, max) // maps slice
+	var wg sync.WaitGroup
+	for i := 0; i < max-1; i++ { // loop over pattern sizes
+		wg.Add(1)
+		go func(k int) {
+			defer wg.Done()
+			subMap[k] = scanForRepetitions(data, k+2)
+		}(i)
+	}
+	wg.Wait()
+	for i := 0; i < max; i++ { // loop over pattern sizes
+		maps.Copy(hist, subMap[i]) //
+	}
+	if Verbose {
+		fmt.Println("Building histogram...done. Length is", len(m))
+	}
+}
+
+// extendHistorgamMap copies all keys with their values from src into dst.
+// if dst contains a kay already, the values are added.
+func extendHistorgamMap(dst, src map[string]int) {
+	for k, v := range src {
+		dst[k] = dst[k] + v
+	}
+}
+*/
 
 // scanForRepetitions searches data for ptLen bytes sequences
 // and returns them as key strings hex encoded with their count as values in m.
@@ -247,7 +281,7 @@ func histogramToList(m map[string]int) (list []Patt) {
 }
 
 func GenerateDescendingCountSortedList(data []byte, maxPatternSize int) []Patt {
-	m := buildHistogram(data, maxPatternSize)
+	m := BuildHistogram(data, maxPatternSize)
 	list := histogramToList(m)
 	//rList := list // reduceSubCounts(list)
 	//sList := SortByDescentingCountAndLengthAndAphabetical(rList)
