@@ -54,6 +54,23 @@ Table of Contents Generation:
 -->
 
 <!-- vscode-markdown-toc -->
+* 1. [Project Status](#project-status)
+* 2. [About The Project](#about-the-project)
+  * 2.1. [TiP Components](#tip-components)
+* 3. [Getting Started](#getting-started)
+  * 3.1. [Prerequisites](#prerequisites)
+  * 3.2. [Built TipTable Generator `tipTable`](#built-tiptable-generator-`tiptable`)
+  * 3.3. [Build `tip` and `tiu`](#build-`tip`-and-`tiu`)
+  * 3.4. [Try `tip` and `tiu`](#try-`tip`-and-`tiu`)
+  * 3.5. [Installation](#installation)
+* 4. [Usage](#usage)
+* 5. [Roadmap](#roadmap)
+* 6. [Contributing](#contributing)
+  * 6.1. [Top contributors:](#top-contributors:)
+* 7. [License](#license)
+* 8. [Contact](#contact)
+* 9. [Acknowledgments](#acknowledgments)
+
 <!-- vscode-markdown-toc-config
 	numbering=true
 	autoSave=true
@@ -65,7 +82,7 @@ Table of Contents Generation:
 ---
 
 
-## Project Status
+## 1. <a id='project-status'></a>Project Status
 
 ```diff
 --> Early experimental state!
@@ -74,7 +91,7 @@ Table of Contents Generation:
 
 <!-- ABOUT THE PROJECT -->
 
-## About The Project
+## 2. <a id='about-the-project'></a>About The Project
 
 * Usual compressors cannot succeed on small data, because they add a translation table into the data.
 * **TiP** is an adaptable small buffer packer suitable for embedded devices. Like [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) it removes all zeroes from the data, but additionally tries data compression. 
@@ -84,7 +101,7 @@ Table of Contents Generation:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### TiP Components
+### 2.1. <a id='tip-components'></a>TiP Components
 
 * Tiny C-Code usable on embedded devices inside `src` folder containing
   * `idTable.c` - generated data specific translation table
@@ -98,31 +115,31 @@ Table of Contents Generation:
 
 
 <!-- GETTING STARTED -->
-## Getting Started
+## 3. <a id='getting-started'></a>Getting Started
 
-### Prerequisites
+### 3.1. <a id='prerequisites'></a>Prerequisites
 
 * For now install [Go](https://golang.org/) to easily build the executables.
 * You need some files containing typical data you want to tip.
   * Just to try TiP out, you can use a folder containing ASCII texts.
 
-### Built TipTable Generator `tipTable`
+### 3.2. <a id='built-tiptable-generator-`tiptable`'></a>Built TipTable Generator `tipTable`
 
 * `cd tipTable; go build -ldflags "-w" ./...`
 * Run `tipTable` on the data files to get an `idTable.c` file.
 
-### Build `tip` and `tiu`
+### 3.3. <a id='build-`tip`-and-`tiu`'></a>Build `tip` and `tiu`
 
 * Copy the generated `idTable.c` file into the `src` folder.
 * Run `go build ./...` or `go install ./...`.
 
-### Try `tip` and `tiu`
+### 3.4. <a id='try-`tip`-and-`tiu`'></a>Try `tip` and `tiu`
 
 * Run `tip -i myFile -v` to get `myFile.tip`.
 * Run `tiu -i myFile.tip -v` to get `myFile.tip.untip`.
 * `myFile` and `myFile.tip.untip` are equal.
 
-### Installation
+### 3.5. <a id='installation'></a>Installation
 
 * Add `src` folder to your project and compile.
 * `pack.h` and `unpack.h` is the user interface.
@@ -131,7 +148,7 @@ Table of Contents Generation:
 
 
 <!-- USAGE EXAMPLES -->
-## Usage
+## 4. <a id='usage'></a>Usage
 
 Please refer to the [Tip User Manual](./docs/TipUserManual.md) (not written yet)
 
@@ -140,7 +157,7 @@ Please refer to the [Tip User Manual](./docs/TipUserManual.md) (not written yet)
 
 
 <!-- ROADMAP -->
-## Roadmap
+## 5. <a id='roadmap'></a>Roadmap
 
 - [x] Create `tipTable.h` Generator `tipTable`.
 - [x] Create `pack.c` and `unpack.c` and test.
@@ -158,7 +175,7 @@ See the [open issues](https://github.com/rokath/tip/issues) for a full list of p
 
 
 <!-- CONTRIBUTING -->
-## Contributing
+## 6. <a id='contributing'></a>Contributing
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
@@ -173,7 +190,7 @@ Don't forget to give the project a star! Thanks again!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Top contributors:
+### 6.1. <a id='top-contributors:'></a>Top contributors:
 
 <a href="https://github.com/rokath/tip/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=rokath/tip" alt="contrib.rocks image" />
@@ -182,7 +199,7 @@ Don't forget to give the project a star! Thanks again!
 
 
 <!-- LICENSE -->
-## License
+## 7. <a id='license'></a>License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
 
@@ -191,7 +208,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 
 <!-- CONTACT -->
-## Contact
+## 8. <a id='contact'></a>Contact
 
 Thomas Höhenleitner - th@seerose.net
 
@@ -202,7 +219,7 @@ Project Link: [https://github.com/rokath/tip](https://github.com/rokath/tip)
 
 
 <!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
+## 9. <a id='acknowledgments'></a>Acknowledgments
 
 * [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing)
 * []() to do
