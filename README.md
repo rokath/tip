@@ -95,7 +95,7 @@ Table of Contents Generation:
 
 * Usual compressors cannot succeed on small data, because they add a translation table into the data.
 * **TiP** is an adaptable small buffer packer suitable for embedded devices. Like [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) it removes all zeroes from the data, but additionally tries data compression. 
-  * [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) adds on byte overhead per each starting 255 bytes.
+  * [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) adds 1 byte overhead per each starting 255 bytes.
   * The TiP worst-case overhead is 1 byte per each starting 127 bytes for uncompressable data.
 * Like [TCOBS](github.com/rokath/tcobs), TiP can already compress 3 bytes into 2 bytes but is expected to do better in a general way.
 
