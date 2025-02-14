@@ -3,7 +3,6 @@ package tiptable
 import (
 	"fmt"
 	"log"
-	"slices"
 	"strings"
 	"sync"
 
@@ -35,17 +34,25 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 	}
 
 	xlist := p.ExportAsList()
-	rlist := xlist // reduceSubCounts(list)
-	slist := pattern.SortByDescentingCountAndLengthAndAphabetical(rlist)
-	list := pattern.SortByIncreasingLengthAndAlphabetical(slist)
-	fmt.Println(len(list))
-	compareFn := func(a, b pattern.Patt) bool {
-		return a.Key == b.Key
+
+	fmt.Println(len(ss), "sentences")
+	fmt.Println(len(xlist), "pattern")
+
+	//rlist := xlist // reduceSubCounts(list)
+	//slist := pattern.SortByDescentingCountAndLengthAndAphabetical(rlist)
+	//list := pattern.SortByIncreasingLengthAndAlphabetical(rlist)
+	//  fmt.Println(len(list))
+	//  compareFn := func(a, b pattern.Patt) bool {
+	//  	return a.Key == b.Key
+	//  }
+	//  list = slices.CompactFunc(list, compareFn)
+	//  fmt.Println(len(list))
+	list := pattern.SortByDescentingCountAndLengthAndAphabetical(xlist)
+
+	for i, x := range list[:200] {
+		fmt.Println(i, x.Cnt, x.Key)
 	}
-	list = slices.CompactFunc(list, compareFn)
-	fmt.Println(len(list))
-	list = pattern.SortByDescentingCountAndLengthAndAphabetical(list)
-	fmt.Println(len(list))
+	// fmt.Println(len(list))
 	// list is sorted by list[i].count, len(list[i].Bytes) and alphabetical in decending order.
 	idCount := min(127, len(list))
 	idList := pattern.SortByDescendingLength(list[:idCount])

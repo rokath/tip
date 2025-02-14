@@ -64,9 +64,6 @@ func (p *Histogram) scanForRepetitions(data []byte, ptLen int) {
 			defer wg.Done()
 			pat := data[k : k+ptLen]
 			key := hex.EncodeToString(pat) // We need to convert pat into a key.
-			if k == 3 {
-				fmt.Println(k, key)
-			}
 			p.mu.Lock()
 			p.Hist[key]++
 			p.mu.Unlock()
