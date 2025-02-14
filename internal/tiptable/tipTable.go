@@ -22,13 +22,13 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 	}
 
 	hist := make(map[string]int, 10000)
-	ss := strings.Split(string(data), ". ") // split ASCII text into sentences (todo)
+	ss := strings.Split(string(data), ". ") // split ASCII text into sentences (TODO)
 
 	for i, sentence := range ss {
 		if Verbose {
 			fmt.Println(i, sentence)
 		}
-		pattern.ExtendHistogram(hist, []byte(sentence), maxPatternSize)
+		hist = pattern.ExtendHistogram(hist, []byte(sentence), maxPatternSize)
 	}
 
 	list := pattern.HistogramToList(hist)
