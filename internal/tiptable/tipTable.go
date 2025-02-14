@@ -31,15 +31,10 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 		pattern.ExtendHistogram(hist, []byte(sentence), maxPatternSize)
 	}
 
-	list := histogramToList(m)
-	//rList := list // reduceSubCounts(list)
-	sList := SortByDescentingCountAndLengthAndAphabetical(rList)
-	
-	// var clist []pattern.Patt
-
-	clist = append(clist, pattern.GenerateDescendingCountSortedList([]byte(sentence), maxPatternSize)...)
-
-	list := pattern.SortByIncreasingLengthAndAlphabetical(clist)
+	list := pattern.HistogramToList(hist)
+	rList := list // reduceSubCounts(list)
+	sList := pattern.SortByDescentingCountAndLengthAndAphabetical(rList)
+	list = pattern.SortByIncreasingLengthAndAlphabetical(sList)
 	fmt.Println(len(list))
 	compareFn := func(a, b pattern.Patt) bool {
 		return a.Key == b.Key

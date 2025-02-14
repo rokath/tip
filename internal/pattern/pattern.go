@@ -3,7 +3,6 @@ package pattern
 import (
 	"encoding/hex"
 	"fmt"
-	"maps"
 	"slices"
 	"sync"
 
@@ -21,6 +20,7 @@ type Patt struct {
 	Bytes []byte // Bytes is the pattern as byte slice.
 	Key   string // key is the pattern as hex string.
 }
+
 /*
 // BuildHistogram searches data for any 2-to-max bytes sequences
 // and returns them as key strings hex encoded with their count as values in m.
@@ -74,7 +74,6 @@ func ExtendHistogram(hist map[string]int, data []byte, max int) {
 	}
 }
 
-
 // extendHistorgamMap copies all keys with their values from src into dst.
 // If dst contains a key already, the values are added.
 func extendHistorgamMap(dst, src map[string]int) {
@@ -82,7 +81,6 @@ func extendHistorgamMap(dst, src map[string]int) {
 		dst[k] = dst[k] + v
 	}
 }
-
 
 // scanForRepetitions searches data for ptLen bytes sequences
 // and returns them as key strings hex encoded with their count as values in m.
@@ -269,7 +267,7 @@ func setCounts(list []Patt, count []int) {
 }
 
 // histogramToList converts m into list and restores original patterns.
-func histogramToList(m map[string]int) (list []Patt) {
+func HistogramToList(m map[string]int) (list []Patt) {
 	list = make([]Patt, len(m))
 	var i int
 	for key, cnt := range m {
