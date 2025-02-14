@@ -35,6 +35,10 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 
 	xlist := p.ExportAsList()
 
+	rlist := p.Reduce(xlist)
+
+
+
 	fmt.Println(len(ss), "sentences")
 	fmt.Println(len(xlist), "pattern")
 
@@ -47,7 +51,7 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 	//  }
 	//  list = slices.CompactFunc(list, compareFn)
 	//  fmt.Println(len(list))
-	list := pattern.SortByDescentingCountAndLengthAndAphabetical(xlist)
+	list := pattern.SortByDescentingCountAndLengthAndAphabetical(rlist)
 
 	for i, x := range list[:200] {
 		fmt.Println(i, x.Cnt, x.Key)
