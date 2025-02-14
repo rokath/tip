@@ -121,7 +121,7 @@ Table of Contents Generation:
 
 * For now install [Go](https://golang.org/) to easily build the executables.
 * You need some files containing typical data you want to tip.
-  * Just to try TiP out, you can use a folder containing ASCII texts.
+  * Just to try out TiP, you can use a folder containing ASCII texts.
 
 ### 3.2. <a id='built-tiptable-generator-`tiptable`'></a>Built TipTable Generator `tipTable`
 
