@@ -96,7 +96,7 @@ Table of Contents Generation:
 * Usual compressors cannot succeed on small data, because they add a translation table into the data.
 * **TiP** is an adaptable small buffer packer suitable for embedded devices. Like [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) it removes all zeroes from the data, but additionally tries data compression. 
   * [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) adds 1 byte overhead per each starting 255 bytes.
-  * The TiP worst-case overhead is 1 byte per each starting 127 bytes for uncompressable data.
+  * The TiP worst-case overhead is 1 byte per each starting 7 bytes for uncompressable data.
 * Like [TCOBS](https://github.com/rokath//tcobs), TiP can already compress 3 bytes into 2 bytes but is expected to do better in a general way.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -104,11 +104,12 @@ Table of Contents Generation:
 ### 2.1. <a id='tip-components'></a>TiP Components
 
 * Tiny C-Code usable on embedded devices inside `src` folder containing
-  * `idTable.c` - generated data specific translation table
+  * `idTable.c` - a generated data specific translation table
   * `pack.c` and `unpack.c` - separately or together compilable
-* `tipTable` - ID Table Generator to create a suitable `idTable.c` file
-* `tip` - tiny pack app using the **pack** C code
-* `tiu` - tiny unpack app using the **unpack** C code
+* PC apps:
+  * `tig` - **ti**ny **g**enerator to create a suitable `idTable.c` file
+  * `tip` - **ti**ny **p**ack using the **pack** C code mainly for tests
+  * `tiu` - **ti**ny **u**npack using the **unpack** C code mainly for tests
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
