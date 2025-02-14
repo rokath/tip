@@ -66,7 +66,7 @@ Table of Contents Generation:
 * 4. [Usage](#usage)
 * 5. [Roadmap](#roadmap)
 * 6. [Contributing](#contributing)
-  * 6.1. [Top contributors:](#top-contributors:)
+  * 6.1. [Top contributors](#top-contributors)
 * 7. [License](#license)
 * 8. [Contact](#contact)
 * 9. [Acknowledgments](#acknowledgments)
@@ -190,7 +190,7 @@ Don't forget to give the project a star! Thanks again!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### 6.1. <a id='top-contributors:'></a>Top contributors:
+### 6.1. <a id='top-contributors:'></a>Top contributors
 
 <a href="https://github.com/rokath/tip/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=rokath/tip" alt="contrib.rocks image" />
