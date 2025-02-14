@@ -107,9 +107,9 @@ Table of Contents Generation:
   * `tig` - **ti**ny **g**enerator to create a suitable `idTable.c` file
   * `tip` - **ti**ny **p**ack using the **pack** C code mainly for tests
   * `tiu` - **ti**ny **u**npack using the **unpack** C code mainly for tests
-* Tiny C-Code usable on embedded devices inside `src` folder containing
+* Tiny C-Code usable on embedded devices inside [src](./src/) folder containing
   * [idTable.c](./src/idTable.c) - a generated data specific translation table
-  * `pack.c` and `unpack.c` - separately or together compilable
+  * [pack.c](./src/pack.c) and [unpack.c](./src/unpack.c) - separately or together compilable
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
