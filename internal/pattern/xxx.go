@@ -3,12 +3,6 @@ package pattern
 /*
 
 
-// Patt contains a pattern and its occurances count.
-type Patt struct {
-	Cnt   int    // cnt is the count of occurances.
-	Bytes []byte // Bytes is the pattern as byte slice.
-	Key   string // key is the pattern as hex string.
-}
 
 // merge copies all keys with their values from src into p.
 // If p contains a key already, the values are added.
@@ -19,79 +13,7 @@ func (p *PatternHistogram) merge(src map[string]int) {
 		p.mu.Unlock()
 	}
 }
-
-// SortByDescentingCountAndLengthAndAphabetical returns list ordered for decreasing count and pattern length.
-// It also sorts alphabetical to get reproducable results.
-func SortByDescentingCountAndLengthAndAphabetical(list []Patt) []Patt {
-	compareFn := func(a, b Patt) int {
-		if a.Cnt < b.Cnt {
-			return 1
-		}
-		if a.Cnt > b.Cnt {
-			return -1
-		}
-		if len(a.Bytes) < len(b.Bytes) {
-			return 1
-		}
-		if len(a.Bytes) > len(b.Bytes) {
-			return -1
-		}
-		if a.Key > b.Key {
-			return 1
-		}
-		if a.Key < b.Key {
-			return -1
-		}
-		return 0
-	}
-	slices.SortFunc(list, compareFn)
-	return list
-}
-
-// SortByIncreasingLengthAndAlphabetical returns list ordered for increasing pattern length.
-// It also sorts alphabetical to get reproducable results.
-func SortByIncreasingLengthAndAlphabetical(list []Patt) []Patt {
-	compareFn := func(a, b Patt) int {
-		if len(a.Bytes) > len(b.Bytes) {
-			return 1
-		}
-		if len(a.Bytes) < len(b.Bytes) {
-			return -1
-		}
-		if a.Key > b.Key {
-			return 1
-		}
-		if a.Key < b.Key {
-			return -1
-		}
-		return 0
-	}
-	slices.SortFunc(list, compareFn)
-	return list
-}
-
-// SortByDescendingLength returns list ordered for descending pattern length.
-// It also sorts alphabetical to get reproducable results.
-func SortByDescendingLength(list []Patt) []Patt {
-	compareFn := func(a, b Patt) int {
-		if len(a.Bytes) < len(b.Bytes) {
-			return 1
-		}
-		if len(a.Bytes) > len(b.Bytes) {
-			return -1
-		}
-		if a.Key > b.Key {
-			return 1
-		}
-		if a.Key < b.Key {
-			return -1
-		}
-		return 0
-	}
-	slices.SortFunc(list, compareFn)
-	return list
-}
-
+	
 // reduceSubCounts searches for p[i].Bytes being a part of an other p[k].Bytes with i < k.
 // Example: If a pattern A is 3 times in pattern B, the pattern A.Cnt value is decreased by 3.
 // Algorithm: check from small to big
@@ -150,18 +72,6 @@ func setCounts(list []Patt, count []int) {
 	}
 }
 
-// histogramToList converts m into list and restores original patterns.
-func HistogramToList(m map[string]int) (list []Patt) {
-	list = make([]Patt, len(m))
-	var i int
-	for key, cnt := range m {
-		list[i].Cnt = cnt
-		list[i].Bytes, _ = hex.DecodeString(key)
-		list[i].Key = key
-		i++
-	}
-	return
-}
 */
 
 /*

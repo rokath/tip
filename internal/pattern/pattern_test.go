@@ -43,7 +43,7 @@ func TestPatternHistogram_scanForRepetitions(t *testing.T) {
 }
 */
 
-func TestPatternHistogram_scanForRepetitions(t *testing.T) {
+func TestHistogram_scanForRepetitions(t *testing.T) {
 	var m sync.Mutex
 	type fields struct {
 		Hist map[string]int
@@ -86,7 +86,7 @@ func TestPatternHistogram_scanForRepetitions(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		p := &PatternHistogram{
+		p := &Histogram{
 			Hist: tt.fields.Hist,
 			mu:   tt.fields.mu,
 		}
@@ -95,7 +95,7 @@ func TestPatternHistogram_scanForRepetitions(t *testing.T) {
 	}
 }
 
-func TestPatternHistogram_Extend(t *testing.T) {
+func TestHistogram_Extend(t *testing.T) {
 	var m sync.Mutex
 	type fields struct {
 		Hist map[string]int
@@ -116,7 +116,7 @@ func TestPatternHistogram_Extend(t *testing.T) {
 			"", // name
 			fields{map[string]int{}, &m},
 			args{[]byte{0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff}, 4},
-			map[string]int{"0000":2, "0000ff":2, "0000ffff":2, "00ff":2, "00ffff":2, "00ffffff":2, "ff00":2, "ff0000":2, "ff0000ff":2, "ffff":9, "ffff00":2, "ffff0000":2, "ffffff":6, "ffffff00":2, "ffffffff":3},
+			map[string]int{"0000": 2, "0000ff": 2, "0000ffff": 2, "00ff": 2, "00ffff": 2, "00ffffff": 2, "ff00": 2, "ff0000": 2, "ff0000ff": 2, "ffff": 9, "ffff00": 2, "ffff0000": 2, "ffffff": 6, "ffffff00": 2, "ffffffff": 3},
 		},
 		{
 			"", // name
@@ -138,7 +138,7 @@ func TestPatternHistogram_Extend(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		p := &PatternHistogram{
+		p := &Histogram{
 			Hist: tt.fields.Hist,
 			mu:   tt.fields.mu,
 		}

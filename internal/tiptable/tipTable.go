@@ -5,6 +5,7 @@ import (
 	"log"
 	"slices"
 	"strings"
+	"sync"
 
 	"github.com/rokath/tip/internal/pattern"
 	"github.com/spf13/afero"
@@ -21,20 +22,22 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 		return err
 	}
 
-	hist := make(map[string]int, 10000)
+	var m sync.Mutex
+	p := pattern.NewHistogram(&m)
+
 	ss := strings.Split(string(data), ". ") // split ASCII text into sentences (TODO)
 
 	for i, sentence := range ss {
 		if Verbose {
 			fmt.Println(i, sentence)
 		}
-		hist = pattern.ExtendHistogram(hist, []byte(sentence), maxPatternSize)
+		p.Extend([]byte(sentence), maxPatternSize)
 	}
 
-	list := pattern.HistogramToList(hist)
-	rList := list // reduceSubCounts(list)
-	sList := pattern.SortByDescentingCountAndLengthAndAphabetical(rList)
-	list = pattern.SortByIncreasingLengthAndAlphabetical(sList)
+	xlist := p.ExportAsList()
+	rlist := xlist // reduceSubCounts(list)
+	slist := pattern.SortByDescentingCountAndLengthAndAphabetical(rlist)
+	list := pattern.SortByIncreasingLengthAndAlphabetical(slist)
 	fmt.Println(len(list))
 	compareFn := func(a, b pattern.Patt) bool {
 		return a.Key == b.Key
