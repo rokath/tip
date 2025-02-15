@@ -37,8 +37,6 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 
 	rlist := p.Reduce(xlist)
 
-
-
 	fmt.Println(len(ss), "sentences")
 	fmt.Println(len(xlist), "pattern")
 

@@ -8,40 +8,6 @@ import (
 )
 
 // generated: ////////////////////////////////
-/*
-func TestPatternHistogram_scanForRepetitions(t *testing.T) {
-	type fields struct {
-		Hist map[string]int
-		mu   sync.Mutex
-	}
-	type args struct {
-		data  []byte
-		ptLen int
-	}
-
-	var m sync.Mutex
-
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-	}{
-		// TODO: Add test cases.
-		{
-			"1", // name
-			fields{map[string]int{"0102": 2, "0203": 2, "0301": 1}, &m}, // fields
-			args{[]byte{0x11, 0x22, 0x33}, 2},                          // args
-		},
-	}
-	for _, tt := range tests {
-		p := &PatternHistogram{
-			Hist: tt.fields.Hist,
-			m, //mu:   tt.fields.mu,
-		}
-		p.scanForRepetitions(tt.args.data, tt.args.ptLen)
-	}
-}
-*/
 
 func TestHistogram_scanForRepetitions(t *testing.T) {
 	var m sync.Mutex
@@ -60,6 +26,18 @@ func TestHistogram_scanForRepetitions(t *testing.T) {
 		exp    map[string]int
 	}{
 		// TODO: Add test cases.
+		{
+			"", // name
+			fields{map[string]int{}, &m},
+			args{[]byte{0xaa, 0xaa, 0xaa, 0xaa, 0x22, 0xaa, 0xaa, 0xaa}, 2},
+			map[string]int{"22aa": 1, "aa22": 1, "aaaa": 5},
+		},
+		{
+			"", // name
+			fields{map[string]int{}, &m},
+			args{[]byte{0xaa, 0xaa, 0xaa, 0xaa, 0x22, 0xaa, 0xaa, 0xaa}, 3},
+			map[string]int{"22aaaa": 1, "aa22aa": 1, "aaaa22": 1, "aaaaaa": 3},
+		},
 		{
 			"", // name
 			fields{map[string]int{}, &m},
@@ -112,6 +90,12 @@ func TestHistogram_Extend(t *testing.T) {
 		exp    map[string]int
 	}{
 		// TODO: Add test cases.
+		{
+			"", // name
+			fields{map[string]int{}, &m},
+			args{[]byte{0xaa, 0xaa, 0xaa, 0xaa, 0x22, 0xaa, 0xaa, 0xaa}, 3},
+			map[string]int{"22aaaa": 1, "aa22aa": 1, "aaaa22": 1, "aaaaaa": 3, "22aa": 1, "aa22": 1, "aaaa": 5},
+		},
 		{
 			"", // name
 			fields{map[string]int{}, &m},

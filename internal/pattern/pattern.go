@@ -25,12 +25,25 @@ func NewHistogram(mu *sync.Mutex) *Histogram {
 	return &object
 }
 
+/*
 // countOverlapping returns sub count in s.
 // https://stackoverflow.com/questions/67956996/is-there-a-count-function-in-go-but-for-overlapping-substrings
 func countOverlapping(s, sub string) int {
 	var c int
-	for d := range s {
-		if strings.HasPrefix(s[d:], sub) {
+	for i := range s {
+		if strings.HasPrefix(s[i:], sub) {
+			c++
+		}
+	}
+	return c
+}
+*/
+// countOverlapping2 returns sub count in s, assuming s & sub are hex-encoded byte buffers
+// https://stackoverflow.com/questions/67956996/is-there-a-count-function-in-go-but-for-overlapping-substrings
+func countOverlapping2(s, sub string) int {
+	var c int
+	for i := 0; i < len(s); i += 2 {
+		if strings.HasPrefix(s[i:], sub) {
 			c++
 		}
 	}
@@ -45,33 +58,34 @@ func (p *Histogram) Reduce(list []Patt) (rlist []Patt) {
 	if Verbose {
 		fmt.Println("Reducing histogram with length", len(p.Hist), "...")
 	}
-	dlist := SortByDescentingCountAndLengthAndAphabetical(rlist)
-	for i, x := range dlist {
-		key := dlist[i].Key // top entry is longest key
-
-		for k := i; k < len(dlist)-1; k++ {
-			n := strings.Count(key, x.Key)
-			fmt.Println(n) hier weiter
-		}
-
-		var wg sync.WaitGroup
-		wg.Add(1)
-		go func(k int) {
-			defer wg.Done()
-			fmt.Print(k)
-			//strings.Count(list[k].Key, list[])
-			// 	//p.scanForRepetitions(data, k+2)
-		}(i)
-	}
-	wg.Wait()
-
+	rlist = list
+	//  dlist := SortByDescentingCountAndLengthAndAphabetical(rlist)
+	//  for i, x := range dlist {
+	//  	key := dlist[i].Key // top entry is longest key
+	//
+	//  	for k := i; k < len(dlist)-1; k++ {
+	//  		n := strings.Count(key, x.Key)
+	//  		fmt.Println(n) hier weiter
+	//  	}
+	//
+	//  	var wg sync.WaitGroup
+	//  	wg.Add(1)
+	//  	go func(k int) {
+	//  		defer wg.Done()
+	//  		fmt.Print(k)
+	//  		//strings.Count(list[k].Key, list[])
+	//  		// 	//p.scanForRepetitions(data, k+2)
+	//  	}(i)
+	//  }
+	//  wg.Wait()
 	if Verbose {
 		fmt.Println("Reducinging histogram...done. New length is", len(p.Hist))
 	}
+	return
 }
 
-// Extend searches data for any 2-to-max bytes sequences
-// and extends p with them as key strings hex encoded with their increased count as values in hist.
+// Extend searches data for any 2-to-max bytes sequences and extends p.Hist with them.
+// The byte sequences are getting hex encodedand used as keys with their increased count as values in p.Hist.
 // Pattern of size 1 are skipped, because they give no compression effect when replaced by an id.
 func (p *Histogram) Extend(data []byte, maxPatternSize int) {
 	if Verbose {
@@ -94,15 +108,13 @@ func (p *Histogram) Extend(data []byte, maxPatternSize int) {
 
 // scanForRepetitions searches data for ptLen bytes sequences
 // and adds them as key strings hex encoded with their count as values to p.Hist.
-// This pattern search algorithm:
-// Start at offset 0 with ptLen bytes from data as pattern and search data for repetitions
-// by moving byte by byte.
+// This pattern search algorithm: Start at offset 0 with ptLen bytes from data as pattern 
+// and search data for repetitions by moving byte by byte. Extend p.Hist accordingly.
 func (p *Histogram) scanForRepetitions(data []byte, ptLen int) {
 	if Verbose {
 		fmt.Println("scan for count", ptLen, "repetitions...")
 	}
 	last := len(data) - (ptLen) // This is the last position in data to check for repetitions.
-
 	var wg sync.WaitGroup
 	for i := 0; i <= last; i++ { // Loop over all possible pattern.
 		wg.Add(1)
@@ -128,14 +140,14 @@ type Patt struct {
 	Key   string // key is the pattern as hex string.
 }
 
-// histogramToList converts m into list and restores original patterns.
+// histogramToList converts p.Hist into list and restores original patterns.
 func (p *Histogram) ExportAsList() (list []Patt) {
 	list = make([]Patt, len(p.Hist))
 	var i int
 	p.mu.Lock()
 	for key, cnt := range p.Hist {
 		list[i].Cnt = cnt
-		list[i].Bytes, _ = hex.DecodeString(key)
+		list[i].Bytes, _ = hex.DecodeString(key) // restore bytes
 		list[i].Key = key
 		i++
 	}
