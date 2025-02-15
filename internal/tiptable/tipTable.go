@@ -26,38 +26,35 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 
 	ss := strings.Split(string(data), ". ") // split ASCII text into sentences (TODO)
 
-	for i, sentence := range ss {
-		if Verbose {
-			fmt.Println(i, sentence)
-		}
-		p.Extend([]byte(sentence), maxPatternSize)
+	var wg sync.WaitGroup
+	for i, sent := range ss {
+		wg.Add(1)
+		go func(k int, sentence string) {
+			defer wg.Done()
+			//  if Verbose {
+			//  	fmt.Println(i, sentence)
+			//  }
+			p.Extend([]byte(sentence), maxPatternSize)
+		}(i, sent)
 	}
+	wg.Wait()
+
 	p.GetKeys()
 	p.SortKeysByDescSize()
 
 	p.Reduce()
 	rlist := p.ExportAsList()
 
-
 	fmt.Println(len(ss), "sentences")
-	//fmt.Println(len(xlist), "pattern")
+	fmt.Println(len(rlist), "pattern")
 
-	//rlist := xlist // reduceSubCounts(list)
-	//slist := pattern.SortByDescCountDescLength(rlist)
-	//list := pattern.SortByIncLength(rlist)
-	//  fmt.Println(len(list))
-	//  compareFn := func(a, b pattern.Patt) bool {
-	//  	return a.Key == b.Key
-	//  }
-	//  list = slices.CompactFunc(list, compareFn)
-	//  fmt.Println(len(list))
 	list := pattern.SortByDescCountDescLength(rlist)
 
-	for i, x := range list[:200] {
-		fmt.Println(i, x.Cnt, x.Key)
+	if Verbose {
+		for i, x := range list[:500] {
+			fmt.Println(i, x.Cnt, x.Key, string(x.Bytes))
+		}
 	}
-	// fmt.Println(len(list))
-	// list is sorted by list[i].count, len(list[i].Bytes) and alphabetical in decending order.
 	idCount := min(127, len(list))
 	idList := pattern.SortByDescLength(list[:idCount])
 	maxListPatternSize := len(idList[0].Bytes)

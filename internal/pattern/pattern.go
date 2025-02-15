@@ -81,7 +81,7 @@ func (p *Histogram) scanForRepetitions(data []byte, ptLen int) {
 func (p *Histogram) GetKeys() {
 	p.mu.Lock()
 	for key := range p.Hist {
-		p.Keys = append( p.Keys, key )
+		p.Keys = append(p.Keys, key)
 	}
 	p.mu.Unlock()
 }
@@ -158,7 +158,7 @@ func (p *Histogram) Reduce() {
 		// Collect 2nd group of equal length keys...
 		var equalSize2ndKey []string
 		equal2ndLength := len(p.Keys[i])
-		for equal2ndLength == len(p.Keys[i]) && i < len(p.Keys)-1 {
+		for i < len(p.Keys) && equal2ndLength == len(p.Keys[i]) {
 			equalSize2ndKey = append(equalSize2ndKey, p.Keys[i])
 			i++
 		}
@@ -172,53 +172,24 @@ func (p *Histogram) Reduce() {
 }
 
 func (p *Histogram) ReduceOverlappingKeys(equalSize1stKey, equalSize2ndKey []string) {
-	// TODO
-	for _, key := range equalSize1stKey {
-		for _, sub := range equalSize2ndKey {
-			n := countOverlapping2(key, sub) // sub is n-times inside key
-			a := p.Hist[key]                 // key count is a
-			b := p.Hist[sub]                 // sub count is b
-			c := b - a*n                     // new count is c
-			p.Hist[sub] = c
-		}
-
-	}
-	/*
-
-			smallerLength := len(p.Keys[i+1]) // Here is equalLength > smallerLength.
-			k := i // Process next group of smaller keys with equal size...
-			for smallerLength == len(p.Keys[i+1]) {
-				n := countOverlapping2(p.Keys[i], p.Keys[i+1])
-				p.Hist[p.Keys[i]] -= n
-				i++
+	var wg sync.WaitGroup
+	for _, key1st := range equalSize1stKey {
+		wg.Add(1)
+		go 
+		func(key string) {
+			defer wg.Done()
+			for _, sub := range equalSize2ndKey {
+				n := countOverlapping2(key, sub) // sub is n-times inside key
+				p.mu.Lock()
+				a := p.Hist[key]                 // key count is a
+				b := p.Hist[sub]                 // sub count is b
+				c := b - a*n                     // new count is c
+				p.Hist[sub] = c
+				p.mu.Unlock()
 			}
-			i = k // Process next group of smaller keys with equal size...done.
-
-
-
-		//rlist = list
-		//  dlist := SortByDescCountDescLength(rlist)
-		//  for i, x := range dlist {
-		//  	key := dlist[i].Key // top entry is longest key
-		//
-		//  	for k := i; k < len(dlist)-1; k++ {
-		//  		n := strings.Count(key, x.Key)
-		//  		fmt.Println(n) hier weiter
-		//  	}
-		//
-		//  	var wg sync.WaitGroup
-		//  	wg.Add(1)
-		//  	go func(k int) {
-		//  		defer wg.Done()
-		//  		fmt.Print(k)
-		//  		//strings.Count(list[k].Key, list[])
-		//  		// 	//p.scanForRepetitions(data, k+2)
-		//  	}(i)
-		//  }
-		//  wg.Wait()
-
-	*/
-
+		}(key1st)
+	}
+	wg.Wait()
 }
 
 // histogramToList converts p.Hist into list and restores original patterns.
