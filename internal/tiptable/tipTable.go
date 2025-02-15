@@ -32,24 +32,26 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 		}
 		p.Extend([]byte(sentence), maxPatternSize)
 	}
+	p.GetKeys()
+	p.SortKeysByDescSize()
 
-	xlist := p.ExportAsList()
+	p.Reduce()
+	rlist := p.ExportAsList()
 
-	rlist := p.Reduce(xlist)
 
 	fmt.Println(len(ss), "sentences")
-	fmt.Println(len(xlist), "pattern")
+	//fmt.Println(len(xlist), "pattern")
 
 	//rlist := xlist // reduceSubCounts(list)
-	//slist := pattern.SortByDescentingCountAndLengthAndAphabetical(rlist)
-	//list := pattern.SortByIncreasingLengthAndAlphabetical(rlist)
+	//slist := pattern.SortByDescCountDescLength(rlist)
+	//list := pattern.SortByIncLength(rlist)
 	//  fmt.Println(len(list))
 	//  compareFn := func(a, b pattern.Patt) bool {
 	//  	return a.Key == b.Key
 	//  }
 	//  list = slices.CompactFunc(list, compareFn)
 	//  fmt.Println(len(list))
-	list := pattern.SortByDescentingCountAndLengthAndAphabetical(rlist)
+	list := pattern.SortByDescCountDescLength(rlist)
 
 	for i, x := range list[:200] {
 		fmt.Println(i, x.Cnt, x.Key)
@@ -57,7 +59,7 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 	// fmt.Println(len(list))
 	// list is sorted by list[i].count, len(list[i].Bytes) and alphabetical in decending order.
 	idCount := min(127, len(list))
-	idList := pattern.SortByDescendingLength(list[:idCount])
+	idList := pattern.SortByDescLength(list[:idCount])
 	maxListPatternSize := len(idList[0].Bytes)
 	oh, err := fSys.Create(oFn)
 	if err != nil {

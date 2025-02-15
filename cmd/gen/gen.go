@@ -12,13 +12,13 @@ import (
 )
 
 var (
-	version    string // do not initialize, goreleaser will handle that
-	commit     string // do not initialize, goreleaser will handle that
-	date       string // do not initialize, goreleaser will handle that
-	iFn        string // input file name
-	oFn        string // ouput file name
-	help       bool
-	verbose    bool
+	version string // do not initialize, goreleaser will handle that
+	commit  string // do not initialize, goreleaser will handle that
+	date    string // do not initialize, goreleaser will handle that
+	iFn     string // input file name
+	oFn     string // ouput file name
+	help    bool
+	verbose bool
 )
 
 func init() {
@@ -26,7 +26,7 @@ func init() {
 	flag.BoolVar(&verbose, "v", false, "help")
 	flag.StringVar(&iFn, "i", "", "input file name")
 	flag.StringVar(&oFn, "o", "idTable.c", "output file name")
-	flag.IntVar(&pattern.SizeMax, "z", 8, "max pattern size to find")
+	flag.IntVar(&pattern.PatternSizeMax, "z", 8, "max pattern size to find")
 }
 
 func main() {
@@ -51,7 +51,7 @@ func doit(w io.Writer, fSys *afero.Afero) {
 	if verbose {
 		fmt.Fprintln(w, version, commit, date)
 	}
-	tiptable.Generate(fSys, oFn, iFn, pattern.SizeMax)
+	tiptable.Generate(fSys, oFn, iFn, pattern.PatternSizeMax)
 }
 
 func distributeArgs() {

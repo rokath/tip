@@ -54,11 +54,11 @@ type defaults struct {
 // StoreVars reads global variables for restauration later.
 func (p *defaults) StoreVars() {
 	p.verbose = Verbose
-	p.sizeMax = SizeMax
+	p.sizeMax = PatternSizeMax
 }
 
 // RestoreVars sets all global variables into previous state.
 func (p *defaults) RestoreVars(t *testing.T) {
 	Verbose = p.verbose
-	SizeMax = p.sizeMax
+	PatternSizeMax = p.sizeMax
 }

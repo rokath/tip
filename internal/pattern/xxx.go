@@ -13,7 +13,7 @@ func (p *PatternHistogram) merge(src map[string]int) {
 		p.mu.Unlock()
 	}
 }
-	
+
 // reduceSubCounts searches for p[i].Bytes being a part of an other p[k].Bytes with i < k.
 // Example: If a pattern A is 3 times in pattern B, the pattern A.Cnt value is decreased by 3.
 // Algorithm: check from small to big
@@ -24,7 +24,7 @@ func reduceSubCounts(p []Patt) []Patt {
 	if len(p) <= 1 {
 		return p // nothing to do
 	}
-	list := SortByIncreasingLengthAndAlphabetical(p) // smallest pattern first
+	list := SortByIncLength(p) // smallest pattern first
 
 	count := getCounts(list) // get a copy to work on
 	var wg sync.WaitGroup
@@ -79,7 +79,7 @@ func GenerateDescendingCountSortedList(data []byte, maxPatternSize int) []Patt {
 	m := BuildHistogram(data, maxPatternSize)
 	list := histogramToList(m)
 	//rList := list // reduceSubCounts(list)
-	//sList := SortByDescentingCountAndLengthAndAphabetical(rList)
+	//sList := SortByDescCountDescLength(rList)
 	return list // biggest cnt first, biggest length first on equal cnt
 }
 */
