@@ -36,8 +36,8 @@ https://www.markdownguide.org/basic-syntax/#reference-style-links
 
 ```diff
 
-+ Compress small buffers fast and efficient with Zeroes Elemination for delimitting. +
--->  Works with big buffers too but will not compress like establisched zip tools ❗
++ Compress small buffers fast and efficient with Zeroes Elemination. +
+-->  Works with big buffers too but will not compress like established zip tools ❗
 
 ```
 
@@ -96,19 +96,20 @@ Table of Contents Generation:
 * Usual compressors cannot succeed on small data, because they add a translation table into the data.
 * **TiP** is an adaptable small buffer packer suitable for embedded devices. Like [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) it removes all zeroes from the data, but additionally tries data compression. 
   * [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) adds 1 byte overhead per each starting 255 bytes.
-  * The TiP worst-case overhead is 1 byte per each starting 127 bytes for uncompressable data.
+  * The TiP worst-case overhead is 1 byte per each starting 7 bytes for uncompressable data.
 * Like [TCOBS](https://github.com/rokath//tcobs), TiP can already compress 3 bytes into 2 bytes but is expected to do better in a general way.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### 2.1. <a id='tip-components'></a>TiP Components
 
-* Tiny C-Code usable on embedded devices inside `src` folder containing
-  * `idTable.c` - generated data specific translation table
-  * `pack.c` and `unpack.c` - separately or together compilable
-* `tipTable` - ID Table Generator to create a suitable `idTable.c` file
-* `tip` - tiny pack app using the **pack** C code
-* `tiu` - tiny unpack app using the **unpack** C code
+* PC apps:
+  * `tig` - **ti**ny **g**enerator to create a suitable `idTable.c` file
+  * `tip` - **ti**ny **p**ack using the **pack** C code mainly for tests
+  * `tiu` - **ti**ny **u**npack using the **unpack** C code mainly for tests
+* Tiny C-Code usable on embedded devices inside [src](./src/) folder containing
+  * [idTable.c](./src/idTable.c) - a generated data specific translation table
+  * [pack.c](./src/pack.c) and [unpack.c](./src/unpack.c) - separately or together compilable
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -120,13 +121,13 @@ Table of Contents Generation:
 ### 3.1. <a id='prerequisites'></a>Prerequisites
 
 * For now install [Go](https://golang.org/) to easily build the executables.
-* You need some files containing typical data you want to tip.
+* You need some files containing typical data you want to pack and unpack.
   * Just to try out TiP, you can use a folder containing ASCII texts.
 
-### 3.2. <a id='built-tiptable-generator-`tiptable`'></a>Built TipTable Generator `tipTable`
+### 3.2. <a id='built-tiptable-generator-`tig`'></a>Built TipTable Generator `tig`
 
-* `cd tipTable; go build -ldflags "-w" ./...`
-* Run `tipTable` on the data files to get an `idTable.c` file.
+* `cd tig && go build -ldflags "-w" ./...`
+* Run `tig` on the data files to get an `idTable.c` file.
 
 ### 3.3. <a id='build-`tip`-and-`tiu`'></a>Build `tip` and `tiu`
 
@@ -137,7 +138,7 @@ Table of Contents Generation:
 
 * Run `tip -i myFile -v` to get `myFile.tip`.
 * Run `tiu -i myFile.tip -v` to get `myFile.tip.untip`.
-* `myFile` and `myFile.tip.untip` are equal.
+* `myFile` and `myFile.tip.untip` are expected to be equal.
 
 ### 3.5. <a id='installation'></a>Installation
 
