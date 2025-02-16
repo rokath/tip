@@ -41,18 +41,21 @@ func Setup(t *testing.T) func() {
 // All package tests are executed sequentially but use the same global variables.
 // Therefore we have to reset the global variables in each test function.
 func TestMain(m *testing.M) {
-	global.StoreVars() // Do stuff BEFORE the id package tests!
+	global.StoreVars() // Do stuff BEFORE the package tests!
 	exitVal := m.Run() // Run the tests sequentially in alphabetical order.
-	os.Exit(exitVal)   // Do stuff AFTER the id package tests!
+	os.Exit(exitVal)   // Do stuff AFTER the package tests!
 }
 
 type defaults struct {
+	verbose bool
 }
 
 // StoreVars reads global variables for restauration later.
 func (p *defaults) StoreVars() {
+	p.verbose = Verbose 
 }
 
 // RestoreVars sets all global variables into previous state.
 func (p *defaults) RestoreVars(t *testing.T) {
+	Verbose = p.verbose
 }
