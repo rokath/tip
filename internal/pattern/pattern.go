@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
-	"slices"
 	"strings"
 	"sync"
 )
@@ -18,7 +17,7 @@ var (
 type Histogram struct {
 	Hist map[string]int
 	mu   *sync.Mutex
-	Keys []string
+	Key  []string
 }
 
 // NewHistogram returns a new Histogram instance.
@@ -81,44 +80,11 @@ func (p *Histogram) scanForRepetitions(data []byte, ptLen int) {
 func (p *Histogram) GetKeys() {
 	p.mu.Lock()
 	for key := range p.Hist {
-		p.Keys = append(p.Keys, key)
+		p.Key = append(p.Key, key)
 	}
 	p.mu.Unlock()
 }
 
-// SortKeysDescSize sorts p.Keys by decending size and alphabetical.
-func (p *Histogram) SortKeysByDescSize() {
-	compareFn := func(a, b string) int {
-		if len(a) < len(b) {
-			return 1
-		}
-		if len(a) > len(b) {
-			return -1
-		}
-		if a > b {
-			return 1
-		}
-		if a < b {
-			return -1
-		}
-		return 0
-	}
-	slices.SortFunc(p.Keys, compareFn)
-}
-
-/*
-// countOverlapping returns sub count in s.
-// https://stackoverflow.com/questions/67956996/is-there-a-count-function-in-go-but-for-overlapping-substrings
-func countOverlapping(s, sub string) int {
-	var c int
-	for i := range s {
-		if strings.HasPrefix(s[i:], sub) {
-			c++
-		}
-	}
-	return c
-}
-*/
 // countOverlapping2 returns sub count in s, assuming s & sub are hex-encoded byte buffers
 // https://stackoverflow.com/questions/67956996/is-there-a-count-function-in-go-but-for-overlapping-substrings
 func countOverlapping2(s, sub string) int {
@@ -139,30 +105,30 @@ func (p *Histogram) Reduce() {
 	if Verbose {
 		fmt.Println("Reducing histogram with length", len(p.Hist), "...")
 	}
-	if len(p.Keys) < 2 {
+	if len(p.Key) < 2 { // less than 2 keys
 		return
 	}
-	for i := 0; i < len(p.Keys)-1; {
-		if len(p.Keys[i]) < len(p.Keys[i+1]) {
+	for i := 0; i < len(p.Key)-1; { // iterate over by increasing length sorted keys
+		if len(p.Key[i]) > len(p.Key[i+1]) {
 			log.Fatal("unsorted keys")
 		}
 
 		// Collect 1st group of equal length keys...
-		var equalSize1stKey []string
-		equal1stLength := len(p.Keys[i])
-		for equal1stLength == len(p.Keys[i]) && i < len(p.Keys)-1 {
-			equalSize1stKey = append(equalSize1stKey, p.Keys[i])
+		var equalLength1stKey []string
+		equal1stLength := len(p.Key[i]) // is multiple of 2
+		for equal1stLength == len(p.Key[i]) && i < len(p.Key)-1 {
+			equalLength1stKey = append(equalLength1stKey, p.Key[i])
 			i++
 		}
 		k := i // Keep position
 		// Collect 2nd group of equal length keys...
-		var equalSize2ndKey []string
-		equal2ndLength := len(p.Keys[i])
-		for i < len(p.Keys) && equal2ndLength == len(p.Keys[i]) {
-			equalSize2ndKey = append(equalSize2ndKey, p.Keys[i])
+		var equalLength2ndKey []string
+		equal2ndLength := len(p.Key[i]) // is multiple of 2
+		for i < len(p.Key) && equal2ndLength == len(p.Key[i]) {
+			equalLength2ndKey = append(equalLength2ndKey, p.Key[i])
 			i++
 		}
-		p.ReduceOverlappingKeys(equalSize1stKey, equalSize2ndKey)
+		p.ReduceOverlappingKeys(equalLength2ndKey, equalLength1stKey)
 		i = k // restore position
 	}
 
@@ -175,15 +141,14 @@ func (p *Histogram) ReduceOverlappingKeys(equalSize1stKey, equalSize2ndKey []str
 	var wg sync.WaitGroup
 	for _, key1st := range equalSize1stKey {
 		wg.Add(1)
-		go 
-		func(key string) {
+		go func(key string) {
 			defer wg.Done()
 			for _, sub := range equalSize2ndKey {
 				n := countOverlapping2(key, sub) // sub is n-times inside key
 				p.mu.Lock()
-				a := p.Hist[key]                 // key count is a
-				b := p.Hist[sub]                 // sub count is b
-				c := b - a*n                     // new count is c
+				a := p.Hist[key] // key count is a
+				b := p.Hist[sub] // sub count is b
+				c := b - a*n     // new count is c
 				p.Hist[sub] = c
 				p.mu.Unlock()
 			}

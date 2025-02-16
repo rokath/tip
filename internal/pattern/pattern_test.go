@@ -158,40 +158,6 @@ func Test_countOverlapping2(t *testing.T) {
 	}
 }
 
-func TestHistogram_SortKeysByDescSize(t *testing.T) {
-	var mu sync.Mutex
-	type fields struct {
-		Hist map[string]int
-		mu   *sync.Mutex
-		Keys []string
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		exp    fields
-	}{
-		// TODO: Add test cases.
-		{
-			"", // name
-			fields{map[string]int{}, &mu, []string{"bb11", "112233", "aa22"}},
-			fields{map[string]int{}, &mu, []string{"112233", "aa22", "bb11"}},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			p := &Histogram{
-				Hist: tt.fields.Hist,
-				mu:   tt.fields.mu,
-				Keys: tt.fields.Keys,
-			}
-			p.SortKeysByDescSize()
-			for i := range p.Keys {
-				assert.Equal(t, tt.exp.Keys[i], tt.fields.Keys[i])
-			}
-		})
-	}
-}
-
 func TestHistogram_ReduceOverlappingKeys(t *testing.T) {
 	var mu sync.Mutex
 	type fields struct {
@@ -228,7 +194,7 @@ func TestHistogram_ReduceOverlappingKeys(t *testing.T) {
 			p := &Histogram{
 				Hist: tt.fields.Hist,
 				mu:   tt.fields.mu,
-				Keys: tt.fields.Keys,
+				Key:  tt.fields.Keys,
 			}
 			p.ReduceOverlappingKeys(tt.args.equalSize1stKey, tt.args.equalSize2ndKey)
 			assert.Equal(t, tt.exp, p.Hist)
@@ -253,7 +219,6 @@ func TestHistogram_Reduce(t *testing.T) {
 			"",
 			fields{map[string]int{"1122": 10, "112233": 1}, &mu, nil},
 			map[string]int{"1122": 9, "112233": 1},
-
 		},
 	}
 	for _, tt := range tests {
@@ -261,7 +226,7 @@ func TestHistogram_Reduce(t *testing.T) {
 			p := &Histogram{
 				Hist: tt.fields.Hist,
 				mu:   tt.fields.mu,
-				Keys: tt.fields.Keys,
+				Key:  tt.fields.Keys,
 			}
 			p.GetKeys()
 			p.SortKeysByDescSize()
@@ -270,6 +235,5 @@ func TestHistogram_Reduce(t *testing.T) {
 		})
 	}
 }
-
 
 // generated: ////////////////////////////////

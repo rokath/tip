@@ -1,5 +1,21 @@
 package pattern
 
+
+/*
+// countOverlapping returns sub count in s.
+// https://stackoverflow.com/questions/67956996/is-there-a-count-function-in-go-but-for-overlapping-substrings
+func countOverlapping(s, sub string) int {
+	var c int
+	for i := range s {
+		if strings.HasPrefix(s[i:], sub) {
+			c++
+		}
+	}
+	return c
+}
+*/
+
+
 /*
 
 

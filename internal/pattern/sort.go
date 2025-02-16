@@ -2,6 +2,29 @@ package pattern
 
 import "slices"
 
+
+// SortKeysByIncrSize sorts p.Keys by decending size and alphabetical.
+func (p *Histogram) SortKeysByIncrSize() {
+	compareFn := func(a, b string) int {
+		if len(a) < len(b) {
+			return -1
+		}
+		if len(a) > len(b) {
+			return +1
+		}
+		if a > b {
+			return 1
+		}
+		if a < b {
+			return -1
+		}
+		return 0
+	}
+	slices.SortFunc(p.Key, compareFn)
+}
+
+
+
 // SortByDescCountDescLength returns list ordered for decreasing count and pattern length.
 // It also sorts alphabetical to get reproducable results.
 func SortByDescCountDescLength(list []Patt) []Patt {
@@ -30,9 +53,9 @@ func SortByDescCountDescLength(list []Patt) []Patt {
 	return list
 }
 /*
-// SortByIncLength returns list ordered for increasing pattern length.
+// SortByIncrLength returns list ordered for increasing pattern length.
 // It also sorts alphabetical to get reproducable results.
-func SortByIncLength(list []Patt) []Patt {
+func SortByIncrLength(list []Patt) []Patt {
 	compareFn := func(a, b Patt) int {
 		if len(a.Bytes) > len(b.Bytes) {
 			return 1

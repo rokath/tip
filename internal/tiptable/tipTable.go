@@ -40,7 +40,8 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 	wg.Wait()
 
 	p.GetKeys()
-	p.SortKeysByDescSize()
+	p.SortKeysByIncrSize()
+	//p.SortKeysByDescSize()
 
 	p.Reduce()
 	rlist := p.ExportAsList()

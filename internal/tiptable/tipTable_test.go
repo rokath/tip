@@ -15,13 +15,26 @@ func TestGenerateAA(t *testing.T) {
 		data []byte
 		exp  string
 	}{
+		/*{
+			[]byte{0xaa, 0xaa, 0xaa, 0xaa, 0xaa},
+			`
+	  4, 0xaa, 0xaa, 0xaa, 0xaa, // ˙˙˙˙|      2  01
+	  3, 0xaa, 0xaa, 0xaa,       // ˙˙˙ |      0  02
+	  2, 0xaa, 0xaa,             // ˙˙  |      0  03`,
+		},*/
 		{
 			[]byte{0xaa, 0xaa, 0xaa, 0xaa},
 			`
 	  4, 0xaa, 0xaa, 0xaa, 0xaa, // ˙˙˙˙|      1  01
 	  3, 0xaa, 0xaa, 0xaa,       // ˙˙˙ |      0  02
 	  2, 0xaa, 0xaa,             // ˙˙  |      0  03`,
-		},
+
+	  //  4, 0xaa, 0xaa, 0xaa, 0xaa, // ˙˙˙˙|      1  01   1 times
+	  //  3, 0xaa, 0xaa, 0xaa,       // ˙˙˙ |      0  02   2 times
+	  //  2, 0xaa, 0xaa,             // ˙˙  |      0  03   3 times general but 2 times in aa aa aa
+      //  -2 aaaa for first aaaaaa and 2n aaaaaa also -2 but one aa is now subtracted twice
+
+	},
 		{
 			[]byte{0xaa, 0xaa},
 			`
