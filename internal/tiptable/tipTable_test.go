@@ -8,7 +8,7 @@ import (
 	"github.com/tj/assert"
 )
 
-// todo: Sort results also alphabetically to ensure equal test results.
+// 
 func TestGenerateAA(t *testing.T) {
 	defer Setup(t)() // This executes Setup(t) and puts the returned function into the defer list.
 	testTable := []struct {
