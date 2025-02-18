@@ -87,7 +87,8 @@ Table of Contents Generation:
 ```diff
 --> Early experimental state!
 ```
-
+* Pack & Unpack works in a first   implementation
+* `idTable.c` generation also ok, but the generated table might not be optimal.
 
 <!-- ABOUT THE PROJECT -->
 
