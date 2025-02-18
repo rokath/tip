@@ -38,6 +38,16 @@ Table of Contents Generation:
 ---
 
 <!--
+12312
+
+     123.   12 23. 31
+--------------
+12   22.    2 
+23.   21.      1
+31.  1 2.           1
+123  111
+231. 111
+312. 111
 
 For low level buffer storage or MCU transfers some kind of framing is needed for resynchronization after failure. An old variant is to declare a special character as escape sign and to start each package with it. And if the escape sign is part of the buffer data, add an escape sign there too. 
 
