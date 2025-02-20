@@ -39,6 +39,13 @@ Table of Contents Generation:
 
 <!--
 
+For low level buffer storage or transfers between MCUs some kind of framing is needed for resynchronization after some failure. A old variant is to declare a special character as escape character and to start each package with it. And if the escape character is part of the buffer data, add an escape character there too. 
+
+COBS is a newer and much better approach, to achieve framing. It transformes the buffer data containing 256 different characters into a sequence of 255 only characters. That allows to use the spare character as  frame delimiter. 
+
+
+
+
 https://jwakely.github.io/pkg-gcc-latest/
 
 ```bash
