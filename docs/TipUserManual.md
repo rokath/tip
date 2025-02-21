@@ -39,9 +39,13 @@ Table of Contents Generation:
 
 <!--
 
-For low level buffer storage or transfers between MCUs some kind of framing is needed for resynchronization after some failure. A old variant is to declare a special character as escape character and to start each package with it. And if the escape character is part of the buffer data, add an escape character there too. 
+For low level buffer storage or MCU transfers some kind of framing is needed for resynchronization after failure. An old variant is to declare a special character as escape sign and to start each package with it. And if the escape sign is part of the buffer data, add an escape sign there too. 
 
-COBS is a newer and much better approach, to achieve framing. It transformes the buffer data containing 256 different characters into a sequence of 255 only characters. That allows to use the spare character as  frame delimiter. 
+COBS is a newer and much better approach, to achieve framing. It transformes the buffer data containing 256 different characters into a sequence of 255 only characters. That allows to use the spare character as  frame delimiter. Usually `0` is used for that.
+
+To combine the COBS technique with compression some additional spare characters are needed. That's done with TCOBS more or less in a "manual" way. meaning, expected data properties are reflected in the TCOBS code.
+
+The TiP approach is more generic, meaning, not to depend on a specific data structure but to expect some data structure usable for compression.
 
 
 
