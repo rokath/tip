@@ -47,7 +47,15 @@ To combine the COBS technique with compression some additional spare characters 
 
 The TiP approach is more generic, meaning, not to depend on a specific data structure but to expect some data structure usable for compression.
 
+[21/02, 10:01] Thomas Höhenleitner: The TiP approach is more generic, meaning, not to depend on a specific data structure but to expect some data structure usable for compression.
 
+If there is a buffer of, let's say 20 bytes, we can consider it as a 20-digit number with 256 ciphers. To free like 8 characters for special usage, we could transform the 20~256 cipher number into a 21~248 ciphers number.
+[21/02, 10:27] Thomas Höhenleitner: This transformation is possible but very computing intensive because of many divisions by 248, or a different base number. So this is no solution for small MCUs.
+[21/02, 10:34] Thomas Höhenleitner: But a division by 128 is cheap. If we transform the 256 base into a 128 base, we only need to perform a shift operation. This way we get 128 special characters to use for compressing and framing.
+[21/02, 10:39] Thomas Höhenleitner: That is the idea behind TiP: Find the 127 most common pattern in similar sample data and assign the IDs 1-127 to them. This is done once offline and the generated ID table gets part of the tiny packer code as well as for the tiny unpacker code.
+[21/02, 10:47] Thomas Höhenleitner: At runtime the actual buffer is searched for matching patterns from the ID table beginning with the longest ones. All these found patterns get replaced by the IDs then. All unreplacable bytes are collected into one separate buffer and "shifted by 1" to free their MSBs. These are collected also in only 7-bit bytes. Then all these
+[21/02, 13:54] Thomas Höhenleitner: N unreplacable bytes occupy N*8 bits. These are distributed onto N*8/7 7-bit bytes, all having the MSBit set. This way we have no zeros in the result and we can distinguish bytes carrying unreplacable bits from ID bytes, which replaced patterns.
+[21/02, 14:03] Thomas Höhenleitner: After replacing all found patterns with their IDs, which all have MSBit=0, the unreplacable bytes are replaced with the bit-reordered unreplacable bytes, having MSBit=1.
 
 
 https://jwakely.github.io/pkg-gcc-latest/
