@@ -52,21 +52,27 @@ Table of Contents Generation:
 
 ## TiP - Why and How?
 
-### Current Situation
+### Initial Situation
+
+#### Framing 
 
 For low level buffer storage or MCU transfers some kind of framing is needed for resynchronization after failure. An old variant is to declare a special character as escape sign and to start each package with it. And if the escape sign is part of the buffer data, add an escape sign there too. Even the as escape sign selected character occurs seldom in the buffer data, a careful design should consider the possibility of a buffer containing only such characters.
 
 [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) is a newer and much better approach, to achieve framing. It transformes the buffer data containing 256 different characters into a sequence of 255 only characters. That allows to use the spare character as frame delimiter. Usually `0` is used for that.
 
+#### Data Compession
+
+A compression followed by COBS framing would do perfectly. But when it comes to very short buffers, like 4 or 20 bytes, normal zip code fails.
+
 To combine the COBS technique with compression especially for very short buffers, some additional spare characters are needed. That's done with [TCOBS](https://github.com/rokath/tcobs) more or less in a "manual" way, meaning, expected special data properties are reflected in the TCOBS code. See the [TCOBS User Manual](https://github.com/rokath/tcobs/blob/master/docs/TCOBSv2Specification.md) for more details.
 
 There is also [SMAZ](https://github.com/antirez/smaz), but suitable only for text buffers mainly in English.
 
-The TiP approach is more generic, meaning, not depending on a specific data structure but expecting any data structure.
+A more generic solution would be nice, meaning, not depending on a specific data structure but expecting any data structure.
 
 ### Bytes and Numbers
 
-COBS and TCOBS are starting or ending with some control characters and these are linked togeter to distinguish them form data bytes. But there is also an other otion.
+COBS and TCOBS are starting or ending with some control characters and these are linked togeter to distinguish them from data bytes. But there is also an other otion.
 
 If there is a buffer of, let's say 20 bytes, we can consider it as a 20-digit number with 256 ciphers. To free like 8 characters for special usage, we could transform the 20 times 256 cipher number into a 21 or 22 times 248 ciphers number. This transformation is possible, but very computing intensive because of many divisions by 248, or a different base number. So this is no solution for small MCUs. But a division by 128 is cheap! If we transform the 256 base into a 128 base, we only need to perform a shift operation for the conversion. This way we get 128 special characters usable for compressing and framing.
 
