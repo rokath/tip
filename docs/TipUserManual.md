@@ -1,7 +1,6 @@
-# Tip User Manual
+# TiP - Tiny Packer - User Manual
 
-(to do)
-
+(work in progress)
 
 ```diff
 
@@ -49,24 +48,45 @@ Table of Contents Generation:
 231. 111
 312. 111
 
-For low level buffer storage or MCU transfers some kind of framing is needed for resynchronization after failure. An old variant is to declare a special character as escape sign and to start each package with it. And if the escape sign is part of the buffer data, add an escape sign there too. 
+--> 
 
-COBS is a newer and much better approach, to achieve framing. It transformes the buffer data containing 256 different characters into a sequence of 255 only characters. That allows to use the spare character as  frame delimiter. Usually `0` is used for that.
+## TiP - Why and How?
 
-To combine the COBS technique with compression some additional spare characters are needed. That's done with TCOBS more or less in a "manual" way. meaning, expected data properties are reflected in the TCOBS code.
+### Current Situation
 
-The TiP approach is more generic, meaning, not to depend on a specific data structure but to expect some data structure usable for compression.
+For low level buffer storage or MCU transfers some kind of framing is needed for resynchronization after failure. An old variant is to declare a special character as escape sign and to start each package with it. And if the escape sign is part of the buffer data, add an escape sign there too. Even the as escape sign selected character occurs seldom in the buffer data, a careful design should consider the possibility of a buffer containing only such characters.
 
-[21/02, 10:01] Thomas Höhenleitner: The TiP approach is more generic, meaning, not to depend on a specific data structure but to expect some data structure usable for compression.
+[COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) is a newer and much better approach, to achieve framing. It transformes the buffer data containing 256 different characters into a sequence of 255 only characters. That allows to use the spare character as frame delimiter. Usually `0` is used for that.
 
-If there is a buffer of, let's say 20 bytes, we can consider it as a 20-digit number with 256 ciphers. To free like 8 characters for special usage, we could transform the 20~256 cipher number into a 21~248 ciphers number.
-[21/02, 10:27] Thomas Höhenleitner: This transformation is possible but very computing intensive because of many divisions by 248, or a different base number. So this is no solution for small MCUs.
-[21/02, 10:34] Thomas Höhenleitner: But a division by 128 is cheap. If we transform the 256 base into a 128 base, we only need to perform a shift operation. This way we get 128 special characters to use for compressing and framing.
-[21/02, 10:39] Thomas Höhenleitner: That is the idea behind TiP: Find the 127 most common pattern in similar sample data and assign the IDs 1-127 to them. This is done once offline and the generated ID table gets part of the tiny packer code as well as for the tiny unpacker code.
-[21/02, 10:47] Thomas Höhenleitner: At runtime the actual buffer is searched for matching patterns from the ID table beginning with the longest ones. All these found patterns get replaced by the IDs then. All unreplacable bytes are collected into one separate buffer and "shifted by 1" to free their MSBs. These are collected also in only 7-bit bytes. Then all these
-[21/02, 13:54] Thomas Höhenleitner: N unreplacable bytes occupy N*8 bits. These are distributed onto N*8/7 7-bit bytes, all having the MSBit set. This way we have no zeros in the result and we can distinguish bytes carrying unreplacable bits from ID bytes, which replaced patterns.
-[21/02, 14:03] Thomas Höhenleitner: After replacing all found patterns with their IDs, which all have MSBit=0, the unreplacable bytes are replaced with the bit-reordered unreplacable bytes, having MSBit=1.
+To combine the COBS technique with compression especially for very short buffers, some additional spare characters are needed. That's done with [TCOBS](https://github.com/rokath/tcobs) more or less in a "manual" way, meaning, expected special data properties are reflected in the TCOBS code. See the [TCOBS User Manual](https://github.com/rokath/tcobs/blob/master/docs/TCOBSv2Specification.md) for more details.
 
+There is also [SMAZ](https://github.com/antirez/smaz), but suitable only for text buffers mainly in English.
+
+The TiP approach is more generic, meaning, not depending on a specific data structure but expecting any data structure.
+
+### Bytes and Numbers
+
+COBS and TCOBS are starting or ending with some control characters and these are linked togeter to distinguish them form data bytes. But there is also an other otion.
+
+If there is a buffer of, let's say 20 bytes, we can consider it as a 20-digit number with 256 ciphers. To free like 8 characters for special usage, we could transform the 20 times 256 cipher number into a 21 or 22 times 248 ciphers number. This transformation is possible, but very computing intensive because of many divisions by 248, or a different base number. So this is no solution for small MCUs. But a division by 128 is cheap! If we transform the 256 base into a 128 base, we only need to perform a shift operation for the conversion. This way we get 128 special characters usable for compressing and framing.
+
+### The TiP Idea
+
+#### Packing
+
+Find the 127 most common pattern in similar sample data and assign the IDs 1-127 to them. This is done once offline and the generated ID table gets part of the tiny packer code as well as for the tiny unpacker code. For that task a generator tool was build.
+
+At runtime the actual buffer is searched for matching patterns from the ID table beginning with the longest ones. All these found patterns get replaced by the IDs later. All unreplacable bytes are collected into one separate buffer. N unreplacable bytes occupy N\*8 bits. These are distributed onto N\*8/7 7-bit bytes, all having the MSBit set. In fact we do not change these N\*8 bits, we simply reorder them slightly. This way we have no zeros in the result and we can distinguish bytes carrying unreplacable bits from ID bytes, which replaced patterns. This bit reordering, to free the MSBit, is de-facto the number transformation to the base 128, mentioned above.
+
+After replacing all found patterns with their IDs, which all have MSBit=0, the unreplacable bytes are replaced with the bit-reordered unreplacable bytes, having MSBit=1.
+
+Now the packing is done and no zeroes are existing anymore.
+
+#### Unpacking
+
+On the receiver side all bytes with MSBit=0 are identified as IDs and are replaced with the patterns they stay for. All bytes with MSBit=1 are carying the unreplacable bytes bits. These are reordered to restore the unreplacable bytes. These are then used to fill the wholes between the patterens.
+
+<!--
 
 https://jwakely.github.io/pkg-gcc-latest/
 
