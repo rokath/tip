@@ -51,7 +51,7 @@ func (p *Histogram) Reduce(list []Patt) (rlist []Patt) {
 
 		for k := i; k < len(dlist)-1; k++ {
 			n := strings.Count(key, x.Key)
-			fmt.Println(n) hier weiter
+			fmt.Println(n) // hier weiter
 		}
 
 		var wg sync.WaitGroup
@@ -62,12 +62,13 @@ func (p *Histogram) Reduce(list []Patt) (rlist []Patt) {
 			//strings.Count(list[k].Key, list[])
 			// 	//p.scanForRepetitions(data, k+2)
 		}(i)
+		wg.Wait()
 	}
-	wg.Wait()
 
 	if Verbose {
 		fmt.Println("Reducinging histogram...done. New length is", len(p.Hist))
 	}
+	return
 }
 
 // Extend searches data for any 2-to-max bytes sequences
