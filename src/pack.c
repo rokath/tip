@@ -38,7 +38,7 @@ size_t tiPack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t 
     int rcount;
     replace_t * rlist = buildReplaceList(&rcount, table, src, slen);
     // All unreplacable bytes are stretched inside to 7-bit units. This makes the data a bit longer.
-    static uint8_t ur[TIP_SRC_BUFFER_SIZE_MAX*8/7+1]; 
+    static uint8_t ur[TIP_SRC_BUFFER_SIZE_MAX*8u/7u+1]; 
     size_t ubSize = collectUnreplacableBytes( ur, rlist, rcount, src );
     uint8_t * urLimit = &ur[sizeof(ur)]; // first address after the ur buffer.
     size_t urSize = shift87bit( urLimit - 1, ur, ubSize );
@@ -105,7 +105,6 @@ static void getNextPattern(const uint8_t ** pt, size_t * sz ){
 //! @param slen is the source buffer size.
 //! @retval is a pointer to the replace list.
 static replace_t * newReplaceList(size_t slen){
-    //static replaceList_t r; // replace list
     static replace_t list[TIP_SRC_BUFFER_SIZE_MAX/2 + 2]; //!< The whole src buffer could be replacable with 2-byte pattern.
     // The first 2 elements are initialized as boders.
     list[0].bo = 0; // byte offset start

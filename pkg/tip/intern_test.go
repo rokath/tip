@@ -11,6 +11,7 @@ func Test_buildReplaceList(t *testing.T) {
 	table := []byte{2, 0xff, 0xff, 0}
 	in := []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
 	exp := []replace{
+		//bo,sz,id
 		{0, 0, 0},
 		{0, 2, 1},
 		{2, 2, 1},

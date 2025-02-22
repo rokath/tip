@@ -18,7 +18,6 @@ var (
 	oFn     string // output file name
 	help    bool
 	verbose bool
-	maxSize int
 )
 
 func init() {
@@ -26,7 +25,7 @@ func init() {
 	flag.BoolVar(&verbose, "v", false, "verbose")
 	flag.StringVar(&iFn, "i", "", "input file name")
 	flag.StringVar(&oFn, "o", "", "output file name")
-	flag.IntVar(&maxSize, "m", 255, "max file size according to tip.h configuration")
+	flag.IntVar(&tip.MaxSize, "m", tip.MaxSize, "max file size according to tip.h configuration")
 }
 
 func main() {
@@ -60,8 +59,8 @@ func doit(w io.Writer, fSys *afero.Afero) (err error) {
 	if err != nil {
 		return
 	}
-	if fi.Size() > int64(maxSize) {
-		return fmt.Errorf("cannot pack %d bytes. maximum is %d", fi.Size(), maxSize)
+	if fi.Size() > int64(tip.MaxSize) {
+		return fmt.Errorf("cannot pack %d bytes. maximum is %d", fi.Size(), tip.MaxSize)
 	}
 	buffer, err := fSys.ReadFile(iFn)
 	if err != nil {
