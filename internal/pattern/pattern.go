@@ -27,6 +27,54 @@ func NewHistogram(mu *sync.Mutex) *Histogram {
 	return &object
 }
 
+// countOverlapping returns sub count in s.
+// https://stackoverflow.com/questions/67956996/is-there-a-count-function-in-go-but-for-overlapping-substrings
+func countOverlapping(s, sub string) int {
+	var c int
+	for d := range s {
+		if strings.HasPrefix(s[d:], sub) {
+			c++
+		}
+	}
+	return c
+}
+
+// Reduce searches the keys if they contain sub-keys.
+// If a sub-key is found inside a key with count n,
+// The sub-key count is reduced by n.
+// It uses
+func (p *Histogram) Reduce(list []Patt) (rlist []Patt) {
+	if Verbose {
+		fmt.Println("Reducing histogram with length", len(p.Hist), "...")
+	}
+	dlist := SortByDescentingCountAndLengthAndAphabetical(rlist)
+	for i, x := range dlist {
+		key := dlist[i].Key // top entry is longest key
+
+		for k := i; k < len(dlist)-1; k++ {
+			n := strings.Count(key, x.Key)
+			fmt.Println(n) // hier weiter
+		}
+
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go func(k int) {
+			defer wg.Done()
+			fmt.Print(k)
+			//strings.Count(list[k].Key, list[])
+			// 	//p.scanForRepetitions(data, k+2)
+		}(i)
+		wg.Wait()
+	}
+
+	if Verbose {
+		fmt.Println("Reducinging histogram...done. New length is", len(p.Hist))
+	}
+	return
+}
+
+// Extend searches data for any 2-to-max bytes sequences
+// and extends p with them as key strings hex encoded with their increased count as values in hist.
 // Extend searches data for any 2-to-max bytes sequences and extends p.Hist with them.
 // The byte sequences are getting hex encodedand used as keys with their increased count as values in p.Hist.
 // Pattern of size 1 are skipped, because they give no compression effect when replaced by an id.
