@@ -31,7 +31,6 @@ https://www.markdownguide.org/basic-syntax/#reference-style-links
 
 </div>
 
-
 # TiP - Tiny Packer for small buffers
 
 ```diff
@@ -81,13 +80,13 @@ Table of Contents Generation:
 
 ---
 
-
 ## 1. <a id='project-status'></a>Project Status
 
 ```diff
 --> Early experimental state!
 ```
-* Pack & Unpack works in a first   implementation
+
+* Pack & Unpack are working in a first implementation
 * `idTable.c` generation also ok, but the generated table might not be optimal.
 
 <!-- ABOUT THE PROJECT -->
@@ -105,9 +104,9 @@ Table of Contents Generation:
 ### 2.1. <a id='tip-components'></a>TiP Components
 
 * PC apps:
-  * `tig` - **ti**ny **g**enerator to create a suitable `idTable.c` file
-  * `tip` - **ti**ny **p**ack using the **pack** C code mainly for tests
-  * `tiu` - **ti**ny **u**npack using the **unpack** C code mainly for tests
+  * `ti_generate` - **ti**ny **g**enerator to create a suitable `idTable.c` file
+  * `ti_pack` - **ti**ny **p**ack using the **pack** C code mainly for tests
+  * `ti_unpack` - **ti**ny **u**npack using the **unpack** C code mainly for tests
 * Tiny C-Code usable on embedded devices inside [src](./src/) folder containing
   * [idTable.c](./src/idTable.c) - a generated data specific translation table
   * [pack.c](./src/pack.c) and [unpack.c](./src/unpack.c) - separately or together compilable
