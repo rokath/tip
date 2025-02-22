@@ -40,14 +40,14 @@ func main() {
 
 func doit(w io.Writer, fSys *afero.Afero) (err error) {
 	if help {
-		fmt.Fprintln(w, "Usage: tip -i inputFileName [-o outputFileName] [-m max file size] [-v]")
-		fmt.Fprintln(w, "Example: `tip -i trice.bin` creates trice.bin.tip")
+		fmt.Fprintln(w, "Usage: ti_pack -i inputFileName [-o outputFileName] [-m max file size] [-v]")
+		fmt.Fprintln(w, "Example: `ti_pack -i trice.bin` creates trice.bin.tip")
 		flag.PrintDefaults()
 		fmt.Fprintln(w, "The TipUserManual explains details.")
 		return
 	}
 	if iFn == "" {
-		fmt.Fprintln(w, `"tip -h" prints help`)
+		fmt.Fprintln(w, `"ti_pack -h" prints help`)
 		return
 	}
 	if oFn == "" {

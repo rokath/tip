@@ -20,8 +20,8 @@ func Test_doit(t *testing.T) {
 	var b bytes.Buffer
 	doit(&b, FSys)
 	act := b.String()
-	exp := `Usage: tipTable -i inputFileName [-o outputFileName] [-z max pattern size] [-v]
-Example: `+"`tipTable -i trice.bin`"+` creates idTable.c
+	exp := `Usage: ti_generate -i inputFileName [-o outputFileName] [-z max pattern size] [-v]
+Example: `+"`ti_generate -i trice.bin`"+` creates idTable.c
 The TipUserManual explains details.
 `
 	assert.Equal(t, exp, act)

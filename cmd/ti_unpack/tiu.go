@@ -38,14 +38,14 @@ func main() {
 
 func doit(w io.Writer, fSys *afero.Afero) (err error) {
 	if help {
-		fmt.Fprintln(w, "Usage: tiu -i inputFileName [-o outputFileName] [-v]")
-		fmt.Fprintln(w, "Example: `tiu -i trice.bin.tip` creates trice.bin.tip.untip")
+		fmt.Fprintln(w, "Usage: ti_unpack -i inputFileName [-o outputFileName] [-v]")
+		fmt.Fprintln(w, "Example: `ti_uunpack -i trice.bin.tip` creates trice.bin.tip.untip")
 		flag.PrintDefaults()
 		fmt.Fprintln(w, "The TipUserManual explains details.")
 		return
 	}
 	if iFn == "" {
-		fmt.Fprintln(w, `"tiu -h" prints help`)
+		fmt.Fprintln(w, `"ti_unpack -h" prints help`)
 		return
 	}
 	if oFn == "" {

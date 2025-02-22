@@ -45,7 +45,7 @@ func doit(w io.Writer, fSys *afero.Afero) {
 		return
 	}
 	if iFn == "" {
-		fmt.Fprintln(w, `"tipTable -h" prints help`)
+		fmt.Fprintln(w, `"ti_generate -h" prints help`)
 		return
 	}
 	if verbose {
