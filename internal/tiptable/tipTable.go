@@ -43,7 +43,7 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 	p.SortKeysByIncrSize()
 	//p.SortKeysByDescSize()
 
-	p.Reduce()
+	//p.Reduce()
 	rlist := p.ExportAsList()
 
 	fmt.Println(len(ss), "sentences")

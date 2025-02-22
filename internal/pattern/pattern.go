@@ -111,42 +111,6 @@ func countOverlapping2(s, sub string) int {
 	return c
 }
 
-/*
-// Reduce searches the keys if they contain sub-keys.
-// If a sub-key is found inside a key with count n,
-// The sub-key count is reduced by n.
-// It uses
-func (p *Histogram) Reduce(list []Patt) (rlist []Patt) {
-	if Verbose {
-		fmt.Println("Reducing histogram with length", len(p.Hist), "...")
-	}
-	dlist := SortByDescentingCountAndLengthAndAphabetical(rlist)
-	for i, x := range dlist {
-		key := dlist[i].Key // top entry is longest key
-
-		for k := i; k < len(dlist)-1; k++ {
-			n := strings.Count(key, x.Key)
-			fmt.Println(n) // hier weiter
-		}
-
-		var wg sync.WaitGroup
-		wg.Add(1)
-		go func(k int) {
-			defer wg.Done()
-			fmt.Print(k)
-			//strings.Count(list[k].Key, list[])
-			// 	//p.scanForRepetitions(data, k+2)
-		}(i)
-		wg.Wait()
-	}
-
-	if Verbose {
-		fmt.Println("Reducinging histogram...done. New length is", len(p.Hist))
-	}
-	return
-}
-*/
-
 // Reduce searches the keys if they contain sub-keys.
 // If a sub-key is found inside a key with count n,
 // The sub-key count is reduced by n.
@@ -163,7 +127,9 @@ func (p *Histogram) Reduce() {
 			log.Fatal("unsorted keys")
 		}
 
-		// Collect 1st group of equal length keys...
+		if Verbose {
+			fmt.Println("Collect 1st group of equal length keys...")
+		}
 		var equalLength1stKey []string
 		equal1stLength := len(p.Key[i]) // is multiple of 2
 		for equal1stLength == len(p.Key[i]) && i < len(p.Key)-1 {
@@ -171,12 +137,17 @@ func (p *Histogram) Reduce() {
 			i++
 		}
 		k := i // Keep position
-		// Collect 2nd group of equal length keys...
+		if Verbose {
+			fmt.Println("Collect 2nd group of equal length keys...")
+		}
 		var equalLength2ndKey []string
 		equal2ndLength := len(p.Key[i]) // is multiple of 2
 		for i < len(p.Key) && equal2ndLength == len(p.Key[i]) {
 			equalLength2ndKey = append(equalLength2ndKey, p.Key[i])
 			i++
+		}
+		if Verbose {
+			fmt.Println( "p.ReduceOverlappingKeys(", equalLength2ndKey, equalLength1stKey, ")")
 		}
 		p.ReduceOverlappingKeys(equalLength2ndKey, equalLength1stKey)
 		i = k // restore position

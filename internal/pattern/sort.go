@@ -25,7 +25,7 @@ func (p *Histogram) SortKeysByIncrSize() {
 
 
 
-// SortByDescCountDescLength returns list ordered for decreasing count and pattern length.
+// SortByDescCountDescLength returns list ordered for descenting count and pattern length.
 // It also sorts alphabetical to get reproducable results.
 func SortByDescCountDescLength(list []Patt) []Patt {
 	compareFn := func(a, b Patt) int {
