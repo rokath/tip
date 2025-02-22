@@ -72,7 +72,7 @@ A more generic solution would be nice, meaning, not depending on a specific data
 
 ### Bytes and Numbers
 
-COBS and TCOBS are starting or ending with some control characters and these are linked togeter to distinguish them from data bytes. But there is also an other otion.
+COBS and TCOBS are starting or ending with some control characters and these are linked togeter to distinguish them from data bytes. But there is also an other option.
 
 If there is a buffer of, let's say 20 bytes, we can consider it as a 20-digit number with 256 ciphers. To free like 8 characters for special usage, we could transform the 20 times 256 cipher number into a 21 or 22 times 248 ciphers number. This transformation is possible, but very computing intensive because of many divisions by 248, or a different base number. So this is no solution for small MCUs. But a division by 128 is cheap! If we transform the 256 base into a 128 base, we only need to perform a shift operation for the conversion. This way we get 128 special characters usable for compressing and framing.
 
