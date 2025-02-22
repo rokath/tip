@@ -66,14 +66,14 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 	defer oh.Close()
 	tipTableSize := 1 // TipTable contains at least table end marker
 	fmt.Fprintln(oh, `//! @file idTable.c
-	   //! @brief Generated code - do not edit!
+//! @brief Generated code - do not edit!
 
-	   #include <stdint.h>
-	   #include <stddef.h>
+#include <stdint.h>
+#include <stddef.h>
 
-	   //! idTable is sorted by pattern length and pattern count.
-	   //! The pattern position + 1 is the replace id.
-	   //! The generator pattern max size was`, maxPatternSize, `and the list pattern max size is:`, maxListPatternSize)
+//! idTable is sorted by pattern length and pattern count.
+//! The pattern position + 1 is the replace id.
+//! The generator pattern max size was`, maxPatternSize, `and the list pattern max size is:`, maxListPatternSize)
 	start := fmt.Sprintf("const uint8_t idTable[] = { // from %s\n", iFn)
 	fill := spaces(9 + 6*maxListPatternSize)
 	fill2 := spaces(maxListPatternSize - 5)
