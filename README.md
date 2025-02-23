@@ -165,7 +165,7 @@ Please refer to the [Tip User Manual](./docs/TipUserManual.md) (not written yet)
 - [ ] Improve `tipTable.h` Generator `tipTable`.
 - [ ] Write [Tip User Manual](./docs/TipUserManual.md).
 - [ ] Write fuzzy tests.
-- [ ] Remove 255 bytes limitation.
+- [ ] Remove 65535 bytes limitation.
 - [ ] Improve implementation for less RAM usage.
 
 

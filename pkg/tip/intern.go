@@ -1,7 +1,9 @@
 package tip
 
 // #include "tip.h"
-// unsigned offsetWidth(void);
+// unsigned offsetWidth(void){
+//    return sizeof(offset_t);
+//}
 // replace_t * buildReplaceList(int * rcount, const uint8_t * table, const uint8_t * src, size_t slen);
 import "C"
 
@@ -30,23 +32,19 @@ func buildReplaceList(table, in []byte) (rpl []replace) {
 	// https://go.dev/wiki/cgo
 	// https://stackoverflow.com/questions/11924196/convert-between-slices-of-different-types
 	cArray := unsafe.Pointer(C.buildReplaceList(rcount, tbl, src, slen))
-
-	var x offset
-	var sizeof_bo = int(unsafe.Sizeof(x))                  // 1=byte, 2=uint16, 4=uint32
+	sizeof_bo := int(C.offsetWidth())
 	const sizeof_sz = 1                                    // byte
 	const sizeof_id = 1                                    // byte
 	var sizeof_replace = sizeof_bo + sizeof_sz + sizeof_id // bytes
 
 	rcnt := int(*rcount)
-	length := rcnt * sizeof_replace 
+	length := rcnt * sizeof_replace
 	bytes := C.GoBytes(cArray, C.int(length))
 	rpl = make([]replace, rcnt)
 
-        offsetWidth:=int(C.OffsetWidth())
-	
 	for i := range rpl {
 		pos := i * sizeof_replace
-		rpl[i].bo = readOffset(bytes[pos:], offsetWidth)
+		rpl[i].bo = readOffset(bytes[pos:], sizeof_bo)
 		rpl[i].sz = bytes[pos+sizeof_bo]
 		rpl[i].id = bytes[pos+sizeof_bo+1]
 	}
@@ -55,29 +53,16 @@ func buildReplaceList(table, in []byte) (rpl []replace) {
 
 // readOffset reds a value of type offset from b.
 func readOffset(b []byte, offsetWidth int) uint32 {
-	// ot := offsetType(MaxSize)
-	switch offserWidth // v := ot.(type) {
-	case byte:
+	switch offsetWidth {
+	case 1:
 		return uint32(b[0])
-	case uint16:
+	case 2:
 		return uint32(binary.LittleEndian.Uint16(b))
-	case uint32:
-		return uint32(binary.LittleEndian.Uint32(b))
+	case 4:
+		return binary.LittleEndian.Uint32(b)
 	default:
-		log.Fatalf("I don't know about type %T!\n", v)
-		return offset(0)
+		log.Fatalf("cannot handle offsetWidth %d!\n", offsetWidth)
+		return 0
 	}
 }
 
-/*
-// offsetType returns a value of matching type according to maxSite
-func offsetType(maxSize int) interface{} {
-	if maxSize < 256 {
-		return byte(0)
-	}
-	if maxSize < 65536 {
-		return uint16(0)
-	}
-	return uint32(0)
-}
-*/

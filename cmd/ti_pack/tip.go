@@ -1,5 +1,12 @@
 package main
 
+// #cgo CFLAGS: -g -Wall -I../../src -I../../../trice/src -I../../examples/L432_inst/Core/inc
+// #include "tip.h"
+// unsigned maxSize(){
+// 	return TIP_SRC_BUFFER_SIZE_MAX;
+// }
+import "C"
+
 import (
 	"flag"
 	"fmt"
@@ -25,7 +32,6 @@ func init() {
 	flag.BoolVar(&verbose, "v", false, "verbose")
 	flag.StringVar(&iFn, "i", "", "input file name")
 	flag.StringVar(&oFn, "o", "", "output file name")
-	flag.IntVar(&tip.MaxSize, "m", tip.MaxSize, "max file size according to tip.h configuration")
 }
 
 func main() {
@@ -59,8 +65,9 @@ func doit(w io.Writer, fSys *afero.Afero) (err error) {
 	if err != nil {
 		return
 	}
-	if fi.Size() > int64(tip.MaxSize) {
-		return fmt.Errorf("cannot pack %d bytes. maximum is %d", fi.Size(), tip.MaxSize)
+	maxSize := int64(C.maxSize())
+	if fi.Size() > maxSize {
+		return fmt.Errorf("cannot pack %d bytes. maximum is %d", fi.Size(), maxSize)
 	}
 	buffer, err := fSys.ReadFile(iFn)
 	if err != nil {
@@ -69,8 +76,6 @@ func doit(w io.Writer, fSys *afero.Afero) (err error) {
 	packet := make([]byte, 2*len(buffer))
 	n := tip.Pack(packet, buffer)
 	if verbose {
-		//fmt.Println(hex.Dump(buffer))
-		//fmt.Println(hex.Dump(packet[:n]))
 		fmt.Fprintln(w, "file size", fi.Size(), "changed to", n, "(rate", 100*n/len(buffer), "percent)")
 	}
 	return fSys.WriteFile(oFn, packet[:n], 0644)

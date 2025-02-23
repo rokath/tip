@@ -13,7 +13,7 @@ extern "C" {
 
 //! TIP_SRC_BUFFER_SIZE_MAX is the maximun allowed input data buffer length.
 //! Its size has influence on the statically allocated RAM.
-#define TIP_SRC_BUFFER_SIZE_MAX 256000000u // bytes
+#define TIP_SRC_BUFFER_SIZE_MAX 65535u // bytes
 
 #if TIP_SRC_BUFFER_SIZE_MAX > 256u*1024u*1024u
 #error invalid TIP_SRC_BUFFER_SIZE_MAX value
@@ -24,10 +24,6 @@ typedef uint16_t offset_t;
 #else
 typedef uint8_t offset_t;
 #endif
-
-static inline unsigned OffsetWidth(void){
-    return sizeof(offset_t);
-}
 
 extern const uint8_t idTable[];
 

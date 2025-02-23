@@ -18,9 +18,9 @@ static size_t collectUnreplacableBytes( uint8_t * dst, replace_t * rlist, int rc
 /*static*/ size_t shift87bit( uint8_t* lst, const uint8_t * src, size_t slen );
 static void initGetNextPattern( const uint8_t * table );
 static void getNextPattern(const uint8_t ** pt, size_t * sz );
-static replace_t * newReplaceList(size_t slen);
+static replace_t * newReplaceList(offset_t slen);
 static void replaceableListInsert( replace_t * r, int * rcount, int k, uint8_t by, offset_t offset, uint8_t sz );
-static size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t uSize, replace_t * rlist, int rcount );
+static size_t generateTipPacket( uint8_t * dst, uint8_t * u7, uint32_t u7Size, replace_t * rlist, int rcount );
 
 size_t tip( uint8_t* dst, const uint8_t * src, size_t len ){
     return tiPack( dst, idTable, src, len );
@@ -52,7 +52,7 @@ size_t tiPack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t 
     replace_t * rlist = newReplaceList(slen);
     *rcount = 2;
     initGetNextPattern(table);
-    for( int id = 1; id < 0x80; id++ ){ // traverse te table.
+    for( int id = 1; id < 0x80; id++ ){ // traverse the ID table.
         // get biggest needle (the next pattern)
         const uint8_t * needle = NULL;
         size_t nlen;
@@ -104,7 +104,7 @@ static void getNextPattern(const uint8_t ** pt, size_t * sz ){
 //! @details It returns always the same static object to avoid memory allocation.
 //! @param slen is the source buffer size.
 //! @retval is a pointer to the replace list.
-static replace_t * newReplaceList(size_t slen){
+static replace_t * newReplaceList(offset_t slen){
     static replace_t list[TIP_SRC_BUFFER_SIZE_MAX/2 + 2]; //!< The whole src buffer could be replacable with 2-byte pattern.
     // The first 2 elements are initialized as boders.
     list[0].bo = 0; // byte offset start
@@ -123,8 +123,8 @@ static replace_t * newReplaceList(size_t slen){
 //! @param u7Size count of 7 lsbits bytes
 //! @param rl replace list
 //! @retval length of tip packet
-static size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t u7Size, replace_t* rlist, int rcount ){ 
-    size_t tipSize = 0;
+static size_t generateTipPacket( uint8_t * dst, uint8_t * u7, uint32_t u7Size, replace_t* rlist, int rcount ){ 
+    size_t packetSize = 0;
     int k = 0;  // Traverse rlist to find relacement pattern.
     do { // r->list[k] is done here, we need to fill the space and insert r[k+1] pattern.
         int uBytes = rlist[k+1].bo - (rlist[k].bo + rlist[k].sz);
@@ -135,22 +135,22 @@ static size_t generateTipPacket( uint8_t * dst, uint8_t * u7, size_t u7Size, rep
             *dst++ = *u7++;
             uBytes--;
             u7Size--;
-            tipSize++;
+            packetSize++;
         }
         k++;
-        size_t sz = rlist[k].sz; // Size of next replace.
+        uint8_t sz = rlist[k].sz; // Size of next replace.
         if( sz == 0 ){
             continue; // no more replaces, but some unreplacable may still exist.
         }
         *dst++ = rlist[k].id;
-        tipSize++;
+        packetSize++;
     }while(k < rcount-1);
     while(u7Size > 0){ // append remaining u7 bytes
         *dst++ = *u7++;
         u7Size--;
-        tipSize++;
+        packetSize++;
     }
-    return tipSize;
+    return packetSize;
 }
 
 //! @brief replaceableListInsert extends r in an ordered way.
