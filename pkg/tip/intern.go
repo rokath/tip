@@ -1,6 +1,7 @@
 package tip
 
 // #include "tip.h"
+// unsigned offsetWidth(void);
 // replace_t * buildReplaceList(int * rcount, const uint8_t * table, const uint8_t * src, size_t slen);
 import "C"
 
@@ -40,10 +41,12 @@ func buildReplaceList(table, in []byte) (rpl []replace) {
 	length := rcnt * sizeof_replace 
 	bytes := C.GoBytes(cArray, C.int(length))
 	rpl = make([]replace, rcnt)
+
+        offsetWidth:=int(C.OffsetWidth())
 	
 	for i := range rpl {
 		pos := i * sizeof_replace
-		rpl[i].bo = readOffset(bytes[pos:])
+		rpl[i].bo = readOffset(bytes[pos:], offsetWidth)
 		rpl[i].sz = bytes[pos+sizeof_bo]
 		rpl[i].id = bytes[pos+sizeof_bo+1]
 	}
@@ -51,7 +54,7 @@ func buildReplaceList(table, in []byte) (rpl []replace) {
 }
 
 // readOffset reds a value of type offset from b.
-func readOffset(b []byte) uint32 {
+func readOffset(b []byte, offsetWidth int) uint32 {
 	// ot := offsetType(MaxSize)
 	switch offserWidth // v := ot.(type) {
 	case byte:
