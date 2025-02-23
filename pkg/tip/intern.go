@@ -12,7 +12,7 @@ import (
 
 // ! @brief replace_t is a replace type descriptor.
 type replace struct {
-	bo offset //  offset_t bo; // bo is the buffer offset, where replace bytes starts. // todo: adapt to tipConfig.h automatically
+	bo uint32 //  offset_t bo; // bo is the buffer offset, where replace bytes starts. // todo: adapt to tipConfig.h automatically
 	sz byte   //  uint8_t  sz; // sz is the replace size (2-255).
 	id byte   //  uint8_t  id; // id is the replace byte 0x01 to 0x7f.
 }
@@ -51,21 +51,22 @@ func buildReplaceList(table, in []byte) (rpl []replace) {
 }
 
 // readOffset reds a value of type offset from b.
-func readOffset(b []byte) offset {
-	ot := offsetType(MaxSize)
-	switch v := ot.(type) {
+func readOffset(b []byte) uint32 {
+	// ot := offsetType(MaxSize)
+	switch offserWidth // v := ot.(type) {
 	case byte:
-		return offset(b[0])
+		return uint32(b[0])
 	case uint16:
-		return offset(binary.LittleEndian.Uint16(b))
+		return uint32(binary.LittleEndian.Uint16(b))
 	case uint32:
-		return offset(binary.LittleEndian.Uint32(b))
+		return uint32(binary.LittleEndian.Uint32(b))
 	default:
 		log.Fatalf("I don't know about type %T!\n", v)
 		return offset(0)
 	}
 }
 
+/*
 // offsetType returns a value of matching type according to maxSite
 func offsetType(maxSize int) interface{} {
 	if maxSize < 256 {
@@ -76,3 +77,4 @@ func offsetType(maxSize int) interface{} {
 	}
 	return uint32(0)
 }
+*/
