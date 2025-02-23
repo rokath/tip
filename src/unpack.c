@@ -20,10 +20,10 @@ size_t tiu( uint8_t * dst, const uint8_t * src, size_t slen ){
 //! @brief tiUnpack decodes src buffer with size slen into dst buffer and returns decoded dlen.
 //! @details For the tip decoding it uses the passed idTable object.
 size_t tiUnpack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen ){
-    static uint8_t u78[256]; // todo
+    static uint8_t u78[TIP_SRC_BUFFER_SIZE_MAX*8u/7u+1]; // todo
     size_t u7len = collectU7Bytes( u78, src, slen );
 
-    static uint8_t u8[256]; // todo
+    static uint8_t u8[TIP_SRC_BUFFER_SIZE_MAX]; // todo
     size_t u8len = shift78bit( u8, u78, u7len );
 
     size_t dlen = restorePacket( dst, table, u8, u8len, src, slen );
