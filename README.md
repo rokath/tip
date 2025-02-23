@@ -58,9 +58,9 @@ Table of Contents Generation:
   * 2.1. [TiP Components](#tip-components)
 * 3. [Getting Started](#getting-started)
   * 3.1. [Prerequisites](#prerequisites)
-  * 3.2. [Built TipTable Generator `tipTable`](#built-tiptable-generator-`tiptable`)
-  * 3.3. [Build `tip` and `tiu`](#build-`tip`-and-`tiu`)
-  * 3.4. [Try `tip` and `tiu`](#try-`tip`-and-`tiu`)
+  * 3.2. [Built TipTable Generator `ti_generate`](#built-tiptable-generator-`ti_generate`)
+  * 3.3. [Build `ti_pack` and `ti_unpack`](#build-`ti_pack`-and-`ti_unpack`)
+  * 3.4. [Try `ti_pack` and `ti_unpack`](#try-`ti_pack`-and-`ti_unpack`)
   * 3.5. [Installation](#installation)
 * 4. [Usage](#usage)
 * 5. [Roadmap](#roadmap)
@@ -113,8 +113,6 @@ Table of Contents Generation:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- GETTING STARTED -->
 ## 3. <a id='getting-started'></a>Getting Started
 
@@ -124,20 +122,20 @@ Table of Contents Generation:
 * You need some files containing typical data you want to pack and unpack.
   * Just to try out TiP, you can use a folder containing ASCII texts.
 
-### 3.2. <a id='built-tiptable-generator-`tig`'></a>Built TipTable Generator `tig`
+### 3.2. <a id='built-tiptable-generator-`ti_generate`'></a>Built TipTable Generator `ti_generate`
 
-* `cd tig && go build -ldflags "-w" ./...`
-* Run `tig` on the data files to get an `idTable.c` file.
+* `cd ti_generate && go build -ldflags "-w" ./...`
+* Run `ti_generate` on the data files to get an `idTable.c` file.
 
-### 3.3. <a id='build-`tip`-and-`tiu`'></a>Build `tip` and `tiu`
+### 3.3. <a id='build-`ti_pack`-and-`ti_unpack`'></a>Build `ti_pack` and `ti_unpack`
 
 * Copy the generated `idTable.c` file into the `src` folder.
 * Run `go build ./...` or `go install ./...`.
 
-### 3.4. <a id='try-`tip`-and-`tiu`'></a>Try `tip` and `tiu`
+### 3.4. <a id='try-`ti_pack`-and-`ti_unpack`'></a>Try `ti_pack` and `ti_unpack`
 
-* Run `tip -i myFile -v` to get `myFile.tip`.
-* Run `tiu -i myFile.tip -v` to get `myFile.tip.untip`.
+* Run `ti_pack -i myFile -v` to get `myFile.tip`.
+* Run `ti_unpack -i myFile.tip -v` to get `myFile.tip.untip`.
 * `myFile` and `myFile.tip.untip` are expected to be equal.
 
 ### 3.5. <a id='installation'></a>Installation
@@ -147,15 +145,12 @@ Table of Contents Generation:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
 <!-- USAGE EXAMPLES -->
 ## 4. <a id='usage'></a>Usage
 
-Please refer to the [Tip User Manual](./docs/TipUserManual.md) (not written yet)
+Please refer to the [Tip User Manual](./docs/TipUserManual.md) (work in progress)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- ROADMAP -->
 ## 5. <a id='roadmap'></a>Roadmap
@@ -168,12 +163,9 @@ Please refer to the [Tip User Manual](./docs/TipUserManual.md) (not written yet)
 - [ ] Remove 65535 bytes limitation.
 - [ ] Improve implementation for less RAM usage.
 
-
 See the [open issues](https://github.com/rokath/tip/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- CONTRIBUTING -->
 ## 6. <a id='contributing'></a>Contributing
@@ -191,13 +183,11 @@ Don't forget to give the project a star! Thanks again!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### 6.1. <a id='top-contributors:'></a>Top contributors
+### 6.1. <a id='top-contributors'></a>Top contributors
 
 <a href="https://github.com/rokath/tip/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=rokath/tip" alt="contrib.rocks image" />
 </a>
-
-
 
 <!-- LICENSE -->
 ## 7. <a id='license'></a>License
@@ -205,8 +195,6 @@ Don't forget to give the project a star! Thanks again!
 Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- CONTACT -->
 ## 8. <a id='contact'></a>Contact
@@ -216,8 +204,6 @@ Thomas Höhenleitner - th@seerose.net
 Project Link: [https://github.com/rokath/tip](https://github.com/rokath/tip)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- ACKNOWLEDGMENTS -->
 ## 9. <a id='acknowledgments'></a>Acknowledgments
@@ -244,8 +230,6 @@ Use this space to list resources you find helpful and would like to give credit 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
@@ -265,7 +249,6 @@ Use this space to list resources you find helpful and would like to give credit 
 [linkedin-url]: https://linkedin.com/in/linkedin_username
 [product-screenshot]: images/screenshot.png
 
-
 [contributors-shield]: https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge
 [contributors-url]: https://github.com/othneildrew/Best-README-Template/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/othneildrew/Best-README-Template.svg?style=for-the-badge
@@ -281,7 +264,6 @@ Use this space to list resources you find helpful and would like to give credit 
 [product-screenshot]: images/screenshot.png
 
 -->
-
 
 <!--
 <h3 align="center">Tiny Packer</h3>
