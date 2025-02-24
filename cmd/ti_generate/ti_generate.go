@@ -24,7 +24,7 @@ var (
 func init() {
 	flag.BoolVar(&help, "h", false, "help")
 	flag.BoolVar(&verbose, "v", false, "help")
-	flag.StringVar(&iFn, "i", "", "input file name")
+	flag.StringVar(&iFn, "i", "", "input file/folder name")
 	flag.StringVar(&oFn, "o", "idTable.c", "output file name")
 	flag.IntVar(&pattern.PatternSizeMax, "z", 8, "max pattern size to find")
 }

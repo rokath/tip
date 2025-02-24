@@ -4,8 +4,12 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/spf13/afero"
 )
 
 var (
@@ -45,11 +49,11 @@ func countOverlapping(s, sub string) int {
 // The byte sequences are getting hex encodedand used as keys with their increased count as values in p.Hist.
 // Pattern of size 1 are skipped, because they give no compression effect when replaced by an id.
 func (p *Histogram) Extend(data []byte, maxPatternSize int) {
-	if Verbose {
-		fmt.Println("Extending histogram with length", len(p.Hist), "...")
-	}
+	//  if Verbose {
+	//  	fmt.Println("Extending histogram with length", len(p.Hist), "...")
+	//  }
 	var wg sync.WaitGroup
-	for i := 0; i < maxPatternSize-1; i++ { // loop over pattern sizes
+	for i := range maxPatternSize-1 { // loop over pattern sizes
 		wg.Add(1)
 		go func(k int) {
 			defer wg.Done()
@@ -58,9 +62,9 @@ func (p *Histogram) Extend(data []byte, maxPatternSize int) {
 	}
 	wg.Wait()
 
-	if Verbose {
-		fmt.Println("Extending histogram...done. New length is", len(p.Hist))
-	}
+	//  if Verbose {
+	//  	fmt.Println("Extending histogram...done. New length is", len(p.Hist))
+	//  }
 }
 
 // scanForRepetitions searches data for ptLen bytes sequences
@@ -68,9 +72,9 @@ func (p *Histogram) Extend(data []byte, maxPatternSize int) {
 // This pattern search algorithm: Start at offset 0 with ptLen bytes from data as pattern
 // and search data for repetitions by moving byte by byte. Extend p.Hist accordingly.
 func (p *Histogram) scanForRepetitions(data []byte, ptLen int) {
-	if Verbose {
-		fmt.Println("scan for count", ptLen, "repetitions...")
-	}
+	//  if Verbose {
+	//  	fmt.Println("scan for count", ptLen, "repetitions...")
+	//  }
 	last := len(data) - (ptLen) // This is the last position in data to check for repetitions.
 	var wg sync.WaitGroup
 	for i := 0; i <= last; i++ { // Loop over all possible pattern.
@@ -85,9 +89,9 @@ func (p *Histogram) scanForRepetitions(data []byte, ptLen int) {
 		}(i)
 	}
 	wg.Wait()
-	if Verbose {
-		fmt.Println("scan for count", ptLen, "repetitions...done.")
-	}
+	//  if Verbose {
+	//  	fmt.Println("scan for count", ptLen, "repetitions...done.")
+	//  }
 }
 
 // GetKeys extracts all p.Hist keys into p.Keys.
@@ -147,7 +151,7 @@ func (p *Histogram) Reduce() {
 			i++
 		}
 		if Verbose {
-			fmt.Println( "p.ReduceOverlappingKeys(", equalLength2ndKey, equalLength1stKey, ")")
+			fmt.Println("p.ReduceOverlappingKeys(", equalLength2ndKey, equalLength1stKey, ")")
 		}
 		p.ReduceOverlappingKeys(equalLength2ndKey, equalLength1stKey)
 		i = k // restore position
@@ -198,4 +202,48 @@ type Patt struct {
 	Cnt   int    // cnt is the count of occurances.
 	Bytes []byte // Bytes is the pattern as byte slice.
 	Key   string // key is the pattern as hex string.
+}
+
+func (p *Histogram) AddWeigths() {
+	for k, v := range p.Hist{
+		p.Hist[k] = v * len(k)
+	}
+}
+
+// ScanFile reads iFn ands its data to the histogram.
+func (p *Histogram) ScanFile(fSys *afero.Afero, iFn string, maxPatternSize int) (err error) {
+	data, err := fSys.ReadFile(iFn)
+	if err != nil {
+		return err
+	}
+
+	ss := strings.Split(string(data), ". ") // split ASCII text into sentences (TODO)
+
+	var wg sync.WaitGroup
+	for i, sent := range ss {
+		wg.Add(1)
+		go func(k int, sentence string) {
+			defer wg.Done()
+			p.Extend([]byte(sentence), maxPatternSize)
+		}(i, sent)
+	}
+	wg.Wait()
+	return
+}
+
+// ScanAllFiles traverses location and adds all files as sample data.
+func (p *Histogram) ScanAllFiles(fSys *afero.Afero, location string, maxPatternSize int) (err error) {
+	numScanned := 0
+	err = filepath.Walk(location, func(path string, _ os.FileInfo, _ error) error {
+		numScanned++
+		fmt.Println(path)
+		if dir, e := fSys.IsDir(path); dir {
+			return e
+		}
+		return p.ScanFile(fSys, path, maxPatternSize)
+	})
+	if Verbose {
+		fmt.Println(numScanned, "files scanned")
+	}
+	return
 }

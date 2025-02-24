@@ -14,31 +14,17 @@ var (
 	Verbose bool
 )
 
-// Generate writes a file oFn containing C code using iFn and max pattern size.
-func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error) {
-	data, err := fSys.ReadFile(iFn)
-	if err != nil {
-		return err
-	}
-
+// Generate writes a file oFn containing C code using loc file(s) and max pattern size.
+func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error) {
 	var m sync.Mutex
 	p := pattern.NewHistogram(&m)
 
-	ss := strings.Split(string(data), ". ") // split ASCII text into sentences (TODO)
-
-	var wg sync.WaitGroup
-	for i, sent := range ss {
-		wg.Add(1)
-		go func(k int, sentence string) {
-			defer wg.Done()
-			//  if Verbose {
-			//  	fmt.Println(i, sentence)
-			//  }
-			p.Extend([]byte(sentence), maxPatternSize)
-		}(i, sent)
+	if ok, _ := fSys.IsDir(loc); ok {
+		err = p.ScanAllFiles(fSys, loc, maxPatternSize)
+	} else {
+		err = p.ScanFile(fSys, loc, maxPatternSize)
 	}
-	wg.Wait()
-
+	//p.AddWeigths()
 	p.GetKeys()
 	p.SortKeysByIncrSize()
 	//p.SortKeysByDescSize()
@@ -46,14 +32,12 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 	//p.Reduce()
 	rlist := p.ExportAsList()
 
-	fmt.Println(len(ss), "sentences")
-	fmt.Println(len(rlist), "pattern")
-
 	list := pattern.SortByDescCountDescLength(rlist)
 
+	lsize := min(500, len(list))
 	if Verbose {
-		for i, x := range list[:500] {
-			fmt.Println(i, x.Cnt, x.Key, string(x.Bytes))
+		for i, x := range list[:lsize] {
+			fmt.Printf("%3d: %6d, %16s, %s\n", i, x.Cnt, x.Key, string(x.Bytes))
 		}
 	}
 	idCount := min(127, len(list))
@@ -74,7 +58,7 @@ func Generate(fSys *afero.Afero, oFn, iFn string, maxPatternSize int) (err error
 //! idTable is sorted by pattern length and pattern count.
 //! The pattern position + 1 is the replace id.
 //! The generator pattern max size was`, maxPatternSize, `and the list pattern max size is:`, maxListPatternSize)
-	start := fmt.Sprintf("const uint8_t idTable[] = { // from %s\n", iFn)
+	start := fmt.Sprintf("const uint8_t idTable[] = { // from %s\n", loc)
 	fill := spaces(9 + 6*maxListPatternSize)
 	fill2 := spaces(maxListPatternSize - 5)
 	fmt.Fprintf(oh, start+"%s// ASCII%s|  count  id\n", fill, fill2)

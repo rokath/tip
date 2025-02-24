@@ -5,15 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "tipTable launch app",
+            "name": "ti_generate launch app",
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/tipTable",
+            "program": "${workspaceFolder}/cmd/ti_generate",
             "env": {},
             "args": ["-v",
                      "-i",
-                     "${workspaceFolder}/dummy.txt"
+                     "${workspaceFolder}/test"
             ]
         },
         {
