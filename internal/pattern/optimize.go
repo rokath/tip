@@ -37,26 +37,29 @@ func (p *Histogram) Reduce() {
 		if Verbose {
 			fmt.Println("Collect 1st group of equal length keys...")
 		}
-		var equalLength1stKey []string
-		equal1stLength := len(p.Key[i]) // is multiple of 2
-		for equal1stLength == len(p.Key[i]) && i < len(p.Key)-1 {
-			equalLength1stKey = append(equalLength1stKey, p.Key[i])
+		var smallerKeys []string
+		smallerLength := len(p.Key[i]) // is multiple of 2
+		for smallerLength == len(p.Key[i]) && i < len(p.Key)-1 {
+			smallerKeys = append(smallerKeys, p.Key[i])
 			i++
 		}
 		k := i // Keep position
 		if Verbose {
 			fmt.Println("Collect 2nd group of equal length keys...")
 		}
-		var equalLength2ndKey []string
-		equal2ndLength := len(p.Key[i]) // is multiple of 2
-		for i < len(p.Key) && equal2ndLength == len(p.Key[i]) {
-			equalLength2ndKey = append(equalLength2ndKey, p.Key[i])
+		var biggerKeys []string
+		biggerLength := len(p.Key[i]) // is multiple of 2
+		for biggerLength == len(p.Key[i]) && i < len(p.Key)-1 {
+			biggerKeys = append(biggerKeys, p.Key[i])
 			i++
 		}
-		if Verbose {
-			fmt.Println("p.ReduceOverlappingKeys(", equalLength2ndKey, equalLength1stKey, ")")
+		if smallerLength == biggerLength {
+			fmt.Printf("WARNING: smallerLength == biggerLength == %d\n", biggerLength )
 		}
-		p.ReduceOverlappingKeys(equalLength2ndKey, equalLength1stKey)
+		if smallerLength > biggerLength {
+			log.Fatalf("ERROR: smallerLength %d > biggerLength %d", smallerLength, biggerLength )
+		}
+		p.ReduceOverlappingKeys(biggerKeys, smallerKeys)
 		i = k // restore position
 	}
 
@@ -65,19 +68,22 @@ func (p *Histogram) Reduce() {
 	}
 }
 
-func (p *Histogram) ReduceOverlappingKeys(equalSize1stKey, equalSize2ndKey []string) {
+func (p *Histogram) ReduceOverlappingKeys(biggerKeys, smallerKeys []string) {
 	var wg sync.WaitGroup
-	for _, key1st := range equalSize1stKey {
+	for _, key1st := range biggerKeys {
 		wg.Add(1)
-		go func(key string) {
+		go func(bkey string) {
 			defer wg.Done()
-			for _, sub := range equalSize2ndKey {
-				n := countOverlapping2(key, sub) // sub is n-times inside key
+			for _, sub := range smallerKeys {
+				n := countOverlapping2(bkey, sub) // sub is n-times inside key
 				p.mu.Lock()
-				a := p.Hist[key] // key count is a
-				b := p.Hist[sub] // sub count is b
-				c := b - a*n     // new count is c
+				a := p.Hist[bkey] // bkey has a count
+				b := p.Hist[sub]  // sub has b count
+				c := b - 1        // a*n      // new sub count is c
 				p.Hist[sub] = c
+				if Verbose && n > 0 {
+					fmt.Printf("%s(%d) is %d inside %s(%d). -> %s(%d)\n", sub, b, n, bkey, a, sub, c)
+				}
 				p.mu.Unlock()
 			}
 		}(key1st)

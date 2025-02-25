@@ -11,9 +11,8 @@
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/ti_generate",
             "env": {},
-            "args": ["-v",
-                     "-i",
-                     "${workspaceFolder}/test"
+            "args": ["-i",
+                     "${workspaceFolder}/docs/TipUserManual.md"
             ]
         },
         {
