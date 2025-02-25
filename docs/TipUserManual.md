@@ -98,6 +98,7 @@ On the receiver side all bytes with MSBit=0 are identified as IDs and are replac
 
 * We create a bunch of test files with data similar to those we want to pack in the future.
   * For now `ti_generate` takes a longer text file, splits it into sentences and treats each as a separate sample buffer.
+  * Also a folder name is accepted and all files are processed then.
 * We assume a longest pattern, like 8 for example.
   * `ti_generate` accepts it as parameter.
   * The longest possible pattern is 255 bytes long.

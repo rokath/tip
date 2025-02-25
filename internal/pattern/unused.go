@@ -1,7 +1,6 @@
 package pattern
 
-import "slices"
-
+/*
 // SortKeysDescSize sorts p.Keys by decending size and alphabetical.
 func (p *Histogram) SortKeysByDescSize() {
 	compareFn := func(a, b string) int {
@@ -21,3 +20,4 @@ func (p *Histogram) SortKeysByDescSize() {
 	}
 	slices.SortFunc(p.Key, compareFn)
 }
+*/

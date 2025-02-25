@@ -29,7 +29,7 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 	p.SortKeysByIncrSize()
 	//p.SortKeysByDescSize()
 
-	//p.Reduce()
+	p.Reduce()
 	rlist := p.ExportAsList()
 
 	list := pattern.SortByDescCountDescLength(rlist)

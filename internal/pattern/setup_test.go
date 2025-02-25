@@ -48,17 +48,17 @@ func TestMain(m *testing.M) {
 
 type defaults struct {
 	verbose bool
-	sizeMax int
+	patternSizeMax int
 }
 
 // StoreVars reads global variables for restauration later.
 func (p *defaults) StoreVars() {
 	p.verbose = Verbose
-	p.sizeMax = PatternSizeMax
+	p.patternSizeMax = PatternSizeMax
 }
 
 // RestoreVars sets all global variables into previous state.
 func (p *defaults) RestoreVars(t *testing.T) {
 	Verbose = p.verbose
-	PatternSizeMax = p.sizeMax
+	PatternSizeMax = p.patternSizeMax
 }

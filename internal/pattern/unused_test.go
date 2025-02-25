@@ -1,12 +1,6 @@
 package pattern
 
-import (
-	"sync"
-	"testing"
-
-	"github.com/tj/assert"
-)
-
+/*
 func TestHistogram_SortKeysByDescSize(t *testing.T) {
 	var mu sync.Mutex
 	type fields struct {
@@ -40,3 +34,4 @@ func TestHistogram_SortKeysByDescSize(t *testing.T) {
 		})
 	}
 }
+*/
