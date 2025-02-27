@@ -24,9 +24,9 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 	} else {
 		err = p.ScanFile(fSys, loc, maxPatternSize)
 	}
-	p.PrintInfo("Histogram after Scan")
-	p.BalanceByteUsage(maxPatternSize)
-	p.PrintInfo("Histogram after Balance")
+	//p.PrintInfo("Histogram after Scan")
+	//p.BalanceByteUsage(maxPatternSize)
+	//p.PrintInfo("Histogram after Balance")
 	p.GetKeys()
 	p.PrintInfo("Histogram after GetKeys")
 	p.Reduce()
