@@ -1,4 +1,4 @@
-# TiP - Tiny Packer - User Manual
+9# TiP - Tiny Packer - User Manual
 
 (work in progress)
 
@@ -126,14 +126,27 @@ On the receiver side all bytes with MSBit=0 are identified as IDs and are replac
 2 | 8 | 9er | 123456789 23456789a | 3456789a1...|9|10/9
 1 | 9 | 10er | 123456789a | 23456789a1...|10|10/10
 
+1234
+
 count|factor|hist|reduced|\*length
 -|-|-|-|-
 1:1,2:1,3:1,4:1|\*4/1|all:4|1:3,2:2,3:2,4:3|=
 12:1,23:1,34:1 |\*4/2|all:2|12:1,23:0,34:1|12:2,23:0,34:2
-123:1, 234:1 |\*4/3|all:1.333|all:0.333|all:1
-1234:1|\*4/4|all:1|all:1|all:4
+123:1, 234:1 |\*4/3|123:1.333,234:1.333|123:0.333,234:0.333|123:1,234:1
+1234:1|\*4/4|1234:1|1234:1|1234:4
 
 table: 1234, 12, 34, 123, 234, 23
+
+1111
+
+count|factor|hist|reduced|\*length
+-|-|-|-|-
+1:4|\*4/1|1:16|1:4|1:4
+11:3|\*4/2|11:6|0.666|1.333
+111:2|\*4/3|111:2.666|111:0.666|111:2
+1111:1\*4/4|1111:1|1111:1|1111:4|1111:4
+
+table: 1111 111 11
 
 ## 3. <a id='improvement-ideas'></a>Improvement Ideas
 
