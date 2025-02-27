@@ -62,7 +62,7 @@ For low level buffer storage or MCU transfers some kind of framing is needed for
 
 #### 1.1.2. <a id='-very-small-buffer-data-compession'></a> Very Small Buffer Data Compession
 
-A compression followed by COBS framing would do perfectly. But when it comes to very short buffers, like 4 or 20 bytes, **normal zip code fails** to reduce the buffer size.
+A compression and then COBS framing would do perfectly. But when it comes to very short buffers, like 4 or 20 bytes, **normal zip code fails** to reduce the buffer size.
 
 To combine the COBS technique with compression especially for very short buffers, some additional spare characters are needed. That's done with [TCOBS](https://github.com/rokath/tcobs) in a manual coded way, meaning, expected special data properties are reflected in the TCOBS code. See the [TCOBS User Manual](https://github.com/rokath/tcobs/blob/master/docs/TCOBSv2Specification.md) for more details.
 
