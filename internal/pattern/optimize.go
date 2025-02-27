@@ -35,7 +35,7 @@ func (p *Histogram) Reduce() {
 		}
 
 		if Verbose {
-			fmt.Println("Collect 1st group of equal length keys...")
+			fmt.Println("Collect 1st group of equal length smaller keys...")
 		}
 		var smallerKeys []string
 		smallerLength := len(p.Key[i]) // is multiple of 2
@@ -45,7 +45,7 @@ func (p *Histogram) Reduce() {
 		}
 		k := i // Keep position
 		if Verbose {
-			fmt.Println("Collect 2nd group of equal length keys...")
+			fmt.Println("Collect 2nd group of equal bigger length keys...")
 		}
 		var biggerKeys []string
 		biggerLength := len(p.Key[i]) // is multiple of 2
