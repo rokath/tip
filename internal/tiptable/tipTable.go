@@ -37,7 +37,7 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 
 	list := pattern.SortByDescCountDescLength(rlist)
 
-	lsize := min(500, len(list))
+	lsize := min(50, len(list))
 	if Verbose {
 		for i, x := range list[:lsize] {
 			fmt.Printf("%3d: %6d, %16s, %s\n", i, x.Cnt, x.Key, string(x.Bytes))
