@@ -2,19 +2,41 @@ package pattern
 
 import (
 	"fmt"
-	"log"
+	"math"
 	"strings"
 	"sync"
 )
 
-// 1 2 3 4 -> 12:1 23:1 34:1 123:1 234:1 1234:1 -> weighted: 12:2 23:2 34:2 123:3 234:3 1234:4
-//         -> 12:0 23:- 34:0 123:0 234:0 1234:1 -> weighted: 12:0 23:- 34:0 123:0 234:0 1234:4
-// 1 1 1 1 -> 11:3           111:2       1111:1 -> weighted: 11:6           111:6       1111:4
-//         -> 11:2           111:1       1111:1 -> weighted: 11:4           111:3       1111:4
+func (p *Histogram) PrintInfo(message string) {
+	var (
+		smallest = math.MaxInt
+		biggest  = math.MinInt
+		sum      int
+		count    int
+	)
+	for _, v := range p.Hist {
+		smallest = min(smallest, v.Weight)
+		biggest = max(biggest, v.Weight)
+		sum += v.Weight
+		count++
+	}
+	fmt.Println(message, "-> count:", count, "sum:", sum, "average:", sum/count, "smallest:", smallest, "biggest:", biggest)
+}
 
+// BalanceByteUsage multiplies each key value with maxPatternSize / len(key) to achieve a balance
+// in byte usage for pattern of different length. To avoid floats, we use a 1000 times bigger value
+func (p *Histogram) BalanceByteUsage(maxPatternSize int) {
+	for k, v := range p.Hist {
+		v.Weight = v.Weight * 2000 / len(k)
+		p.Hist[k] = v
+	}
+}
+
+// AddWeigths multiplies weight values with key len.
 func (p *Histogram) AddWeigths() {
 	for k, v := range p.Hist {
-		p.Hist[k] = v * len(k)
+		v.Weight *= len(k)
+		p.Hist[k] = v
 	}
 }
 
@@ -29,17 +51,14 @@ func (p *Histogram) Reduce() {
 	if len(p.Key) < 2 { // less than 2 keys
 		return
 	}
+	p.SortKeysByIncrSize()
 	for i := 0; i < len(p.Key)-1; { // iterate over by increasing length sorted keys
-		if len(p.Key[i]) > len(p.Key[i+1]) {
-			log.Fatal("unsorted keys")
-		}
-
 		if Verbose {
 			fmt.Println("Collect 1st group of equal length smaller keys...")
 		}
 		var smallerKeys []string
 		smallerLength := len(p.Key[i]) // is multiple of 2
-		for smallerLength == len(p.Key[i]) && i < len(p.Key)-1 {
+		for i < len(p.Key)-1 && smallerLength == len(p.Key[i]) {
 			smallerKeys = append(smallerKeys, p.Key[i])
 			i++
 		}
@@ -49,17 +68,13 @@ func (p *Histogram) Reduce() {
 		}
 		var biggerKeys []string
 		biggerLength := len(p.Key[i]) // is multiple of 2
-		for biggerLength == len(p.Key[i]) && i < len(p.Key)-1 {
+		for i < len(p.Key) &&  biggerLength == len(p.Key[i]) {
 			biggerKeys = append(biggerKeys, p.Key[i])
 			i++
 		}
-		if smallerLength == biggerLength {
-			fmt.Printf("WARNING: smallerLength == biggerLength == %d\n", biggerLength )
+		if smallerLength < biggerLength { // == on last item
+			p.ReduceOverlappingKeys(biggerKeys, smallerKeys)
 		}
-		if smallerLength > biggerLength {
-			log.Fatalf("ERROR: smallerLength %d > biggerLength %d", smallerLength, biggerLength )
-		}
-		p.ReduceOverlappingKeys(biggerKeys, smallerKeys)
 		i = k // restore position
 	}
 
@@ -70,23 +85,24 @@ func (p *Histogram) Reduce() {
 
 func (p *Histogram) ReduceOverlappingKeys(biggerKeys, smallerKeys []string) {
 	var wg sync.WaitGroup
-	for _, key1st := range biggerKeys {
+	for _, bkey := range biggerKeys {
 		wg.Add(1)
-		go func(bkey string) {
+		go func(bigKey string) {
 			defer wg.Done()
-			for _, sub := range smallerKeys {
-				n := countOverlapping2(bkey, sub) // sub is n-times inside key
+			for _, subKey := range smallerKeys {
+				n := countOverlapping2(bigKey, subKey) // sub is n-times inside key
 				p.mu.Lock()
-				a := p.Hist[bkey] // bkey has a count
-				b := p.Hist[sub]  // sub has b count
-				c := b - 1        // a*n      // new sub count is c
-				p.Hist[sub] = c
+				a := p.Hist[bigKey].Weight // bkey has a count
+				v := p.Hist[subKey]
+				b := v.Weight      // sub has b count
+				v.Weight = b - a*n // new sub count
+				p.Hist[subKey] = v
 				if Verbose && n > 0 {
-					fmt.Printf("%s(%d) is %d inside %s(%d). -> %s(%d)\n", sub, b, n, bkey, a, sub, c)
+					fmt.Printf("%s(%d) is %d inside %s(%d). -> %s(%d)\n", subKey, b, n, bigKey, a, subKey, v.Weight)
 				}
 				p.mu.Unlock()
 			}
-		}(key1st)
+		}(bkey)
 	}
 	wg.Wait()
 }
@@ -103,44 +119,3 @@ func countOverlapping2(s, sub string) int {
 	return c
 }
 
-/*
-
-
-// countOverlapping returns sub count in s.
-// https://stackoverflow.com/questions/67956996/is-there-a-count-function-in-go-but-for-overlapping-substrings
-func countOverlapping(s, sub string) int {
-	var c int
-	for d := range s {
-		if strings.HasPrefix(s[d:], sub) {
-			c++
-		}
-	}
-	return c
-}
-
-
-*/
-
-/*
-// SortByIncrLength returns list ordered for increasing pattern length.
-// It also sorts alphabetical to get reproducable results.
-func SortByIncrLength(list []Patt) []Patt {
-	compareFn := func(a, b Patt) int {
-		if len(a.Bytes) > len(b.Bytes) {
-			return 1
-		}
-		if len(a.Bytes) < len(b.Bytes) {
-			return -1
-		}
-		if a.Key > b.Key {
-			return 1
-		}
-		if a.Key < b.Key {
-			return -1
-		}
-		return 0
-	}
-	slices.SortFunc(list, compareFn)
-	return list
-}
-*/

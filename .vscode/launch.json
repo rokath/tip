@@ -20,11 +20,11 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/tip",
+            "program": "${workspaceFolder}/cmd/ti_pack",
             "env": {},
             "args": ["-v",
                      "-i",
-                     "${workspaceFolder}/dummy.txt"
+                     "${workspaceFolder}/test/a.txt"
             ]
         }
     ]

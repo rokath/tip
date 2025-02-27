@@ -13,12 +13,60 @@ func countOverlapping(s, sub string) int {
 	}
 	return c
 }
-*/
 
+// countOverlapping returns sub count in s.
+// https://stackoverflow.com/questions/67956996/is-there-a-count-function-in-go-but-for-overlapping-substrings
+func countOverlapping(s, sub string) int {
+	var c int
+	for d := range s {
+		if strings.HasPrefix(s[d:], sub) {
+			c++
+		}
+	}
+	return c
+}
 
-/*
+// SortKeysDescSize sorts p.Keys by decending size and alphabetical.
+func (p *Histogram) SortKeysByDescSize() {
+	compareFn := func(a, b string) int {
+		if len(a) < len(b) {
+			return 1
+		}
+		if len(a) > len(b) {
+			return -1
+		}
+		if a > b {
+			return 1
+		}
+		if a < b {
+			return -1
+		}
+		return 0
+	}
+	slices.SortFunc(p.Key, compareFn)
+}
 
-
+// SortByIncrLength returns list ordered for increasing pattern length.
+// It also sorts alphabetical to get reproducable results.
+func SortByIncrLength(list []Patt) []Patt {
+	compareFn := func(a, b Patt) int {
+		if len(a.Bytes) > len(b.Bytes) {
+			return 1
+		}
+		if len(a.Bytes) < len(b.Bytes) {
+			return -1
+		}
+		if a.Key > b.Key {
+			return 1
+		}
+		if a.Key < b.Key {
+			return -1
+		}
+		return 0
+	}
+	slices.SortFunc(list, compareFn)
+	return list
+}
 
 // merge copies all keys with their values from src into p.
 // If p contains a key already, the values are added.
@@ -88,9 +136,6 @@ func setCounts(list []Patt, count []int) {
 	}
 }
 
-*/
-
-/*
 func GenerateDescendingCountSortedList(data []byte, maxPatternSize int) []Patt {
 	m := BuildHistogram(data, maxPatternSize)
 	list := histogramToList(m)
@@ -98,9 +143,7 @@ func GenerateDescendingCountSortedList(data []byte, maxPatternSize int) []Patt {
 	//sList := SortByDescCountDescLength(rList)
 	return list // biggest cnt first, biggest length first on equal cnt
 }
-*/
 
-/*
 // BuildHistogram searches data for any 2-to-max bytes sequences
 // and returns them as key strings hex encoded with their count as values in m.
 // Pattern of size 1 are skipped, because they give no compression effect when replaced by an id.

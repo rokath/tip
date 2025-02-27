@@ -24,12 +24,15 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 	} else {
 		err = p.ScanFile(fSys, loc, maxPatternSize)
 	}
-	//p.AddWeigths()
+	p.PrintInfo("Histogram after Scan")
+	p.BalanceByteUsage(maxPatternSize)
+	p.PrintInfo("Histogram after Balance")
 	p.GetKeys()
-	p.SortKeysByIncrSize()
-	//p.SortKeysByDescSize()
-
+	p.PrintInfo("Histogram after GetKeys")
 	p.Reduce()
+	p.PrintInfo("Histogram after Reduce")
+	p.AddWeigths()
+	p.PrintInfo("Histogram after AddWeights")
 	rlist := p.ExportAsList()
 
 	list := pattern.SortByDescCountDescLength(rlist)

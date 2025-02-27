@@ -10,7 +10,7 @@ import (
 func TestHistogram_SortKeysByIncrSize(t *testing.T) {
 	var mu sync.Mutex
 	type fields struct {
-		Hist map[string]int
+		Hist map[string]Pat
 		mu   *sync.Mutex
 		Keys []string
 	}
@@ -22,8 +22,8 @@ func TestHistogram_SortKeysByIncrSize(t *testing.T) {
 		// TODO: Add test cases.
 		{
 			"", // name
-			fields{map[string]int{}, &mu, []string{"bb11", "112233", "aa22"}},
-			fields{map[string]int{}, &mu, []string{"aa22", "bb11", "112233"}},
+			fields{map[string]Pat{}, &mu, []string{"bb11", "112233", "aa22"}},
+			fields{map[string]Pat{}, &mu, []string{"aa22", "bb11", "112233"}},
 		},
 	}
 	for _, tt := range tests {
@@ -62,3 +62,4 @@ func TestSortByDescCountDescLength(t *testing.T) {
 	act := SortByDescCountDescLength(pat)
 	assert.Equal(t, exp, act)
 }
+

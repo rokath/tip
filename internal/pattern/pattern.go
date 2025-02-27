@@ -16,16 +16,22 @@ var (
 	Verbose        bool
 )
 
+// Pat is the pattern descriptor of Key.
+type Pat struct {
+	Weight int // Weight is first len(Pos) but gets modifikated later
+	Pos []int // Pos holds all start occurances of Key
+}
+
 // Histogram objects hold pattern strings occurences count.
 type Histogram struct {
-	Hist map[string]int // Hist is the created histogram.
+	Hist map[string]Pat // Hist is the created histogram. len(Pat.Pos) is the occurrances count.
 	mu   *sync.Mutex    // mu guaranties mutual exclusion access to the histogram.
 	Key  []string       // Key holds all histogram keys separately for faster processing.
 }
 
 // NewHistogram returns a new Histogram instance.
 func NewHistogram(mu *sync.Mutex) *Histogram {
-	h := make(map[string]int, 10000)
+	h := make(map[string]Pat, 10000)
 	object := Histogram{h, mu, nil}
 	return &object
 }
@@ -56,12 +62,16 @@ func (p *Histogram) scanForRepetitions(data []byte, ptLen int) {
 	var wg sync.WaitGroup
 	for i := 0; i <= last; i++ { // Loop over all possible pattern.
 		wg.Add(1)
-		go func(k int) {
+		//go 
+		func(k int) {
 			defer wg.Done()
 			pat := data[k : k+ptLen]
 			key := hex.EncodeToString(pat) // We need to convert pat into a key.
 			p.mu.Lock()
-			p.Hist[key]++
+			pt := p.Hist[key]
+			pt.Pos = append(pt.Pos, k)
+			pt.Weight++
+			p.Hist[key] = pt
 			p.mu.Unlock()
 		}(i)
 	}
@@ -83,7 +93,7 @@ func (p *Histogram) ExportAsList() (list []Patt) {
 	var i int
 	p.mu.Lock()
 	for key, cnt := range p.Hist {
-		list[i].Cnt = cnt
+		list[i].Cnt = cnt.Weight
 		list[i].Bytes, _ = hex.DecodeString(key) // restore bytes
 		list[i].Key = key
 		i++
