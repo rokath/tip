@@ -55,6 +55,7 @@ func (p *Histogram) Extend(data []byte, maxPatternSize int) {
 
 // scanForRepetitions searches data for ptLen bytes sequences
 // and adds them as key strings hex encoded with their count as values to p.Hist.
+// Also the pattern positions are recorded.
 // This pattern search algorithm: Start at offset 0 with ptLen bytes from data as pattern
 // and search data for repetitions by moving byte by byte. Extend p.Hist accordingly.
 func (p *Histogram) scanForRepetitions(data []byte, ptLen int) {
@@ -62,8 +63,7 @@ func (p *Histogram) scanForRepetitions(data []byte, ptLen int) {
 	var wg sync.WaitGroup
 	for i := 0; i <= last; i++ { // Loop over all possible pattern.
 		wg.Add(1)
-		//go 
-		func(k int) {
+		go func(k int) {
 			defer wg.Done()
 			pat := data[k : k+ptLen]
 			key := hex.EncodeToString(pat) // We need to convert pat into a key.
@@ -116,7 +116,8 @@ func (p *Histogram) ScanFile(fSys *afero.Afero, iFn string, maxPatternSize int) 
 		return err
 	}
 
-	ss := strings.Split(string(data), ". ") // split ASCII text into sentences (TODO)
+	//ss := strings.Split(string(data), ". ") // split ASCII text into sentences (TODO)
+        ss := []string{string(data)}
 
 	var wg sync.WaitGroup
 	for i, sent := range ss {
