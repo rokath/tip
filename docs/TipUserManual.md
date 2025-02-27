@@ -1,4 +1,4 @@
-# TiP - Tiny Packer - User Manual
+9# TiP - Tiny Packer - User Manual
 
 (work in progress)
 
@@ -112,6 +112,41 @@ On the receiver side all bytes with MSBit=0 are identified as IDs and are replac
 * Also it could make sense to use the length of a pattern as weigth. If, for example a 5-bytes long pattern occurs 100 times and a 2-bytes long pattern exists 200 times in the sample data - which should get preceedence to get into the ID table? My guess is, to multiply the pattern length with its occureances count gives a good approximation.
 * We could also just determine all pattern from 2 to 8 bytes length and then go byte by byte through the sample data and increment for each byte the pattern counter for the pattern containing this byte on the right place.
 * It could make sense, to build several ID tables and then measure how good the packing is with the different tables.
+
+#### 10 bytes: 123456789a 
+
++|-|length|pattern|no pattern|byte usage count | equ. factor
+-|-|-|-|-|-|-
+10 | 0 | 1er | 1 ... a ||1|10/1
+9 | 1 |2er| 12 23 ... 9a| a1| 2|10/2
+8 | 2 |3er |123 234 ... 89a| 9a1 a12 | 3 |10/3
+...|...|...|...|...|...
+4 |6| 7er|1234567 2345678 3456789 456789a|56789a1...|7|10/7
+3 | 7 | 8er | 12345678 23456789 3456789a | 456789a1...|8|10/8
+2 | 8 | 9er | 123456789 23456789a | 3456789a1...|9|10/9
+1 | 9 | 10er | 123456789a | 23456789a1...|10|10/10
+
+1234
+
+count|factor|hist|reduced|\*length
+-|-|-|-|-
+1:1,2:1,3:1,4:1|\*4/1|all:4|1:3,2:2,3:2,4:3|=
+12:1,23:1,34:1 |\*4/2|all:2|12:1,23:0,34:1|12:2,23:0,34:2
+123:1, 234:1 |\*4/3|123:1.333,234:1.333|123:0.333,234:0.333|123:1,234:1
+1234:1|\*4/4|1234:1|1234:1|1234:4
+
+table: 1234, 12, 34, 123, 234, 23
+
+1111
+
+count|factor|hist|reduced|\*length
+-|-|-|-|-
+1:4|\*4/1|1:16|1:4|1:4
+11:3|\*4/2|11:6|0.666|1.333
+111:2|\*4/3|111:2.666|111:0.666|111:2
+1111:1\*4/4|1111:1|1111:1|1111:4|1111:4
+
+table: 1111 111 11
 
 ## 3. <a id='improvement-ideas'></a>Improvement Ideas
 
