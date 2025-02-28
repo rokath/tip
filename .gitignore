@@ -1,7 +1,5 @@
-
+*.tip
 *.bin
 *.o
-
-
-
+examples/G01B_inst/out.gcc/
 examples/L432_inst/out.gcc/

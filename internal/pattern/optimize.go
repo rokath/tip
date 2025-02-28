@@ -9,25 +9,27 @@ import (
 
 func (p *Histogram) PrintInfo(message string) {
 	var (
-		smallest = math.MaxInt
-		biggest  = math.MinInt
-		sum      int
+		smallest float32 = math.MaxFloat32
+		biggest  = float32(0)
+		sum      float32
 		count    int
 	)
+
 	for _, v := range p.Hist {
 		smallest = min(smallest, v.Weight)
+
 		biggest = max(biggest, v.Weight)
 		sum += v.Weight
 		count++
 	}
-	fmt.Println(message, "-> count:", count, "sum:", sum, "average:", sum, "/", count, "=", sum/count, "smallest:", smallest, "biggest:", biggest)
+	fmt.Println(message, "-> count:", count, "sum:", sum, "average:", sum, "/", count, "=", sum/float32(count), "smallest:", smallest, "biggest:", biggest)
 }
 
-// BalanceByteUsage multiplies each key value with maxPatternSize / len(key) to achieve a balance
-// in byte usage for pattern of different length. To avoid floats, we use a 1000 times bigger value
+// BalanceByteUsage multiplies each key value with maxPatternSize / (len(key)/2) 
+// to achieve a balance in byte usage for pattern of different length. 
 func (p *Histogram) BalanceByteUsage(maxPatternSize int) {
 	for k, v := range p.Hist {
-		v.Weight = v.Weight * 2000 / len(k)
+		v.Weight *= float32(2*maxPatternSize) / float32(len(k))
 		p.Hist[k] = v
 	}
 }
@@ -35,7 +37,7 @@ func (p *Histogram) BalanceByteUsage(maxPatternSize int) {
 // AddWeigths multiplies weight values with key len.
 func (p *Histogram) AddWeigths() {
 	for k, v := range p.Hist {
-		v.Weight *= len(k)
+		v.Weight *= float32(len(k)>>1)
 		p.Hist[k] = v
 	}
 }
@@ -51,6 +53,7 @@ func (p *Histogram) Reduce() {
 	if len(p.Hist) < 2 { // less than 2 keys
 		return
 	}
+	p.GetKeys()
 	p.SortKeysByIncrSize()
 	for i := 0; i < len(p.Key)-1; { // iterate over by increasing length sorted keys
 		var smallerKeys []string
@@ -121,7 +124,7 @@ func (p *Histogram) DeletePosition(key string, position int) {
 			// }
 			v.Pos[i] = v.Pos[len(v.Pos)-1]
 			v.Pos = v.Pos[:len(v.Pos)-1]
-			v.Weight -= 1 // 500?
+			v.Weight -= 1.0
 			p.Hist[key] = v
 			return
 		}

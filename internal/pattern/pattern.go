@@ -17,8 +17,8 @@ var (
 
 // Pat is the pattern descriptor of Key.
 type Pat struct {
-	Weight int   // Weight is first len(Pos) but gets modifikated later
-	Pos    []int // Pos holds all start occurances of Key
+	Weight float32 // Weight is first len(Pos) but gets modifikated later
+	Pos    []int   // Pos holds all start occurances of Key
 }
 
 // Histogram objects hold pattern strings occurences count.
@@ -53,17 +53,17 @@ func (p *Histogram) Extend(data []byte, maxPatternSize int) {
 }
 
 // DiscardSeldomPattern removes all keys occuring only discardSize or less often.
-func (p *Histogram) DiscardSeldomPattern(discardSize int) {
+func (p *Histogram) DiscardSeldomPattern(discardSize float32) {
 	hlen := len(p.Hist)
-	counts := make([]int, discardSize) 
+	counts := make([]int, int(discardSize))
 	for k, v := range p.Hist {
 		if v.Weight <= discardSize {
 			delete(p.Hist, k)
-			counts[v.Weight-1]++
+			counts[int(v.Weight-1)]++
 		}
 	}
 	if Verbose {
-		fmt.Println( counts, "of", hlen, "patterns removed.")
+		fmt.Println(counts, "of", hlen, "patterns removed.")
 	}
 }
 
@@ -107,7 +107,7 @@ func (p *Histogram) ExportAsList() (list []Patt) {
 	var i int
 	p.mu.Lock()
 	for key, cnt := range p.Hist {
-		list[i].Cnt = cnt.Weight
+		list[i].Cnt = int(cnt.Weight) // TODO
 		list[i].Bytes, _ = hex.DecodeString(key) // restore bytes
 		list[i].Key = key
 		i++
