@@ -20,7 +20,7 @@ func (p *Histogram) PrintInfo(message string) {
 		sum += v.Weight
 		count++
 	}
-	fmt.Println(message, "-> count:", count, "sum:", sum, "average:", sum/count, "smallest:", smallest, "biggest:", biggest)
+	fmt.Println(message, "-> count:", count, "sum:", sum, "average:", sum, "/", count, "=", sum/count, "smallest:", smallest, "biggest:", biggest)
 }
 
 // BalanceByteUsage multiplies each key value with maxPatternSize / len(key) to achieve a balance
@@ -121,7 +121,7 @@ func (p *Histogram) DeletePosition(key string, position int) {
 			// }
 			v.Pos[i] = v.Pos[len(v.Pos)-1]
 			v.Pos = v.Pos[:len(v.Pos)-1]
-			v.Weight -= 500
+			v.Weight -= 1 // 500?
 			p.Hist[key] = v
 			return
 		}
@@ -140,11 +140,11 @@ repeat:
 	if idx == -1 { // subKey not inside bkey
 		return
 	}
-	if idx & 1 == 1 { // odd not allowed
+	if idx&1 == 1 { // odd not allowed
 		if offset+idx+1 < len(bkey) {
 			offset += idx + 1
 			goto repeat
-		}else{
+		} else {
 			return
 		}
 	}
@@ -152,7 +152,7 @@ repeat:
 	bkeyPos := p.Hist[bkey].Pos
 	subKeyPos := p.Hist[subKey].Pos
 	p.mu.Unlock()
-	pos := positionIndexMatch(bkeyPos, (offset + idx)>>1, subKeyPos) 
+	pos := positionIndexMatch(bkeyPos, (offset+idx)>>1, subKeyPos)
 	if pos >= 0 {
 		p.mu.Lock()
 		p.DeletePosition(subKey, pos)
