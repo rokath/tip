@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 
 	"github.com/spf13/afero"
@@ -18,8 +17,8 @@ var (
 
 // Pat is the pattern descriptor of Key.
 type Pat struct {
-	Weight int // Weight is first len(Pos) but gets modifikated later
-	Pos []int // Pos holds all start occurances of Key
+	Weight int   // Weight is first len(Pos) but gets modifikated later
+	Pos    []int // Pos holds all start occurances of Key
 }
 
 // Histogram objects hold pattern strings occurences count.
@@ -51,6 +50,21 @@ func (p *Histogram) Extend(data []byte, maxPatternSize int) {
 		}(i)
 	}
 	wg.Wait()
+}
+
+// DiscardSeldomPattern removes all keys occuring only discardSize or less often.
+func (p *Histogram) DiscardSeldomPattern(discardSize int) {
+	hlen := len(p.Hist)
+	counts := make([]int, discardSize) 
+	for k, v := range p.Hist {
+		if v.Weight <= discardSize {
+			delete(p.Hist, k)
+			counts[v.Weight-1]++
+		}
+	}
+	if Verbose {
+		fmt.Println( counts, "of", hlen, "patterns removed.")
+	}
 }
 
 // scanForRepetitions searches data for ptLen bytes sequences
@@ -117,7 +131,7 @@ func (p *Histogram) ScanFile(fSys *afero.Afero, iFn string, maxPatternSize int) 
 	}
 
 	//ss := strings.Split(string(data), ". ") // split ASCII text into sentences (TODO)
-        ss := []string{string(data)}
+	ss := []string{string(data)}
 
 	var wg sync.WaitGroup
 	for i, sent := range ss {

@@ -12,7 +12,7 @@
             "program": "${workspaceFolder}/cmd/ti_generate",
             "env": {},
             "args": ["-i",
-                     "${workspaceFolder}/docs/TipUserManual.md"
+                     "${workspaceFolder}/test/samples/trice.bin"
             ]
         },
         {

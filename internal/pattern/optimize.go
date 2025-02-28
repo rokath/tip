@@ -48,7 +48,7 @@ func (p *Histogram) Reduce() {
 	if Verbose {
 		fmt.Println("Reducing histogram with length", len(p.Hist), "...")
 	}
-	if len(p.Key) < 2 { // less than 2 keys
+	if len(p.Hist) < 2 { // less than 2 keys
 		return
 	}
 	p.SortKeysByIncrSize()
@@ -77,60 +77,108 @@ func (p *Histogram) Reduce() {
 	}
 }
 
-// positionMatch return pos if a and b have one value common or -1.
-func positionMatch(a, b []int) int {
+// positionIndexMatch return b pos if a + idx and b have one value common or -1.
+func positionIndexMatch(a []int, idx int, b []int) int {
 	for _, x := range a {
 		for _, y := range b {
-			if x == y {
-				return x
+			if x+idx == y {
+				return y
 			}
 		}
 	}
 	return -1
 }
 
-func (p *Histogram) ReduceOverlappingKeys(biggerKeys, smallerKeys []string) {
-	if Verbose {
-		fmt.Println("ReduceOverlappingKeys")
-		fmt.Println(len(biggerKeys), "\tbiggerKeys:", biggerKeys[:3], "...")
-		fmt.Println(len(smallerKeys), "\tsmallerKeys:", smallerKeys[:3], "...")
+//  // positionMatch return pos if a and b have one value common or -1.
+//  func positionMatch(a, b []int) int {
+//  	for _, x := range a {
+//  		for _, y := range b {
+//  			if x == y {
+//  				return x
+//  			}
+//  		}
+//  	}
+//  	return -1
+//  }
+
+//  // DeletePosition removes position key and reduces its weight by 1.
+//  func (p *Histogram)DeletePosition(key string, position int){
+//  	v := p.Hist[key]
+//  	v.Pos = slices.DeleteFunc(v.Pos, func(position int) bool {
+//  		return slices.Contains(v.Pos, position)
+//  	})
+//  	v.Weight--
+//  	p.Hist[key] = v
+//  }
+
+// DeletePosition removes position key and reduces its weight by 1.
+func (p *Histogram) DeletePosition(key string, position int) {
+	v := p.Hist[key]
+	for i, x := range v.Pos {
+		if x == position {
+			// if Verbose{
+			// 	fmt.Println("DeletePosition:", key, v.Weight)
+			// }
+			v.Pos[i] = v.Pos[len(v.Pos)-1]
+			v.Pos = v.Pos[:len(v.Pos)-1]
+			v.Weight -= 500
+			p.Hist[key] = v
+			return
+		}
 	}
+}
+
+// ReduceSubKey checks if subKey is inside bkey and removes the subKey internal positions,
+// if they match with the bkey positions. Example: if subkey has position 21 and bkey has
+// position 18 and idx is 2, then the subkey position 20 is removed (18+2==20).
+func (p *Histogram) ReduceSubKey(bkey, subKey string) {
+	// We need to pay attention, that the .Pos values are 1-step values, but the keys are double sized!
+	var offset int
+repeat:
+	s := bkey[offset:]
+	idx := strings.Index(s, subKey)
+	if idx == -1 { // subKey not inside bkey
+		return
+	}
+	if idx & 1 == 1 { // odd not allowed
+		if offset+idx+1 < len(bkey) {
+			offset += idx + 1
+			goto repeat
+		}else{
+			return
+		}
+	}
+	p.mu.Lock()
+	bkeyPos := p.Hist[bkey].Pos
+	subKeyPos := p.Hist[subKey].Pos
+	p.mu.Unlock()
+	pos := positionIndexMatch(bkeyPos, (offset + idx)>>1, subKeyPos) 
+	if pos >= 0 {
+		p.mu.Lock()
+		p.DeletePosition(subKey, pos)
+		p.mu.Unlock()
+	}
+	if offset+idx+2 < len(bkey) {
+		offset += idx + 2
+		goto repeat
+	}
+}
+
+// ReduceOverlappingKeys checks for all biggerKeys if the smallerKeys are part of them
+// and removes their internal positions, if the positions are matching.
+func (p *Histogram) ReduceOverlappingKeys(biggerKeys, smallerKeys []string) {
+	//  if Verbose {
+	//  	fmt.Println("ReduceOverlappingKeys")
+	//  	fmt.Println(len(biggerKeys), "\tbiggerKeys:", biggerKeys[:3], "...")
+	//  	fmt.Println(len(smallerKeys), "\tsmallerKeys:", smallerKeys[:3], "...")
+	//  }
 	var wg sync.WaitGroup
 	for _, bkey := range biggerKeys {
 		wg.Add(1)
 		go func(bigKey string) {
 			defer wg.Done()
 			for _, subKey := range smallerKeys {
-				idx := strings.Index(bkey, subKey)
-				if idx == -1 { // subKey not inside bkey
-					continue
-				}
-				p.mu.Lock()
-				bkeyPos := p.Hist[bkey].Pos
-				subKeyPos := p.Hist[subKey].Pos
-				p.mu.Unlock()
-				if pos := positionMatch(bkeyPos, subKeyPos); pos >= 0 {
-					p.mu.Lock()
-					v := p.Hist[subKey]
-					v.Weight -= 1
-					p.Hist[subKey] = v
-					//  if Verbose {
-					//  	fmt.Printf("%s(%d) found inside %s(%d) at pos %d.\n", subKey, v.Weight, bigKey, p.Hist[bkey].Weight, pos)
-					//  }
-					p.mu.Unlock()
-				}
-
-				// n := countOverlapping2(bigKey, subKey) // sub is n-times inside key
-				// p.mu.Lock()
-				// a := p.Hist[bigKey].Weight // bkey has a count
-				// v := p.Hist[subKey]
-				// b := v.Weight      // sub has b count
-				// v.Weight = b - a*n // new sub count
-				// p.Hist[subKey] = v
-				// if Verbose && n > 0 {
-				// 	// fmt.Printf("%s(%d) is %d inside %s(%d). -> %s(%d)\n", subKey, b, n, bigKey, a, subKey, v.Weight)
-				// }
-				// p.mu.Unlock()
+				p.ReduceSubKey(bkey, subKey)
 			}
 		}(bkey)
 	}

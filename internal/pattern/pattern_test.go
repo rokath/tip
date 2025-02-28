@@ -140,6 +140,7 @@ func TestHistogram_Extend(t *testing.T) {
 			mu:   tt.fields.mu,
 		}
 		p.Extend(tt.args.data, tt.args.maxPatternSize)
+		p.SortPositions()
 		assert.Equal(t, tt.exp, p.Hist)
 	}
 }
