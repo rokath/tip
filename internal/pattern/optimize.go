@@ -9,9 +9,9 @@ import (
 
 func (p *Histogram) PrintInfo(message string) {
 	var (
-		smallest float32 = math.MaxFloat32
-		biggest  = float32(0)
-		sum      float32
+		smallest float64 = math.MaxFloat32
+		biggest          = float64(0)
+		sum      float64
 		count    int
 	)
 
@@ -22,14 +22,25 @@ func (p *Histogram) PrintInfo(message string) {
 		sum += v.Weight
 		count++
 	}
-	fmt.Println(message, "-> count:", count, "sum:", sum, "average:", sum, "/", count, "=", sum/float32(count), "smallest:", smallest, "biggest:", biggest)
+	fmt.Println(message, "-> count:", count, "sum:", sum, "average:", sum, "/", count, "=", sum/float64(count), "smallest:", smallest, "biggest:", biggest)
 }
 
-// BalanceByteUsage multiplies each key value with maxPatternSize / (len(key)/2) 
-// to achieve a balance in byte usage for pattern of different length. 
+// BalanceByteUsage multiplies each key value with maxPatternSize / len(key)
+// to achieve a balance in byte usage for pattern of different length.
+// pattern   | counts | sum | factor | weight
+// abcd      | 1	  | 1	| 4/1    | 4
+// abc bcd   | 1+1	  | 2   | 4/2    | 4
+// ab bc cd  | 1+1+1  | 3   | 4/3    | 4
+// a b c d   | 1+1+1+1|	4   | 4/4    | 4
+// aaaa      | 1	  | 1	| 4/1    | 4
+// aaa aaa   | 1+1	  | 2   | 4/2    | 4
+// aa aa aa  | 1+1+1  | 3   | 4/3    | 4
+// a a a a   | 1+1+1+1|	4   | 4/4    | 4
+// sum = max - (size - 1) = max+1-size
 func (p *Histogram) BalanceByteUsage(maxPatternSize int) {
 	for k, v := range p.Hist {
-		v.Weight *= float32(2*maxPatternSize) / float32(len(k))
+		factor := float64(maxPatternSize) / float64((maxPatternSize+1)-(len(k)>>1))
+		v.Weight *= factor
 		p.Hist[k] = v
 	}
 }
@@ -37,7 +48,7 @@ func (p *Histogram) BalanceByteUsage(maxPatternSize int) {
 // AddWeigths multiplies weight values with key len.
 func (p *Histogram) AddWeigths() {
 	for k, v := range p.Hist {
-		v.Weight *= float32(len(k)>>1)
+		v.Weight *= float64(len(k) >> 1)
 		p.Hist[k] = v
 	}
 }

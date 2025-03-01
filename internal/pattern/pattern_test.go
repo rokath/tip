@@ -1,6 +1,7 @@
 package pattern
 
 import (
+	"reflect"
 	"sync"
 	"testing"
 
@@ -133,6 +134,12 @@ func TestHistogram_Extend(t *testing.T) {
 			args{[]byte{0x11, 0x22, 0x33}, 2},
 			map[string]Pat{"1122": {1, []int{0}}, "2233": {1, []int{1}}},
 		},
+		{
+			"", // name
+			fields{map[string]Pat{}, &m},
+			args{[]byte("abc"), 2},
+			map[string]Pat{s2h("ab"): {1, []int{0}}, s2h("bc"): {1, []int{1}}},
+		},
 	}
 	for _, tt := range tests {
 		p := &Histogram{
@@ -144,3 +151,88 @@ func TestHistogram_Extend(t *testing.T) {
 		assert.Equal(t, tt.exp, p.Hist)
 	}
 }
+
+func TestHistogram_DiscardSeldomPattern(t *testing.T) {
+	var m sync.Mutex
+	type args struct {
+		discardSize float64
+	}
+	tests := []struct {
+		name string
+		p    *Histogram
+		args args
+		exp  *Histogram
+	}{
+		// test cases:
+		{"",
+			&Histogram{map[string]Pat{s2h("ab"): {4, []int{8, 16, 24, 32}}, s2h("bc"): {1, []int{44}}, s2h("abc"): {1, []int{8}}}, &m, nil}, args{3},
+			&Histogram{map[string]Pat{s2h("ab"): {4, []int{8, 16, 24, 32}}}, &m, nil},
+		},
+		{"",
+			&Histogram{map[string]Pat{s2h("ab"): {4, []int{8, 16, 24, 32}}, s2h("bc"): {2, []int{44}}, s2h("abc"): {1, []int{8}}}, &m, nil}, args{1},
+			&Histogram{map[string]Pat{s2h("ab"): {4, []int{8, 16, 24, 32}}, s2h("bc"): {2, []int{44}}}, &m, nil},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.p.DiscardSeldomPattern(tt.args.discardSize)
+			assert.Equal(t, tt.exp, tt.p)
+		})
+	}
+}
+
+func TestHistogram_GetKeys(t *testing.T) {
+	var m sync.Mutex
+	tests := []struct {
+		name string
+		p    *Histogram
+		exp  []string
+	}{
+		// test cases:
+		{"",
+			&Histogram{map[string]Pat{s2h("ab"): {4, []int{8, 16, 24, 32}}, s2h("bc"): {1, []int{44}}, s2h("abc"): {1, []int{8}}}, &m, nil},
+			[]string{"ab", "bc", "abc"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.p.GetKeys()
+			assert.Equal(t, len(tt.p.Hist), len(tt.exp))
+			for _, k := range tt.exp {
+				_, ok := tt.p.Hist[s2h(k)]
+				assert.True(t, ok)
+			}
+		})
+	}
+}
+
+func TestHistogram_ExportAsList(t *testing.T) {
+	var m sync.Mutex
+	tests := []struct {
+		name     string
+		p        *Histogram
+		wantList []Patt
+	}{
+		// test cases:
+		{"",
+			&Histogram{map[string]Pat{s2h("ab"): {4, []int{8, 16, 24, 32}}, s2h("bc"): {1, []int{44}}, s2h("abc"): {1, []int{8}}}, &m, nil},
+			[]Patt{
+				{4, []byte{0x61, 0x62}, s2h("ab")},
+				{1, []byte{0x62, 0x63}, s2h("bc")},
+				{1, []byte{0x61, 0x62, 0x63}, s2h("abc")},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotList := tt.p.ExportAsList()
+			actList := SortByDescCountDescLength(gotList)
+			expList := SortByDescCountDescLength(tt.wantList)
+			if !reflect.DeepEqual(actList, expList) {
+				t.Errorf("Histogram.ExportAsList() = %v, want %v", gotList, tt.wantList)
+			}
+		})
+	}
+}
+
+// generated: ////////////////////////////////

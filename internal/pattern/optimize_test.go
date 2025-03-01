@@ -53,10 +53,12 @@ func TestHistogram_BalanceByteUsage(t *testing.T) {
 		args   args
 		exp    map[string]Pat
 	}{ // test cases:
-		{"", fields{map[string]Pat{"1122": {1, []int{0}}}, &m, nil}, args{8}, map[string]Pat{"1122": {500, []int{0}}}},
-		{"", fields{map[string]Pat{"1122": {10, []int{0}}}, &m, nil}, args{8}, map[string]Pat{"1122": {5000, []int{0}}}},
-		{"", fields{map[string]Pat{"112233": {10, []int{0}}}, &m, nil}, args{8}, map[string]Pat{"112233": {3333, []int{0}}}},
-		{"", fields{map[string]Pat{"1111": {3, []int{0}}}, &m, nil}, args{8}, map[string]Pat{"1111": {1500, []int{0}}}},
+		{"", fields{map[string]Pat{s2h("a"): {4, []int{0, 1, 2, 3}}}, &m, nil}, args{4}, map[string]Pat{s2h("a"): {4, []int{0, 1, 2, 3}}}},
+		{"", fields{map[string]Pat{s2h("aa"): {3, []int{0, 1, 2}}}, &m, nil}, args{4}, map[string]Pat{s2h("aa"): {4, []int{0, 1, 2}}}},
+		{"", fields{map[string]Pat{s2h("aaa"): {2, []int{0, 1}}}, &m, nil}, args{4}, map[string]Pat{s2h("aaa"): {4, []int{0, 1}}}},
+		{"", fields{map[string]Pat{s2h("aaaa"): {1, []int{0}}}, &m, nil}, args{4}, map[string]Pat{s2h("aaaa"): {4, []int{0}}}},
+		{"", fields{map[string]Pat{s2h("ab"): {10, []int{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}}}, &m, nil}, args{8}, map[string]Pat{s2h("ab"): {float64(10*8) / 7, []int{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}}}},
+		{"", fields{map[string]Pat{s2h("ab"): {3, []int{0, 3, 6}}}, &m, nil}, args{8}, map[string]Pat{s2h("ab"): {float64(3*8) / 7, []int{0, 3, 6}}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -66,6 +68,11 @@ func TestHistogram_BalanceByteUsage(t *testing.T) {
 				Key:  tt.fields.Key,
 			}
 			p.BalanceByteUsage(tt.args.maxPatternSize)
+			for k, v := range p.Hist {
+				a := v.Weight
+				e := tt.exp[k].Weight
+				withinTolerance(a, e, 0.001)
+			}
 		})
 	}
 }
@@ -114,8 +121,8 @@ func TestHistogram_DeletePosition(t *testing.T) {
 			p.DeletePosition(tt.args.key, tt.args.position)
 			e := tt.exp.Hist
 			a := p.Hist
-			fmt.Println("exp:", reflect.ValueOf(e).Type(), e)
-			fmt.Println("act:", reflect.ValueOf(a).Type(), a)
+			//fmt.Println("exp:", reflect.ValueOf(e).Type(), e)
+			//fmt.Println("act:", reflect.ValueOf(a).Type(), a)
 			result := reflect.DeepEqual(e, a)
 			assert.True(t, result)
 		})
@@ -162,6 +169,11 @@ func TestHistogram_Reduce(t *testing.T) {
 			fields{map[string]Pat{"1122": {2, []int{4, 9}}, "112233": {1, []int{4}}}, &mu, nil},
 			map[string]Pat{"1122": {1, []int{9}}, "112233": {1, []int{4}}},
 		},
+		{
+			"",
+			fields{map[string]Pat{"11a2": {2, []int{4, 9}}, "112233": {1, []int{4}}}, &mu, nil},
+			map[string]Pat{"11a2": {2, []int{4, 9}}, "112233": {1, []int{4}}},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -197,18 +209,18 @@ func TestHistogram_ReduceOverlappingKeys(t *testing.T) {
 		{
 			"",
 			fields{map[string]Pat{"1a1a": {3, []int{0, 1, 5}}, "1a1a1a": {1, []int{0}}}, &mu, nil}, // the histogram in p
-			args{[]string{"1a1a1a"}, []string{"1a1a"}},                                          // the function arguments
-			map[string]Pat{"1a1a": {1, []int{5}}, "1a1a1a": {1, []int{0}}},                      // the expected result in p !!!!!!!!!!!!!!!!!!
+			args{[]string{"1a1a1a"}, []string{"1a1a"}},                                             // the function arguments
+			map[string]Pat{"1a1a": {1, []int{5}}, "1a1a1a": {1, []int{0}}},                         // the expected result in p
 		},
 		{
 			"", // case: |xx1a1a1a1axx...|
 			fields{map[string]Pat{"1a1a": {9, []int{0, 2, 3, 4, 5, 6, 8, 10, 20}}, "1a1a1a1a": {2, []int{2, 32}}}, &mu, nil}, // the histograms in p
-			args{[]string{"1a1a1a1a"}, []string{"1a1a"}},                                                            // the function arguments
-			map[string]Pat{"1a1a": {6, []int{0, 5, 6, 8, 10, 20}}, "1a1a1a1a": {2, []int{2, 32}}},                         // the expected result in p
+			args{[]string{"1a1a1a1a"}, []string{"1a1a"}},                                          // the function arguments
+			map[string]Pat{"1a1a": {6, []int{0, 5, 6, 8, 10, 20}}, "1a1a1a1a": {2, []int{2, 32}}}, // the expected result in p
 		},
 		{
 			"",
-			fields{map[string]Pat{"1122": {2, []int{8,32}}, "112233": {1, []int{8}}}, &mu, nil},
+			fields{map[string]Pat{"1122": {2, []int{8, 32}}, "112233": {1, []int{8}}}, &mu, nil},
 			args{[]string{"112233"}, []string{"1122"}},
 			map[string]Pat{"1122": {1, []int{32}}, "112233": {1, []int{8}}},
 		},
@@ -228,8 +240,70 @@ func TestHistogram_ReduceOverlappingKeys(t *testing.T) {
 			fmt.Println("act:", reflect.ValueOf(a).Type(), a)
 			result := reflect.DeepEqual(e, a)
 			assert.True(t, result)
-
 			assert.Equal(t, tt.exp, p.Hist)
+		})
+	}
+}
+
+func TestHistogram_AddWeigths(t *testing.T) {
+	var mu sync.Mutex
+	tests := []struct {
+		name string
+		p    *Histogram
+		exp  map[string]float64
+	}{
+		// test cases:
+		{"", &Histogram{map[string]Pat{"1122": {2, []int{8, 32}}, "112233": {1, []int{8}}}, &mu, nil}, map[string]float64{"1122": 4, "112233": 3}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.p.AddWeigths()
+			for k, v := range tt.p.Hist {
+				a := v.Weight
+				e := tt.exp[k]
+				fmt.Println(k, a, e)
+				assert.True(t, withinTolerance(e, a, 0.001))
+			}
+		})
+	}
+}
+
+func TestHistogram_ReduceSubKey(t *testing.T) {
+	var mu sync.Mutex
+	type args struct {
+		bkey   string
+		subKey string
+	}
+	tests := []struct {
+		name string
+		p    *Histogram
+		args args
+		exp  *Histogram
+	}{
+		// test cases:
+		{
+			"",
+			&Histogram{map[string]Pat{s2h("ab"): {2, []int{8, 32}}, s2h("112233"): {1, []int{8}}}, &mu, nil},
+			args{s2h("abc"), s2h("ab")},
+			&Histogram{map[string]Pat{s2h("ab"): {2, []int{8, 32}}, s2h("112233"): {1, []int{8}}}, &mu, nil},
+		},
+		{
+			"",
+			&Histogram{map[string]Pat{s2h("ab"): {2, []int{8, 32}}, s2h("abc"): {1, []int{8}}}, &mu, nil},
+			args{s2h("abc"), s2h("ab")},
+			&Histogram{map[string]Pat{s2h("ab"): {1, []int{32}}, s2h("abc"): {1, []int{8}}}, &mu, nil},
+		},
+		{
+			"",
+			&Histogram{map[string]Pat{s2h("ab"): {2, []int{8, 32}}, s2h("bc"): {2, []int{9, 44}}, s2h("abc"): {1, []int{8}}}, &mu, nil},
+			args{s2h("abc"), s2h("bc")},
+			&Histogram{map[string]Pat{s2h("ab"): {2, []int{8, 32}}, s2h("bc"): {1, []int{44}}, s2h("abc"): {1, []int{8}}}, &mu, nil},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.p.ReduceSubKey(tt.args.bkey, tt.args.subKey)
+			assert.Equal(t, tt.exp, tt.p)
 		})
 	}
 }
