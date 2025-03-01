@@ -1,4 +1,4 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+8<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a id="readme-top"></a>
 
 <!-- PROJECT SHIELDS -->
@@ -155,9 +155,9 @@ Please refer to the [Tip User Manual](./docs/TipUserManual.md) (work in progress
 <!-- ROADMAP -->
 ## 5. <a id='roadmap'></a>Roadmap
 
-- [x] Create `tipTable.h` Generator `tipTable`.
+- [x] Create `tipTable.h` Generator `ti_generate`.
 - [x] Create `pack.c` and `unpack.c` and test.
-- [ ] Improve `tipTable.h` Generator `tipTable`.
+- [ ] Improve `tipTable.h` Generator `ti_generate`.
 - [ ] Write [Tip User Manual](./docs/TipUserManual.md).
 - [ ] Write fuzzy tests.
 - [ ] Remove 65535 bytes limitation.
