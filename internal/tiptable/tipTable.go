@@ -25,7 +25,7 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 		err = p.ScanFile(fSys, loc, maxPatternSize)
 	}
 	p.PrintInfo("Histogram after Scan")
-	p.DiscardSeldomPattern(20)
+	p.DiscardSeldomPattern(0)
 	p.PrintInfo("Histogram after DiscardSeldomPattern")
 	//p.BalanceByteUsage(maxPatternSize)
 	//p.PrintInfo("Histogram after Balance")
