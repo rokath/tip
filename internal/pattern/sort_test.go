@@ -19,7 +19,7 @@ func TestHistogram_SortKeysByIncrSize(t *testing.T) {
 		fields fields
 		exp    fields
 	}{
-		// TODO: Add test cases.
+		// test cases:
 		{
 			"", // name
 			fields{map[string]Pat{}, &mu, []string{"bb11", "112233", "aa22"}},
@@ -63,3 +63,4 @@ func TestSortByDescCountDescLength(t *testing.T) {
 	assert.Equal(t, exp, act)
 }
 
+// generated: ////////////////////////////////

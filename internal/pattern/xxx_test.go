@@ -176,7 +176,7 @@ func _XXX_Test_extendHistorgamMap(t *testing.T) {
 	fmt.Println(tt)
 }
 
-func TestExtendHistogram(t *testing.T) {
+func TestScanData(Histogram(t *testing.T) {
 	defer Setup(t)() // This executes Setup(t) and puts the returned function into the defer list.
 	type args struct {
 		hist map[string]int
@@ -192,7 +192,7 @@ func TestExtendHistogram(t *testing.T) {
 		{"2nd", args{map[string]int{"0102": 3}, []byte{0x01, 0x02}, 4}},
 	}
 	for _, tt := range tests {
-		ExtendHistogram(tt.args.hist, tt.args.data, tt.args.max)
+		ScanData(Histogram(tt.args.hist, tt.args.data, tt.args.max)
 	}
 }
 
