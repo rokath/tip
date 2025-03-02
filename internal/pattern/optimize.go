@@ -22,7 +22,7 @@ func (p *Histogram) PrintInfo(message string) {
 		sum += v.Weight
 		count++
 	}
-	fmt.Println(message, "-> count:", count, "sum:", sum, "average:", sum, "/", count, "=", sum/float64(count), "smallest:", smallest, "biggest:", biggest)
+	fmt.Println("average=\t", sum/float64(count), "\tsmallest:", smallest, "\tbiggest:", biggest, "\t", message)
 }
 
 // BalanceByteUsage multiplies each key value with maxPatternSize / len(key)

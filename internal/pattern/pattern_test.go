@@ -72,7 +72,7 @@ func TestHistogram_scanForRepetitions(t *testing.T) {
 	}
 }
 
-func TestHistogram_Extend(t *testing.T) {
+func TestHistogram_ScanData(t *testing.T) {
 	var m sync.Mutex
 	type fields struct {
 		Hist map[string]Pat
@@ -146,7 +146,7 @@ func TestHistogram_Extend(t *testing.T) {
 			Hist: tt.fields.Hist,
 			mu:   tt.fields.mu,
 		}
-		p.Extend(tt.args.data, tt.args.maxPatternSize)
+		p.ScanData(tt.args.data, tt.args.maxPatternSize)
 		p.SortPositions()
 		assert.Equal(t, tt.exp, p.Hist)
 	}

@@ -35,12 +35,12 @@ func NewHistogram(mu *sync.Mutex) *Histogram {
 	return &object
 }
 
-// Extend searches data for any 2-to-max bytes sequences
+// ScanData( searches data for any 2-to-max bytes sequences
 // and extends p with them as key strings hex encoded with their increased count as values in hist.
-// Extend searches data for any 2-to-max bytes sequences and extends p.Hist with them.
+// ScanData( searches data for any 2-to-max bytes sequences and extends p.Hist with them.
 // The byte sequences are getting hex encodedand used as keys with their increased count as values in p.Hist.
 // Pattern of size 1 are skipped, because they give no compression effect when replaced by an id.
-func (p *Histogram) Extend(data []byte, maxPatternSize int) {
+func (p *Histogram) ScanData(data []byte, maxPatternSize int) {
 	var wg sync.WaitGroup
 	for i := range maxPatternSize - 1 { // loop over pattern sizes
 		wg.Add(1)
@@ -71,7 +71,7 @@ func (p *Histogram) DiscardSeldomPattern(discardSize float64) {
 // and adds them as key strings hex encoded with their count as values to p.Hist.
 // Also the pattern positions are recorded.
 // This pattern search algorithm: Start at offset 0 with ptLen bytes from data as pattern
-// and search data for repetitions by moving byte by byte. Extend p.Hist accordingly.
+// and search data for repetitions by moving byte by byte. ScanData( p.Hist accordingly.
 func (p *Histogram) scanForRepetitions(data []byte, ptLen int) {
 	last := len(data) - (ptLen) // This is the last position in data to check for repetitions.
 	var wg sync.WaitGroup
@@ -129,20 +129,8 @@ func (p *Histogram) ScanFile(fSys *afero.Afero, iFn string, maxPatternSize int) 
 	if err != nil {
 		return err
 	}
-
-	//ss := strings.Split(string(data), ". ") // split ASCII text into sentences (TODO)
-	ss := []string{string(data)}
-
-	var wg sync.WaitGroup
-	for i, sent := range ss {
-		wg.Add(1)
-		go func(k int, sentence string) {
-			defer wg.Done()
-			p.Extend([]byte(sentence), maxPatternSize)
-		}(i, sent)
-	}
-	wg.Wait()
-	return
+	p.ScanData(data, maxPatternSize)
+	return nil
 }
 
 // ScanAllFiles traverses location and adds all files as sample data.
