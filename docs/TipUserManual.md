@@ -113,16 +113,16 @@ On the receiver side all bytes with MSBit=0 are identified as IDs and are replac
 * We could also just determine all pattern from 2 to 8 bytes length and then go byte by byte through the sample data and increment for each byte the pattern counter for the pattern containing this byte on the right place.
 * It could make sense, to build several ID tables and then measure how good the packing is with the different tables.
 
-
+``` c
 // 1 2 3 4 -> 12:1 23:1 34:1 123:1 234:1 1234:1 -> weighted: 12:2 23:2 34:2 123:3 234:3 1234:4
 //         -> 12:0 23:- 34:0 123:0 234:0 1234:1 -> weighted: 12:0 23:- 34:0 123:0 234:0 1234:4
 // 1 1 1 1 -> 11:3           111:2       1111:1 -> weighted: 11:6           111:6       1111:4
 //         -> 11:2           111:1       1111:1 -> weighted: 11:4           111:3       1111:4
-
+```
 
 #### 10 bytes: 123456789a 
 
-+   | -   | length | pattern                         | no pattern    | byte usage count | equ. factor
+p  | m   | length | pattern                         | no pattern    | byte usage count | equ. factor
 ----|-----|--------|---------------------------------|---------------|------------------|------------
 10  | 0   | 1er    | 1 ... a                         |               | 1                | 10/1
 9   | 1   | 2er    | 12 23 ... 9a                    | a1            | 2                | 10/2
