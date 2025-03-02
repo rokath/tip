@@ -3,6 +3,7 @@ package pattern
 import (
 	"encoding/hex"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"sync"
@@ -35,7 +36,7 @@ func NewHistogram(mu *sync.Mutex) *Histogram {
 	return &object
 }
 
-// ScanData( searches data for any 2-to-max bytes sequences
+// ScanData searches data for any 2-to-max bytes sequences
 // and extends p with them as key strings hex encoded with their increased count as values in hist.
 // ScanData( searches data for any 2-to-max bytes sequences and extends p.Hist with them.
 // The byte sequences are getting hex encodedand used as keys with their increased count as values in p.Hist.
@@ -136,14 +137,24 @@ func (p *Histogram) ScanFile(fSys *afero.Afero, iFn string, maxPatternSize int) 
 // ScanAllFiles traverses location and adds all files as sample data.
 func (p *Histogram) ScanAllFiles(fSys *afero.Afero, location string, maxPatternSize int) (err error) {
 	numScanned := 0
+	var wg sync.WaitGroup
 	err = filepath.Walk(location, func(path string, _ os.FileInfo, _ error) error {
 		numScanned++
 		fmt.Println(path)
 		if dir, e := fSys.IsDir(path); dir {
 			return e
 		}
-		return p.ScanFile(fSys, path, maxPatternSize)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			err := p.ScanFile(fSys, path, maxPatternSize)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
+		return nil
 	})
+	wg.Wait()
 	if Verbose {
 		fmt.Println(numScanned, "files scanned")
 	}

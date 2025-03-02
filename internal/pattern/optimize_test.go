@@ -53,12 +53,26 @@ func TestHistogram_BalanceByteUsage(t *testing.T) {
 		args   args
 		exp    map[string]Pat
 	}{ // test cases:
-		{"", fields{map[string]Pat{s2h("a"): {4, []int{0, 1, 2, 3}}}, &m, nil}, args{4}, map[string]Pat{s2h("a"): {4, []int{0, 1, 2, 3}}}},
-		{"", fields{map[string]Pat{s2h("aa"): {3, []int{0, 1, 2}}}, &m, nil}, args{4}, map[string]Pat{s2h("aa"): {4, []int{0, 1, 2}}}},
-		{"", fields{map[string]Pat{s2h("aaa"): {2, []int{0, 1}}}, &m, nil}, args{4}, map[string]Pat{s2h("aaa"): {4, []int{0, 1}}}},
-		{"", fields{map[string]Pat{s2h("aaaa"): {1, []int{0}}}, &m, nil}, args{4}, map[string]Pat{s2h("aaaa"): {4, []int{0}}}},
-		{"", fields{map[string]Pat{s2h("ab"): {10, []int{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}}}, &m, nil}, args{8}, map[string]Pat{s2h("ab"): {float64(10*8) / 7, []int{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}}}},
-		{"", fields{map[string]Pat{s2h("ab"): {3, []int{0, 3, 6}}}, &m, nil}, args{8}, map[string]Pat{s2h("ab"): {float64(3*8) / 7, []int{0, 3, 6}}}},
+		{"", fields{map[string]Pat{s2h("a"): {4, []int{0, 1, 2, 3}}}, &m, nil}, args{4},
+			/*   */ map[string]Pat{s2h("a"): {4, []int{0, 1, 2, 3}}}},
+
+		{"", fields{map[string]Pat{s2h("aa"): {3, []int{0, 1, 2}}}, &m, nil}, args{4},
+			/*   */ map[string]Pat{s2h("aa"): {4, []int{0, 1, 2}}}},
+
+		{"", fields{map[string]Pat{s2h("aaa"): {2, []int{0, 1}}}, &m, nil}, args{4},
+			/*   */ map[string]Pat{s2h("aaa"): {4, []int{0, 1}}}},
+
+		{"", fields{map[string]Pat{s2h("aaaa"): {1, []int{0}}}, &m, nil}, args{4},
+			/*   */ map[string]Pat{s2h("aaaa"): {4, []int{0}}}},
+
+		{"", fields{map[string]Pat{s2h("ab"): {10, []int{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}}}, &m, nil}, args{8},
+			/*   */ map[string]Pat{s2h("ab"): {float64(10*8) / 7, []int{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}}}},
+
+		{"", fields{map[string]Pat{s2h("ab"): {3, []int{0, 3, 6}}}, &m, nil}, args{8},
+			/*   */ map[string]Pat{s2h("ab"): {float64(3*8) / 7, []int{0, 3, 6}}}},
+
+		{"", fields{map[string]Pat{s2h("ab"): {2, []int{0, 3}}, s2h("bc"): {1.0, []int{1}}, s2h("ca"): {1.0, []int{2}}, s2h("abc"): {1, []int{0}}, s2h("bca"): {1, []int{1}}, s2h("cab"): {1, []int{2}}, s2h("aba"): {1, []int{3}}, s2h("bab"): {1, []int{4}}}, &m, nil}, args{3},
+			/*   */ map[string]Pat{s2h("ab"): {3, []int{0, 3}}, s2h("bc"): {1.5, []int{1}}, s2h("ca"): {1.5, []int{2}}, s2h("abc"): {3, []int{0}}, s2h("bca"): {3, []int{1}}, s2h("cab"): {3, []int{2}}, s2h("aba"): {3, []int{3}}, s2h("bab"): {3, []int{4}}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -71,7 +85,11 @@ func TestHistogram_BalanceByteUsage(t *testing.T) {
 			for k, v := range p.Hist {
 				a := v.Weight
 				e := tt.exp[k].Weight
-				withinTolerance(a, e, 0.001)
+				ok := withinTolerance(a, e, 0.001)
+				if !ok {
+					fmt.Println(k, e, a)
+				}
+				assert.True(t, ok)
 			}
 		})
 	}
@@ -153,7 +171,7 @@ func Test_positionIndexMatch(t *testing.T) {
 }
 
 func TestHistogram_Reduce(t *testing.T) {
-	var mu sync.Mutex
+	var m sync.Mutex
 	type fields struct {
 		Hist map[string]Pat
 		mu   *sync.Mutex
@@ -162,17 +180,37 @@ func TestHistogram_Reduce(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
+		args   int
 		exp    map[string]Pat
 	}{ // test cases:
+		//  {
+		//  	"",
+		//  	fields{map[string]Pat{"1122": {2, []int{4, 9}}, "112233": {1, []int{4}}}, &m, nil},
+		//  	/*  */ map[string]Pat{"1122": {1, []int{9}}, "112233": {1, []int{4}}},
+		//  },
+		//  {
+		//  	"",
+		//  	fields{map[string]Pat{"11a2": {2, []int{4, 9}}, "112233": {1, []int{4}}}, &m, nil},
+		//  	/*  */ map[string]Pat{"11a2": {2, []int{4, 9}}, "112233": {1, []int{4}}},
+		//  },
 		{
-			"",
-			fields{map[string]Pat{"1122": {2, []int{4, 9}}, "112233": {1, []int{4}}}, &mu, nil},
-			map[string]Pat{"1122": {1, []int{9}}, "112233": {1, []int{4}}},
-		},
-		{
-			"",
-			fields{map[string]Pat{"11a2": {2, []int{4, 9}}, "112233": {1, []int{4}}}, &mu, nil},
-			map[string]Pat{"11a2": {2, []int{4, 9}}, "112233": {1, []int{4}}},
+			"", // abcab: TODO Issue ca occurs 1 times but is inside bca and cab!
+			//     01234
+			fields{map[string]Pat{
+				s2h("ab"):  {2, []int{0, 3}}, // in abc and cab and in (aba) and (bab) formally
+				s2h("bc"):  {1, []int{1}},    // in abc and bca
+				s2h("ca"):  {1, []int{2}},    // in bca and cab
+				s2h("abc"): {1, []int{0}},
+				s2h("bca"): {1, []int{1}},
+				s2h("cab"): {1, []int{2}},
+				s2h("aba"): {1, []int{3}},
+				s2h("bab"): {1, []int{4}}}, &m, nil}, 3,
+			map[string]Pat{
+				s2h("abc"): {3, []int{0}},
+				s2h("bca"): {3, []int{1}},
+				s2h("cab"): {3, []int{2}},
+				s2h("aba"): {3, []int{3}},
+				s2h("bab"): {3, []int{4}}},
 		},
 	}
 	for _, tt := range tests {
@@ -182,8 +220,9 @@ func TestHistogram_Reduce(t *testing.T) {
 				mu:   tt.fields.mu,
 				Key:  tt.fields.Keys,
 			}
-			p.GetKeys()
+			p.BalanceByteUsage(tt.args)
 			p.Reduce()
+			p.DeleteEmptyKeys()
 			assert.Equal(t, tt.exp, tt.fields.Hist)
 		})
 	}

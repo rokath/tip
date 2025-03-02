@@ -60,6 +60,30 @@ func TestHistogram_scanForRepetitions(t *testing.T) {
 			args{[]byte{0x11, 0x22, 0x33}, 2},
 			map[string]Pat{"1122": {1, []int{0}}, "2233": {1, []int{1}}},
 		},
+		{
+			"", // name
+			fields{map[string]Pat{}, &m},
+			args{[]byte("abc"), 2},
+			map[string]Pat{s2h("ab"): {1, []int{0}}, s2h("bc"): {1, []int{1}}},
+		},
+		{
+			"", // name
+			fields{map[string]Pat{}, &m},
+			args{[]byte("abcab"), 2},
+			map[string]Pat{s2h("ab"): {2, []int{0,3}}, s2h("bc"): {1, []int{1}}, s2h("ca"): {1, []int{2}}},
+		},
+		{
+			"", // name
+			fields{map[string]Pat{}, &m},
+			args{[]byte("abcab"), 3},
+			map[string]Pat{s2h("abc"): {1, []int{0}}, s2h("bca"): {1, []int{1}}, s2h("cab"): {1, []int{2}}},
+		},
+		{
+			"", // name
+			fields{map[string]Pat{}, &m},
+			args{[]byte("abcab"), 4},
+			map[string]Pat{s2h("abca"): {1, []int{0}}, s2h("bcab"): {1, []int{1}}},
+		},
 	}
 	for _, tt := range tests {
 		p := &Histogram{

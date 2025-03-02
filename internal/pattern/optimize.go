@@ -25,6 +25,14 @@ func (p *Histogram) PrintInfo(message string) {
 	fmt.Println("average=\t", sum/float64(count), "\tsmallest:", smallest, "\tbiggest:", biggest, "\t", message)
 }
 
+func (p *Histogram) DeleteEmptyKeys() {
+	for k, v := range p.Hist {
+		if len(v.Pos) == 0 {
+			delete(p.Hist, k)
+		}
+	}
+}
+
 // BalanceByteUsage multiplies each key value with maxPatternSize / len(key)
 // to achieve a balance in byte usage for pattern of different length.
 // pattern   | counts | sum | factor | weight
@@ -37,6 +45,7 @@ func (p *Histogram) PrintInfo(message string) {
 // aa aa aa  | 1+1+1  | 3   | 4/3    | 4
 // a a a a   | 1+1+1+1|	4   | 4/4    | 4
 // sum = max - (size - 1) = max+1-size
+// weight = max/(max+1-size)
 func (p *Histogram) BalanceByteUsage(maxPatternSize int) {
 	for k, v := range p.Hist {
 		factor := float64(maxPatternSize) / float64((maxPatternSize+1)-(len(k)>>1))
@@ -189,7 +198,8 @@ func (p *Histogram) ReduceOverlappingKeys(biggerKeys, smallerKeys []string) {
 	var wg sync.WaitGroup
 	for _, bkey := range biggerKeys {
 		wg.Add(1)
-		go func(bigKey string) {
+		//go
+		func(bigKey string) {
 			defer wg.Done()
 			for _, subKey := range smallerKeys {
 				p.ReduceSubKey(bkey, subKey)
