@@ -36,18 +36,19 @@ func NewHistogram(mu *sync.Mutex) *Histogram {
 	return &object
 }
 
-// ScanData searches data for any 2-to-max bytes sequences
-// and extends p with them as key strings hex encoded with their increased count as values in hist.
+// ScanData searches data for any 2-to-max bytes sequences and extends p 
+// with them as key strings hex encoded with their increased count as values in hist.
 // ScanData( searches data for any 2-to-max bytes sequences and extends p.Hist with them.
 // The byte sequences are getting hex encodedand used as keys with their increased count as values in p.Hist.
 // Pattern of size 1 are skipped, because they give no compression effect when replaced by an id.
-func (p *Histogram) ScanData(data []byte, maxPatternSize int) {
+// When ring is true, the data are considered as ring.
+func (p *Histogram) ScanData(data []byte, maxPatternSize int, ring bool) {
 	var wg sync.WaitGroup
 	for i := range maxPatternSize - 1 { // loop over pattern sizes
 		wg.Add(1)
 		go func(k int) {
 			defer wg.Done()
-			p.scanForRepetitions(data, k+2)
+			p.scanForRepetitions(data, k+2, ring)
 		}(i)
 	}
 	wg.Wait()
@@ -73,7 +74,11 @@ func (p *Histogram) DiscardSeldomPattern(discardSize float64) {
 // Also the pattern positions are recorded.
 // This pattern search algorithm: Start at offset 0 with ptLen bytes from data as pattern
 // and search data for repetitions by moving byte by byte. ScanData( p.Hist accordingly.
-func (p *Histogram) scanForRepetitions(data []byte, ptLen int) {
+// When ring is true, the data are considered as ring.
+func (p *Histogram) scanForRepetitions(data []byte, ptLen int, ring bool) {
+	if ring {
+		data = append(data, data[:ptLen-1]...)
+	}
 	last := len(data) - (ptLen) // This is the last position in data to check for repetitions.
 	var wg sync.WaitGroup
 	for i := 0; i <= last; i++ { // Loop over all possible pattern.
@@ -130,7 +135,7 @@ func (p *Histogram) ScanFile(fSys *afero.Afero, iFn string, maxPatternSize int) 
 	if err != nil {
 		return err
 	}
-	p.ScanData(data, maxPatternSize)
+	p.ScanData(data, maxPatternSize, false)
 	return nil
 }
 

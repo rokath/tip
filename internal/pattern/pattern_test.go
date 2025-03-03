@@ -17,6 +17,7 @@ func TestHistogram_scanForRepetitions(t *testing.T) {
 	type args struct {
 		data  []byte
 		ptLen int
+		ring  bool
 	}
 	tests := []struct {
 		name   string
@@ -27,62 +28,38 @@ func TestHistogram_scanForRepetitions(t *testing.T) {
 		{
 			"", // name
 			fields{map[string]Pat{}, &m},
-			args{[]byte{0xaa, 0xaa, 0xaa, 0xaa, 0x22, 0xaa, 0xaa, 0xaa}, 2},
-			map[string]Pat{"22aa": {1, []int{4}}, "aa22": {1, []int{3}}, "aaaa": {5, []int{0, 1, 2, 5, 6}}},
+			args{[]byte("ab"), 2, false},
+			map[string]Pat{s2h("ab"): {1, []int{0}}},
 		},
 		{
 			"", // name
 			fields{map[string]Pat{}, &m},
-			args{[]byte{0xaa, 0xaa, 0xaa, 0xaa, 0x22, 0xaa, 0xaa, 0xaa}, 3},
-			map[string]Pat{"22aaaa": {1, []int{4}}, "aa22aa": {1, []int{3}}, "aaaa22": {1, []int{2}}, "aaaaaa": {3, []int{0, 1, 5}}},
+			args{[]byte("ab"), 2, true},
+			map[string]Pat{s2h("ab"): {1, []int{0}},s2h("ba"): {1, []int{1}}},
 		},
 		{
 			"", // name
 			fields{map[string]Pat{}, &m},
-			args{[]byte{0x11, 0x22, 0x33, 0xaa, 0x22, 0x33, 0xbb}, 3},
-			map[string]Pat{"112233": {1, []int{0}}, "2233aa": {1, []int{1}}, "2233bb": {1, []int{4}}, "33aa22": {1, []int{2}}, "aa2233": {1, []int{3}}},
+			args{[]byte("abc"), 2, false},
+			map[string]Pat{s2h("ab"): {1, []int{0}},s2h("bc"): {1, []int{1}}},
 		},
 		{
 			"", // name
 			fields{map[string]Pat{}, &m},
-			args{[]byte{0x11, 0x22, 0x33, 0xaa, 0x22, 0x33, 0xbb}, 2},
-			map[string]Pat{"1122": {1, []int{0}}, "2233": {2, []int{1, 4}}, "33aa": {1, []int{2}}, "33bb": {1, []int{5}}, "aa22": {1, []int{3}}},
+			args{[]byte("abc"), 2, true},
+			map[string]Pat{s2h("ab"): {1, []int{0}},s2h("bc"): {1, []int{1}},s2h("ca"): {1, []int{2}}},
 		},
 		{
 			"", // name
 			fields{map[string]Pat{}, &m},
-			args{[]byte{0x11, 0x22, 0x33, 0x22, 0x33}, 2},
-			map[string]Pat{"1122": {1, []int{0}}, "2233": {2, []int{1, 3}}, "3322": {1, []int{2}}},
+			args{[]byte("aaa"), 2, false},
+			map[string]Pat{s2h("aa"): {2, []int{0,1}}},
 		},
 		{
 			"", // name
 			fields{map[string]Pat{}, &m},
-			args{[]byte{0x11, 0x22, 0x33}, 2},
-			map[string]Pat{"1122": {1, []int{0}}, "2233": {1, []int{1}}},
-		},
-		{
-			"", // name
-			fields{map[string]Pat{}, &m},
-			args{[]byte("abc"), 2},
-			map[string]Pat{s2h("ab"): {1, []int{0}}, s2h("bc"): {1, []int{1}}},
-		},
-		{
-			"", // name
-			fields{map[string]Pat{}, &m},
-			args{[]byte("abcab"), 2},
-			map[string]Pat{s2h("ab"): {2, []int{0,3}}, s2h("bc"): {1, []int{1}}, s2h("ca"): {1, []int{2}}},
-		},
-		{
-			"", // name
-			fields{map[string]Pat{}, &m},
-			args{[]byte("abcab"), 3},
-			map[string]Pat{s2h("abc"): {1, []int{0}}, s2h("bca"): {1, []int{1}}, s2h("cab"): {1, []int{2}}},
-		},
-		{
-			"", // name
-			fields{map[string]Pat{}, &m},
-			args{[]byte("abcab"), 4},
-			map[string]Pat{s2h("abca"): {1, []int{0}}, s2h("bcab"): {1, []int{1}}},
+			args{[]byte("aaa"), 2, true},
+			map[string]Pat{s2h("aa"): {3, []int{0,1,2}}},
 		},
 	}
 	for _, tt := range tests {
@@ -90,7 +67,7 @@ func TestHistogram_scanForRepetitions(t *testing.T) {
 			Hist: tt.fields.Hist,
 			mu:   tt.fields.mu,
 		}
-		p.scanForRepetitions(tt.args.data, tt.args.ptLen)
+		p.scanForRepetitions(tt.args.data, tt.args.ptLen, tt.args.ring)
 		p.SortPositions()
 		assert.Equal(t, tt.exp, p.Hist)
 	}
@@ -105,6 +82,7 @@ func TestHistogram_ScanData(t *testing.T) {
 	type args struct {
 		data           []byte
 		maxPatternSize int
+		ring bool
 	}
 	tests := []struct {
 		name   string
@@ -115,13 +93,13 @@ func TestHistogram_ScanData(t *testing.T) {
 		{
 			"", // name
 			fields{map[string]Pat{}, &m},
-			args{[]byte{0xaa, 0xaa, 0xaa, 0xaa, 0x22, 0xaa, 0xaa, 0xaa}, 3},
+			args{[]byte{0xaa, 0xaa, 0xaa, 0xaa, 0x22, 0xaa, 0xaa, 0xaa}, 3, false},
 			map[string]Pat{"22aaaa": {1, []int{4}}, "aa22aa": {1, []int{3}}, "aaaa22": {1, []int{2}}, "aaaaaa": {3, []int{0, 1, 5}}, "22aa": {1, []int{4}}, "aa22": {1, []int{3}}, "aaaa": {5, []int{0, 1, 2, 5, 6}}},
 		},
 		{
 			"", // name
 			fields{map[string]Pat{}, &m},
-			args{[]byte{0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff}, 4},
+			args{[]byte{0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff}, 4, false},
 			map[string]Pat{
 				"0000":     {2, []int{4, 10}},
 				"0000ff":   {2, []int{4, 10}},
@@ -143,26 +121,56 @@ func TestHistogram_ScanData(t *testing.T) {
 		{
 			"", // name
 			fields{map[string]Pat{}, &m},
-			args{[]byte{0xff, 0xff, 0xff, 0xff}, 3},
+			args{[]byte{0xff, 0xff, 0xff, 0xff}, 3, false},
 			map[string]Pat{"ffff": {3, []int{0, 1, 2}}, "ffffff": {2, []int{0, 1}}},
 		},
 		{
 			"", // name
 			fields{map[string]Pat{}, &m},
-			args{[]byte{0x11, 0x22, 0x33, 0xaa, 0x22, 0x33, 0xbb}, 3},
+			args{[]byte{0x11, 0x22, 0x33, 0xaa, 0x22, 0x33, 0xbb}, 3, false},
 			map[string]Pat{"1122": {1, []int{0}}, "112233": {1, []int{0}}, "2233": {2, []int{1, 4}}, "2233aa": {1, []int{1}}, "2233bb": {1, []int{4}}, "33aa": {1, []int{2}}, "33aa22": {1, []int{2}}, "33bb": {1, []int{5}}, "aa22": {1, []int{3}}, "aa2233": {1, []int{3}}},
 		},
 		{
 			"", // name
 			fields{map[string]Pat{}, &m},
-			args{[]byte{0x11, 0x22, 0x33}, 2},
+			args{[]byte{0x11, 0x22, 0x33}, 2, false},
 			map[string]Pat{"1122": {1, []int{0}}, "2233": {1, []int{1}}},
 		},
 		{
 			"", // name
 			fields{map[string]Pat{}, &m},
-			args{[]byte("abc"), 2},
+			args{[]byte("abc"), 2, false},
 			map[string]Pat{s2h("ab"): {1, []int{0}}, s2h("bc"): {1, []int{1}}},
+		},
+		{
+			"", // name
+			fields{map[string]Pat{}, &m},
+			args{[]byte("abc"), 3, false},
+			map[string]Pat{s2h("ab"): {1, []int{0}}, s2h("bc"): {1, []int{1}}, s2h("abc"): {1, []int{0}}},
+		},
+		{
+			"", // name
+			fields{map[string]Pat{}, &m},
+			args{[]byte("abc"), 3, true},
+			map[string]Pat{s2h("ab"): {1, []int{0}}, s2h("bc"): {1, []int{1}}, s2h("ca"): {1, []int{2}}, s2h("abc"): {1, []int{0}}, s2h("bca"): {1, []int{1}}, s2h("cab"): {1, []int{2}}},
+		},
+		{
+			"", // name
+			fields{map[string]Pat{}, &m},
+			args{[]byte("aaa"), 3, true},
+			map[string]Pat{s2h("aa"): {3, []int{0,1,2}}, s2h("aaa"): {3, []int{0,1,2}}},
+		},
+		{
+			"", // name
+			fields{map[string]Pat{}, &m},
+			args{[]byte("aaaaa"), 3, false},
+			map[string]Pat{s2h("aa"): {4, []int{0,1,2,3}}, s2h("aaa"): {3, []int{0,1,2}}},
+		},
+		{
+			"", // name
+			fields{map[string]Pat{}, &m},
+			args{[]byte("aaaaa"), 3, true},
+			map[string]Pat{s2h("aa"): {5, []int{0,1,2,3,4}}, s2h("aaa"): {5, []int{0,1,2,3,4}}},
 		},
 	}
 	for _, tt := range tests {
@@ -170,7 +178,7 @@ func TestHistogram_ScanData(t *testing.T) {
 			Hist: tt.fields.Hist,
 			mu:   tt.fields.mu,
 		}
-		p.ScanData(tt.args.data, tt.args.maxPatternSize)
+		p.ScanData(tt.args.data, tt.args.maxPatternSize, tt.args.ring)
 		p.SortPositions()
 		assert.Equal(t, tt.exp, p.Hist)
 	}
