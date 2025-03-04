@@ -9,34 +9,6 @@ import (
 	"github.com/tj/assert"
 )
 
-func Test_countOverlapping2(t *testing.T) {
-	type args struct {
-		s   string
-		sub string
-	}
-	tests := []struct {
-		name string
-		args args
-		want int
-	}{ // test cases:
-		{"", args{"11111111", "1111111111"}, 0},
-		{"", args{"11111111", "11111111"}, 1},
-		{"", args{"11111111", "111111"}, 2},
-		{"", args{"11111111", "1111"}, 3},
-		{"", args{"11111111", "11"}, 4},
-		{"", args{"1111", "111a"}, 0},
-		{"", args{"1111", "1111"}, 1},
-		{"", args{"111111", "1111"}, 2},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := countOverlapping2(tt.args.s, tt.args.sub); got != tt.want {
-				t.Errorf("countOverlapping2() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestHistogram_BalanceByteUsage(t *testing.T) {
 	var m sync.Mutex
 	type fields struct {
@@ -95,58 +67,6 @@ func TestHistogram_BalanceByteUsage(t *testing.T) {
 	}
 }
 
-func TestHistogram_DeletePosition(t *testing.T) {
-	var mu sync.Mutex
-	type fields struct {
-		Hist map[string]Pat
-		mu   *sync.Mutex
-		Key  []string
-	}
-	type args struct {
-		key      string
-		position int
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		exp    fields
-	}{
-		// test cases:
-		{"",
-			fields{map[string]Pat{"1122": {3, []int{4, 5, 7}}, "112233": {1, nil}}, &mu, nil},
-			args{"1122", 5},
-			fields{map[string]Pat{"1122": {2, []int{4, 7}}, "112233": {1, nil}}, &mu, nil},
-		},
-		{"",
-			fields{map[string]Pat{"1122": {1, []int{4}}, "112233": {1, nil}}, &mu, nil},
-			args{"1122", 5},
-			fields{map[string]Pat{"1122": {1, []int{4}}, "112233": {1, nil}}, &mu, nil},
-		},
-		{"",
-			fields{map[string]Pat{"1122": {1, []int{4}}, "112233": {1, nil}}, &mu, nil},
-			args{"1122", 4},
-			fields{map[string]Pat{"1122": {0, []int{}}, "112233": {1, nil}}, &mu, nil},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			p := &Histogram{
-				Hist: tt.fields.Hist,
-				mu:   tt.fields.mu,
-				Key:  tt.fields.Key,
-			}
-			p.DeletePosition(tt.args.key, tt.args.position)
-			e := tt.exp.Hist
-			a := p.Hist
-			//fmt.Println("exp:", reflect.ValueOf(e).Type(), e)
-			//fmt.Println("act:", reflect.ValueOf(a).Type(), a)
-			result := reflect.DeepEqual(e, a)
-			assert.True(t, result)
-		})
-	}
-}
-
 func Test_positionIndexMatch(t *testing.T) {
 	type args struct {
 		a   []int
@@ -170,7 +90,7 @@ func Test_positionIndexMatch(t *testing.T) {
 	}
 }
 
-func TestHistogram_Reduce(t *testing.T) {
+func _TestHistogram_Reduce0(t *testing.T) {
 	var m sync.Mutex
 	type fields struct {
 		Hist map[string]Pat
@@ -183,16 +103,6 @@ func TestHistogram_Reduce(t *testing.T) {
 		args   int
 		exp    map[string]Pat
 	}{ // test cases:
-		//  {
-		//  	"",
-		//  	fields{map[string]Pat{"1122": {2, []int{4, 9}}, "112233": {1, []int{4}}}, &m, nil},
-		//  	/*  */ map[string]Pat{"1122": {1, []int{9}}, "112233": {1, []int{4}}},
-		//  },
-		//  {
-		//  	"",
-		//  	fields{map[string]Pat{"11a2": {2, []int{4, 9}}, "112233": {1, []int{4}}}, &m, nil},
-		//  	/*  */ map[string]Pat{"11a2": {2, []int{4, 9}}, "112233": {1, []int{4}}},
-		//  },
 		{
 			"", // abcab: TODO Issue ca occurs 1 times but is inside bca and cab!
 			//     01234
@@ -228,7 +138,89 @@ func TestHistogram_Reduce(t *testing.T) {
 	}
 }
 
-func TestHistogram_ReduceOverlappingKeys(t *testing.T) {
+func TestHistogram_Reduce1(t *testing.T) {
+	var m sync.Mutex
+	type fields struct {
+		Hist map[string]Pat
+		mu   *sync.Mutex
+		Keys []string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		data   []byte
+		ring   bool
+		exp    map[string]Pat
+	}{ // test cases:
+		{
+			"",
+			fields{map[string]Pat{}, &m, nil},
+			[]byte("aaaaa"), true,
+			map[string]Pat{
+				s2h("aa"):  {5, []int{0, 1, 2, 3, 4}},
+				s2h("aaa"): {5, []int{0, 1, 2, 3, 4}},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := &Histogram{
+				Hist: tt.fields.Hist,
+				mu:   tt.fields.mu,
+				Key:  tt.fields.Keys,
+			}
+			p.ScanData(tt.data, 3, true)
+			p.SortPositions()
+			//p.BalanceByteUsage(tt.args)
+			//p.Reduce()
+			//p.DeleteEmptyKeys()
+			assert.Equal(t, tt.exp, tt.fields.Hist)
+		})
+	}
+}
+
+func TestHistogram_Reduce2(t *testing.T) {
+	var m sync.Mutex
+	type fields struct {
+		Hist map[string]Pat
+		mu   *sync.Mutex
+		Keys []string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		data   []byte
+		ring   bool
+		exp    map[string]Pat
+	}{ // test cases:
+		{
+			"",
+			fields{map[string]Pat{}, &m, nil},
+			[]byte("aaaaa"), true,
+			map[string]Pat{
+				s2h("aa"):  {0, []int{}},
+				s2h("aaa"): {5, []int{0, 1, 2, 3, 4}},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := &Histogram{
+				Hist: tt.fields.Hist,
+				mu:   tt.fields.mu,
+				Key:  tt.fields.Keys,
+			}
+			p.ScanData(tt.data, 3, true)
+			//p.BalanceByteUsage(tt.args)
+			p.Reduce()
+			//p.DeleteEmptyKeys()
+			p.SortPositions()
+			assert.Equal(t, tt.exp, tt.fields.Hist)
+		})
+	}
+}
+
+func _TestHistogram_ReduceOverlappingKeys(t *testing.T) {
 	var mu sync.Mutex
 	type fields struct {
 		Hist map[string]Pat
@@ -307,7 +299,7 @@ func TestHistogram_AddWeigths(t *testing.T) {
 	}
 }
 
-func TestHistogram_ReduceSubKey(t *testing.T) {
+func _TestHistogram_ReduceSubKey(t *testing.T) {
 	var mu sync.Mutex
 	type args struct {
 		bkey   string

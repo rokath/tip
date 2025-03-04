@@ -3,6 +3,7 @@ package pattern
 import (
 	"fmt"
 	"math"
+	"slices"
 	"strings"
 	"sync"
 )
@@ -100,6 +101,19 @@ func (p *Histogram) Reduce() {
 	}
 }
 
+// positionsMatch returns all sub positions where bpos + idx and sub equal.
+func positionsMatch(bpos []int, idx int, sub []int) []int {
+	pos := make([]int, 0)
+	for _, x := range bpos {
+		for _, y := range sub {
+			if x+idx == y {
+				pos = append(pos, y)
+			}
+		}
+	}
+	return pos
+}
+
 // positionIndexMatch return b pos if a + idx and b have one value common or -1.
 func positionIndexMatch(a []int, idx int, b []int) int {
 	for _, x := range a {
@@ -112,94 +126,77 @@ func positionIndexMatch(a []int, idx int, b []int) int {
 	return -1
 }
 
-//  // positionMatch return pos if a and b have one value common or -1.
-//  func positionMatch(a, b []int) int {
-//  	for _, x := range a {
-//  		for _, y := range b {
-//  			if x == y {
-//  				return x
-//  			}
-//  		}
-//  	}
-//  	return -1
-//  }
-
-//  // DeletePosition removes position key and reduces its weight by 1.
-//  func (p *Histogram)DeletePosition(key string, position int){
-//  	v := p.Hist[key]
-//  	v.Pos = slices.DeleteFunc(v.Pos, func(position int) bool {
-//  		return slices.Contains(v.Pos, position)
-//  	})
-//  	v.Weight--
-//  	p.Hist[key] = v
-//  }
-
-// DeletePosition removes position key and reduces its weight by 1.
-func (p *Histogram) DeletePosition(key string, position int) {
+// DeletePositionsOfKey removes positions from key and reduces its weight by len(positions).
+func (p *Histogram) DeletePositionsOfKey(key string, positions []int) {
+	slices.Sort(positions)
+	positions = slices.Compact(positions) // uniq
 	v := p.Hist[key]
-	for i, x := range v.Pos {
-		if x == position {
-			// if Verbose{
-			// 	fmt.Println("DeletePosition:", key, v.Weight)
-			// }
-			v.Pos[i] = v.Pos[len(v.Pos)-1]
-			v.Pos = v.Pos[:len(v.Pos)-1]
-			v.Weight -= 1.0
-			p.Hist[key] = v
-			return
+	n := 0
+	for _, x := range v.Pos {
+		if !slices.Contains(positions, x) {
+			v.Pos[n] = x // keep
+			n++
+		} else {
+			v.Weight -= 1
 		}
+	}
+	v.Pos = v.Pos[:n]
+	p.Hist[key] = v
+}
+
+// getMatchingSubKeyPositions returns those subKey positions, which match appropriate bkey positions.
+func (p *Histogram) getMatchingSubKeyPositions(bkey, subKey string) []int {
+	var offset int
+	subKeyPositions := make([]int, 0)
+	for {
+		s := bkey[offset:]
+		idx := strings.Index(s, subKey) // get next subkey location inside bkey
+		if idx == -1 {                  // not found
+			return subKeyPositions
+		}
+		// "aaaaa"
+		//subKey: "aa", 5,[]int{0,1,2,3,4}
+		// bKey: "aaa", 5,[]int{0,1,2,3,4}
+		// aa:0,aa:1                <- aaa:0
+		//      aa:1,aa:2           <- aaa:1
+		//           aa:2,aa:3      <- aaa:2
+		//                aa:3,aa:4 <- aaa:3
+		// aa:0,               aa:4 <- aaa:4
+		// For each bkey are to remove 2 sunKey positions.
+		// When subKey idx==0, we need to remove
+		// We need to pay attention, that the .Pos values are 1-step values, but the keys are double sized!
+		sKeyLoc := (offset + idx) / 2
+		for _, x := range p.Hist[bkey].Pos { // x=01234
+			for _, y := range p.Hist[subKey].Pos {
+				if x+sKeyLoc == y {
+					subKeyPositions = append(subKeyPositions, y)
+					// break
+				}
+			}
+		}
+		offset += 2*sKeyLoc + 2
 	}
 }
 
 // ReduceSubKey checks if subKey is inside bkey and removes the subKey internal positions,
-// if they match with the bkey positions. Example: if subkey has position 21 and bkey has
-// position 18 and idx is 2, then the subkey position 20 is removed (18+2==20).
+// if they match with the bkey positions. Example: if subkey has positions 14, 18, 42 and bkey has
+// position 10 and subkey is at index is 4 and 8 and, then the subkey positions 14, 18 are removed.
 func (p *Histogram) ReduceSubKey(bkey, subKey string) {
-	// We need to pay attention, that the .Pos values are 1-step values, but the keys are double sized!
-	var offset int
-repeat:
-	s := bkey[offset:]
-	idx := strings.Index(s, subKey)
-	if idx == -1 { // subKey not inside bkey
-		return
-	}
-	if idx&1 == 1 { // odd not allowed
-		if offset+idx+1 < len(bkey) {
-			offset += idx + 1
-			goto repeat
-		} else {
-			return
-		}
-	}
-	p.mu.Lock()
-	bkeyPos := p.Hist[bkey].Pos
-	subKeyPos := p.Hist[subKey].Pos
-	p.mu.Unlock()
-	pos := positionIndexMatch(bkeyPos, (offset+idx)>>1, subKeyPos)
-	if pos >= 0 {
+	pos := p.getMatchingSubKeyPositions(bkey, subKey)
+	if len(pos) > 0 {
 		p.mu.Lock()
-		p.DeletePosition(subKey, pos)
+		p.DeletePositionsOfKey(subKey, pos)
 		p.mu.Unlock()
-	}
-	if offset+idx+2 < len(bkey) {
-		offset += idx + 2
-		goto repeat
 	}
 }
 
 // ReduceOverlappingKeys checks for all biggerKeys if the smallerKeys are part of them
-// and removes their internal positions, if the positions are matching.
+// and removes the subkey internal positions, if the positions are matching.
 func (p *Histogram) ReduceOverlappingKeys(biggerKeys, smallerKeys []string) {
-	//  if Verbose {
-	//  	fmt.Println("ReduceOverlappingKeys")
-	//  	fmt.Println(len(biggerKeys), "\tbiggerKeys:", biggerKeys[:3], "...")
-	//  	fmt.Println(len(smallerKeys), "\tsmallerKeys:", smallerKeys[:3], "...")
-	//  }
 	var wg sync.WaitGroup
 	for _, bkey := range biggerKeys {
 		wg.Add(1)
-		//go
-		func(bigKey string) {
+		go func(bigKey string) {
 			defer wg.Done()
 			for _, subKey := range smallerKeys {
 				p.ReduceSubKey(bkey, subKey)
@@ -207,16 +204,4 @@ func (p *Histogram) ReduceOverlappingKeys(biggerKeys, smallerKeys []string) {
 		}(bkey)
 	}
 	wg.Wait()
-}
-
-// countOverlapping2 returns sub count in s, assuming s & sub are hex-encoded byte buffers (even length).
-// https://stackoverflow.com/questions/67956996/is-there-a-count-function-in-go-but-for-overlapping-substrings
-func countOverlapping2(s, sub string) int {
-	var c int
-	for i := 0; i < len(s); i += 2 {
-		if strings.HasPrefix(s[i:], sub) {
-			c++
-		}
-	}
-	return c
 }

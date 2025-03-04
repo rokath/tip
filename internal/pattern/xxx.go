@@ -1,6 +1,62 @@
 package pattern
 
 
+
+/*
+// countOverlapping2 returns sub count in s, assuming s & sub are hex-encoded byte buffers (even length).
+// https://stackoverflow.com/questions/67956996/is-there-a-count-function-in-go-but-for-overlapping-substrings
+func countOverlapping2(s, sub string) int {
+	var c int
+	for i := 0; i < len(s); i += 2 {
+		if strings.HasPrefix(s[i:], sub) {
+			c++
+		}
+	}
+	return c
+}
+*/
+
+
+//  // positionMatch return pos if a and b have one value common or -1.
+//  func positionMatch(a, b []int) int {
+//  	for _, x := range a {
+//  		for _, y := range b {
+//  			if x == y {
+//  				return x
+//  			}
+//  		}
+//  	}
+//  	return -1
+//  }
+
+//  // DeletePosition removes position key and reduces its weight by 1.
+//  func (p *Histogram)DeletePosition(key string, position int){
+//  	v := p.Hist[key]
+//  	v.Pos = slices.DeleteFunc(v.Pos, func(position int) bool {
+//  		return slices.Contains(v.Pos, position)
+//  	})
+//  	v.Weight--
+//  	p.Hist[key] = v
+//  }
+/*
+// DeletePosition removes position key and reduces its weight by 1.
+func (p *Histogram) DeletePosition(key string, position int) {
+	v := p.Hist[key]
+	for i, x := range v.Pos {
+		if x == position {
+			// if Verbose{
+			// 	fmt.Println("DeletePosition:", key, v.Weight)
+			// }
+			v.Pos[i] = v.Pos[len(v.Pos)-1]
+			v.Pos = v.Pos[:len(v.Pos)-1]
+			v.Weight -= 1.0
+			p.Hist[key] = v
+			return
+		}
+	}
+}
+*/
+
 /*
 // countOverlapping returns sub count in s.
 // https://stackoverflow.com/questions/67956996/is-there-a-count-function-in-go-but-for-overlapping-substrings

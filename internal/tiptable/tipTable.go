@@ -15,6 +15,8 @@ var (
 )
 
 // Generate writes a file oFn containing C code using loc file(s) and max pattern size.
+// https://en.wikipedia.org/wiki/Dictionary_coder
+// https://cs.stackexchange.com/questions/112901/algorithm-to-find-repeated-patterns-in-a-large-string
 func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error) {
 	var m sync.Mutex
 	p := pattern.NewHistogram(&m)
@@ -25,24 +27,22 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 		err = p.ScanFile(fSys, loc, maxPatternSize)
 	}
 	p.PrintInfo("Histogram after Scan")
-	p.DiscardSeldomPattern(1)
-	p.PrintInfo("Histogram after DiscardSeldomPattern")
+	//p.DiscardSeldomPattern(1)
+	//p.PrintInfo("Histogram after DiscardSeldomPattern")
 	//p.BalanceByteUsage(maxPatternSize)
 	//p.PrintInfo("Histogram after Balance")
-	p.Reduce()
-	p.PrintInfo("Histogram after Reduce")
+	//p.Reduce()
+	//p.DeleteEmptyKeys()
+	//p.PrintInfo("Histogram after Reduce")
 	//p.AddWeigths()
 	//p.PrintInfo("Histogram after AddWeights")
+
+	// Todo: Reduce bigger keys if smaller keys fit.
+	
 	rlist := p.ExportAsList()
 
 	list := pattern.SortByDescCountDescLength(rlist)
 
-	//  if Verbose {
-	//  	lsize := min(50, len(list))
-	//  	for i, x := range list[:lsize] {
-	//  		fmt.Printf("%3d: %6d, %16s, %s\n", i, x.Cnt, x.Key, string(x.Bytes))
-	//  	}
-	//  }
 	idCount := min(127, len(list))
 	idList := pattern.SortByDescLength(list[:idCount])
 	maxListPatternSize := len(idList[0].Bytes)
@@ -71,16 +71,22 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 		tipTableSize += 1 + sz
 		if i < idCount {
 			fmt.Fprintf(oh, "\t%s|%7d  %02x\n", pls, x.Cnt, i+1)
-		} else {
-			if Verbose && x.Cnt > 1 {
-				fmt.Fprintf(oh, "//\t%s|%7d  %6d\n", pls, x.Cnt, i+1)
-			}
 		}
 	}
 	fmt.Fprintln(oh, "\t  0 // table end marker")
 	fmt.Fprintln(oh, "};")
 	fmt.Fprintln(oh)
-	fmt.Fprintf(oh, "// tipTableSize is %d.", tipTableSize)
+	fmt.Fprintf(oh, "// tipTableSize is %d.\n", tipTableSize)
+	fmt.Fprintln(oh)
+	for i, x := range list {
+		if i == 127 {
+			fmt.Fprintln(oh, "// --------------------------------")
+		}
+		if x.Cnt > 1 {
+			pls := createPatternLineString(x.Bytes, maxListPatternSize) // todo: review and improve code
+			fmt.Fprintf(oh, "//%4d: (%4d) %s\n", i, x.Cnt, pls)
+		}
+	}
 	fmt.Fprintln(oh)
 	return
 }

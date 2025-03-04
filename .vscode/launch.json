@@ -11,8 +11,9 @@
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/ti_generate",
             "env": {},
-            "args": ["-i",
-                     "${workspaceFolder}/test/samples/trice.bin"
+            "args": ["-i", "${workspaceFolder}/docs/TipUserManual.md",
+                     "-z", "4",
+                     "-v"
             ]
         },
         {
@@ -22,9 +23,8 @@
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/ti_pack",
             "env": {},
-            "args": ["-v",
-                     "-i",
-                     "${workspaceFolder}/test/a.txt"
+            "args": ["-i", "${workspaceFolder}/test/a.txt",
+                     "-v"
             ]
         }
     ]

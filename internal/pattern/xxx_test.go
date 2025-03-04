@@ -1,6 +1,90 @@
 package pattern
 
+
 /*
+func Test_countOverlapping2(t *testing.T) {
+	type args struct {
+		s   string
+		sub string
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{ // test cases:
+		{"", args{"11111111", "1111111111"}, 0},
+		{"", args{"11111111", "11111111"}, 1},
+		{"", args{"11111111", "111111"}, 2},
+		{"", args{"11111111", "1111"}, 3},
+		{"", args{"11111111", "11"}, 4},
+		{"", args{"1111", "111a"}, 0},
+		{"", args{"1111", "1111"}, 1},
+		{"", args{"111111", "1111"}, 2},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := countOverlapping2(tt.args.s, tt.args.sub); got != tt.want {
+				t.Errorf("countOverlapping2() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+*/
+
+/*
+
+func TestHistogram_DeletePosition(t *testing.T) {
+	var mu sync.Mutex
+	type fields struct {
+		Hist map[string]Pat
+		mu   *sync.Mutex
+		Key  []string
+	}
+	type args struct {
+		key      string
+		position int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		exp    fields
+	}{
+		// test cases:
+		{"",
+			fields{map[string]Pat{"1122": {3, []int{4, 5, 7}}, "112233": {1, nil}}, &mu, nil},
+			args{"1122", 5},
+			fields{map[string]Pat{"1122": {2, []int{4, 7}}, "112233": {1, nil}}, &mu, nil},
+		},
+		{"",
+			fields{map[string]Pat{"1122": {1, []int{4}}, "112233": {1, nil}}, &mu, nil},
+			args{"1122", 5},
+			fields{map[string]Pat{"1122": {1, []int{4}}, "112233": {1, nil}}, &mu, nil},
+		},
+		{"",
+			fields{map[string]Pat{"1122": {1, []int{4}}, "112233": {1, nil}}, &mu, nil},
+			args{"1122", 4},
+			fields{map[string]Pat{"1122": {0, []int{}}, "112233": {1, nil}}, &mu, nil},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := &Histogram{
+				Hist: tt.fields.Hist,
+				mu:   tt.fields.mu,
+				Key:  tt.fields.Key,
+			}
+			p.DeletePosition(tt.args.key, tt.args.position)
+			e := tt.exp.Hist
+			a := p.Hist
+			//fmt.Println("exp:", reflect.ValueOf(e).Type(), e)
+			//fmt.Println("act:", reflect.ValueOf(a).Type(), a)
+			result := reflect.DeepEqual(e, a)
+			assert.True(t, result)
+		})
+	}
+}
+
 func TestHistogram_SortKeysByDescSize(t *testing.T) {
 	var mu sync.Mutex
 	type fields struct {

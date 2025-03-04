@@ -21,6 +21,7 @@ func spaces(n int) string {
 // length is used to append spaces until the string has the desired length.
 func byteSliceAsASCII(b []byte, length int) string {
 	var s strings.Builder
+	s.WriteString("`")
 	for _, x := range b {
 		if 0x20 <= x && x < 0x7f {
 			s.WriteString(fmt.Sprintf("%c", x))
@@ -28,6 +29,7 @@ func byteSliceAsASCII(b []byte, length int) string {
 			s.WriteString(`˙`)
 		}
 	}
+	s.WriteString("`")
 	s.WriteString(spaces(length - len(b)))
 	return s.String()
 }
