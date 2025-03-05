@@ -14,6 +14,7 @@
 #include "memmem.h"
 
 /*static*/ replace_t * buildReplaceList(int * rcount, const uint8_t * table, const uint8_t * src, size_t slen);
+/*static*/ replace_t * buildReplaceList2(int * rcount, const uint8_t * table, const uint8_t * src, size_t slen);
 static size_t collectUnreplacableBytes( uint8_t * dst, replace_t * rlist, int rcount, const uint8_t * src );
 /*static*/ size_t shift87bit( uint8_t* lst, const uint8_t * src, size_t slen );
 static void initGetNextPattern( const uint8_t * table );
@@ -36,7 +37,7 @@ size_t tiPack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t 
         return 0;
     }
     int rcount;
-    replace_t * rlist = buildReplaceList(&rcount, table, src, slen);
+    replace_t * rlist = buildReplaceList2(&rcount, table, src, slen);
     // All unreplacable bytes are stretched inside to 7-bit units. This makes the data a bit longer.
     static uint8_t ur[TIP_SRC_BUFFER_SIZE_MAX*8u/7u+1]; 
     size_t ubSize = collectUnreplacableBytes( ur, rlist, rcount, src );
@@ -47,7 +48,7 @@ size_t tiPack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t 
     return tipSize;
 }
 
-
+// buildReplaceList starts with biggest table pattern and searches for matches.
 /*static*/ replace_t * buildReplaceList(int * rcount, const uint8_t * table, const uint8_t * src, size_t slen){
     replace_t * rlist = newReplaceList(slen);
     *rcount = 2;
@@ -70,12 +71,47 @@ size_t tiPack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t 
             hlen = rlist[k+1].bo - rlist[k].bo - rlist[k].sz;  
             uint8_t * loc = memmem( hay, hlen, needle, nlen ); // search hay for the needle
             if( loc ){ // found, id is the replace byte.
-                offset_t offset = loc - src; // offset is the needle (=pattern) position.
+                offset_t offset = loc - src; // offset is the relative needle (=pattern) position.
                 replaceableListInsert( rlist, rcount, k, id, offset, nlen );
                 goto repeat; // Same k and same  (needle) needs processing again but in the next hay stack.
             } // The r insert takes part inside the already processed rs.
             k++;
         }while( hay+hlen < src+slen );
+    }
+    return rlist;
+}
+
+// buildReplaceList2 starts with src and tries to find biggest matching pattern from table at buf = src.
+// If one was found, buf is incremented by found pattern size and we start over.
+// If none found, we increment buf by 1 and start over.
+/*static*/ replace_t * buildReplaceList2(int * rcount, const uint8_t * table, const uint8_t * src, size_t slen){
+    replace_t * rlist = newReplaceList(slen);
+    *rcount = 2;
+    int k = 0;
+    const uint8_t * buf = src;
+repeat:
+    initGetNextPattern(table);
+    for( int id = 1; id < 0x80; id++ ){ // traverse the ID table.    
+        // get the next pattern
+        const uint8_t * needle = NULL;
+        size_t nlen;
+        getNextPattern( &needle, &nlen );
+        if( nlen == 0 ){ // end of table if less 127 IDs
+            break; 
+        }
+        if( strncmp((void*)buf, (void*)needle, nlen) ){ // no match
+            continue; // with next pattern
+        }
+        // found, id is the replace byte.
+        offset_t offset = buf - src; // relative pattern position
+        replaceableListInsert( rlist, rcount, k, id, offset, nlen );
+        k++;
+        buf += nlen;
+        goto repeat;
+    }
+    buf++;
+    if( buf < src + slen ){
+        goto repeat;
     }
     return rlist;
 }
@@ -154,8 +190,8 @@ static size_t generateTipPacket( uint8_t * dst, uint8_t * u7, uint32_t u7Size, r
 }
 
 //! @brief replaceableListInsert extends r in an ordered way.
-//! @param r ist the replace list.
-//! @param k is the position after where to insert.
+//! @param rlist ist the replace list.
+//! @param k is the rlist position after where to insert.
 //! @param id is the replace byte for the location.
 //! @param offset is the location to be extended with.
 //! @param sz is the replace pattern size.

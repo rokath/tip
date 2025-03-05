@@ -91,6 +91,7 @@ func (p *Histogram) Reduce() {
 			i++
 		}
 		if smallerLength < biggerLength { // == on last item
+			fmt.Println(i, biggerLength, smallerLength)
 			p.ReduceOverlappingKeys(biggerKeys, smallerKeys)
 		}
 		i = k // restore position

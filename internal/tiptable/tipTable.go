@@ -27,7 +27,9 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 		err = p.ScanFile(fSys, loc, maxPatternSize)
 	}
 	p.PrintInfo("Histogram after Scan")
-	//p.DiscardSeldomPattern(1)
+
+	// All these trials did not result in significantly improved  
+	//p.DiscardSeldomPattern(10)
 	//p.PrintInfo("Histogram after DiscardSeldomPattern")
 	//p.BalanceByteUsage(maxPatternSize)
 	//p.PrintInfo("Histogram after Balance")
@@ -37,7 +39,7 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 	//p.AddWeigths()
 	//p.PrintInfo("Histogram after AddWeights")
 
-	// Todo: Reduce bigger keys if smaller keys fit.
+	// Todo: Reduce bigger keys if smaller keys fit?
 	
 	rlist := p.ExportAsList()
 
