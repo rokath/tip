@@ -96,7 +96,7 @@ Table of Contents Generation:
 * Usual compressors cannot succeed on small data, because they add a translation table into the data.
 * **TiP** is an adaptable small buffer packer suitable for embedded devices. Like [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) it removes all zeroes from the data, but additionally tries data compression. 
   * [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) adds 1 byte overhead per each starting 255 bytes.
-  * The TiP worst-case overhead is 1 byte per each starting 7 bytes for uncompressable data.
+  * The TiP worst-case overhead is 1 byte per each starting 7 bytes for uncompressable data, but the expected packed size is about 60% of the unpacked data.
 * Like [TCOBS](https://github.com/rokath//tcobs), TiP can already compress 3 bytes into 2 bytes but is expected to do better in a general way.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -130,6 +130,7 @@ Table of Contents Generation:
 ### 3.3. <a id='build-`ti_pack`-and-`ti_unpack`'></a>Build `ti_pack` and `ti_unpack`
 
 * Copy the generated `idTable.c` file into the `src` folder.
+* Run `go clean -cache`.
 * Run `go build ./...` or `go install ./...`.
 
 ### 3.4. <a id='try-`ti_pack`-and-`ti_unpack`'></a>Try `ti_pack` and `ti_unpack`
