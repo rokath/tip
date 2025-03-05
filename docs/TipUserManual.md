@@ -122,6 +122,7 @@ On the receiver side all bytes with MSBit=0 are identified as IDs and are replac
 * We could also just determine all pattern from 2 to N bytes length and then go byte by byte through the sample data and increment for each byte the pattern counter for the pattern containing this byte on the right place.
 * It could make sense, to build several ID tables and then measure how good the packing is with the different tables.
 
+<!--
 ``` c
 // 1 2 3 4 -> 12:1 23:1 34:1 123:1 234:1 1234:1 -> weighted: 12:2 23:2 34:2 123:3 234:3 1234:4
 //         -> 12:0 23:- 34:0 123:0 234:0 1234:1 -> weighted: 12:0 23:- 34:0 123:0 234:0 1234:4
@@ -174,7 +175,7 @@ aa0000  | 1     | 4/3            | 4000/3 = 1333 | contains 0000
 0000bb  | 1     | 4/3            | 4000/3 = 1333 | contains 0000
 bb0000  | 1     | 4/3            | 4000/3 = 1333 | contains 0000
 0000cc  | 1     | 4/3            | 4000/3 = 1333 | contains 0000
-
+-->
 
 ## 3. <a id='improvement-ideas'></a>Improvement Ideas
 
@@ -195,18 +196,16 @@ bb0000  | 1     | 4/3            | 4000/3 = 1333 | contains 0000
   * The count is guarantied not to be zero and also some optional additional bytes.
 
 
-
-<!--
-### 3.2. <a id='minimize-worst-case-size'></a>Minimize Worst-Case Size
+### 3.2. <a id='minimize-worst-case-size'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter.
 
 * If data are containing no ID table pattern at all, they are getting bigger by the factor 8/7. Thats a result of treating the data in 8 bit units (bytes).
 * If we change that to 16-bit units, by accepting an optional padding byte, we can reduce this increase factor to 16/15.
 * We still have IDs 1-127
 * An existing ID 127 just tells if there is a padding byte in the unreplacable data.
-* When unpacking, the first set MSBit tells that this byte and the next are unreplaceable. So we get N 16-bit groups of unreplacable data. BUT the 2nd byte could be zero!
-* 
+* When unpacking, the first set MSBit tells that this byte and the next are unreplaceable. So we get N 16-bit groups of unreplacable data.
+* BUT we need 2 frame delimiter bytes then!
 
-
+<!--
 
 https://jwakely.github.io/pkg-gcc-latest/
 
