@@ -137,7 +137,7 @@ func TestHistogram_Reduce_0(t *testing.T) {
 	}
 }
 
-func TestHistogram_Reduce_1(t *testing.T) {
+func TestHistogram_Reduce_1_ok(t *testing.T) {
 	var m sync.Mutex
 	type fields struct {
 		Hist map[string]Pat
@@ -203,15 +203,64 @@ func TestHistogram_Reduce_1(t *testing.T) {
 				s2h("CAB"): {2, []int{2, 5}},    // "434142":pattern.Pat{Weight:1, Pos:[]int{4}}}
 			},
 		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := &Histogram{
+				Hist: tt.fields.Hist,
+				mu:   tt.fields.mu,
+				Key:  tt.fields.Keys,
+			}
+			p.ScanData(tt.data, tt.maxLen, tt.ring)
+			if tt.reduce {
+				p.Reduce()
+			}
+			p.DeleteEmptyKeys()
+			p.SortPositions()
+			assert.Equal(t, tt.exp, tt.fields.Hist)
+		})
+	}
+}
+
+func TestHistogram_Reduce_1_devel(t *testing.T) {
+	var m sync.Mutex
+	type fields struct {
+		Hist map[string]Pat
+		mu   *sync.Mutex
+		Keys []string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		data   []byte
+		maxLen int
+		ring   bool
+		reduce bool
+		exp    map[string]Pat
+	}{ // test cases:
+		{
+			"", fields{map[string]Pat{}, &m, nil}, []byte("ABCABCABCABC"), 4, false, false, // max, ring reduce
+			//map[string]Pat{ //////////////////////////// 0123456789ab
+			map[string]Pat{
+				s2h("AB"):   {4, []int{0, 3, 6, 9}},  //"4142":     {Weight: 4, Pos: []int{0, 3, 6, 9}},
+				s2h("BC"):   {4, []int{1, 4, 7, 10}}, //"4243":     {Weight: 4, Pos: []int{1, 4, 7, 10}},
+				s2h("CA"):   {3, []int{2, 5, 8}},     //"4341":     {Weight: 3, Pos: []int{2, 5, 8}},
+				s2h("ABC"):  {4, []int{0, 3, 6, 9}},  //"414243":   {Weight: 4, Pos: []int{0, 3, 6, 9}},
+				s2h("BCA"):  {3, []int{1, 4, 7}},     //"424341":   {Weight: 3, Pos: []int{1, 4, 7}},
+				s2h("CAB"):  {3, []int{2, 5, 8}},     //"434142":   {Weight: 3, Pos: []int{2, 5, 8}},
+				s2h("ABCA"): {3, []int{0, 3, 6}},     //"41424341": {Weight: 3, Pos: []int{0, 3, 6}},
+				s2h("BCAB"): {3, []int{1, 4, 7}},     //"42434142": {Weight: 3, Pos: []int{1, 4, 7}},
+				s2h("CABC"): {3, []int{2, 5, 8}},     //"43414243": {Weight: 3, Pos: []int{2, 5, 8}},
+			},
+		},
 		{
 			"", fields{map[string]Pat{}, &m, nil}, []byte("ABCABCABCABC"), 4, false, true,
 			map[string]Pat{ ////////////////////////////// 0123456789ab
-				//s2h("ABC"):  {3, []int{0, 3, 6}}, // "414243":pattern.Pat{Weight:1, Pos:[]int{2}},
-				//s2h("BCA"):  {2, []int{1, 4}},    // "424142":pattern.Pat{Weight:2, Pos:[]int{1, 6}},
-				//s2h("CAB"):  {2, []int{2, 5}},    // "434142":pattern.Pat{Weight:1, Pos:[]int{4}}}
-				s2h("ABCA"): {3, []int{0, 3, 6}}, // "41424341":pattern.Pat{Weight:3, Pos:[]int{0, 3, 6}},
-				s2h("BCAB"): {3, []int{1, 4, 7}}, //  "42434142":pattern.Pat{Weight:3, Pos:[]int{1, 4, 7}},
-				s2h("CABC"): {3, []int{2, 5, 8}}, // "43414243":pattern.Pat{Weight:3, Pos:[]int{2, 5, 8}}
+				////////////////////////////////////////// ABCA  ABCA   <- 2 pattern
+				////////////////////////////////////////// ABCABCABCABC <- 3 pattern
+				s2h("ABCA"): {3, []int{0, 3, 6}}, //"41424341":pattern.Pat{Weight:3, Pos:[]int{0, 3, 6}},
+				s2h("BCAB"): {3, []int{1, 4, 7}}, //"42434142":pattern.Pat{Weight:3, Pos:[]int{1, 4, 7}},
+				s2h("CABC"): {3, []int{2, 5, 8}}, //"43414243":pattern.Pat{Weight:3, Pos:[]int{2, 5, 8}}
 			},
 		},
 	}
@@ -223,7 +272,6 @@ func TestHistogram_Reduce_1(t *testing.T) {
 				Key:  tt.fields.Keys,
 			}
 			p.ScanData(tt.data, tt.maxLen, tt.ring)
-			//p.BalanceByteUsage(tt.args)
 			if tt.reduce {
 				p.Reduce()
 			}
