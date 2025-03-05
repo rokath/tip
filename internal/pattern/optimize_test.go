@@ -2,7 +2,6 @@ package pattern
 
 import (
 	"fmt"
-	"reflect"
 	"sync"
 	"testing"
 
@@ -90,7 +89,7 @@ func Test_positionIndexMatch(t *testing.T) {
 	}
 }
 
-func _TestHistogram_Reduce0(t *testing.T) {
+func TestHistogram_Reduce_0(t *testing.T) {
 	var m sync.Mutex
 	type fields struct {
 		Hist map[string]Pat
@@ -138,7 +137,7 @@ func _TestHistogram_Reduce0(t *testing.T) {
 	}
 }
 
-func TestHistogram_Reduce1(t *testing.T) {
+func TestHistogram_Reduce_1(t *testing.T) {
 	var m sync.Mutex
 	type fields struct {
 		Hist map[string]Pat
@@ -149,57 +148,70 @@ func TestHistogram_Reduce1(t *testing.T) {
 		name   string
 		fields fields
 		data   []byte
+		maxLen int
 		ring   bool
+		reduce bool
 		exp    map[string]Pat
 	}{ // test cases:
 		{
-			"",
-			fields{map[string]Pat{}, &m, nil},
-			[]byte("aaaaa"), true,
+			"", fields{map[string]Pat{}, &m, nil}, []byte("aaaaa"), 3, true, true,
+			map[string]Pat{
+				//s2h("aa"):  {0, []int{}},
+				s2h("aaa"): {5, []int{0, 1, 2, 3, 4}},
+			},
+		},
+		{
+			"", fields{map[string]Pat{}, &m, nil}, []byte("aaaaa"), 3, true, false,
 			map[string]Pat{
 				s2h("aa"):  {5, []int{0, 1, 2, 3, 4}},
 				s2h("aaa"): {5, []int{0, 1, 2, 3, 4}},
 			},
 		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			p := &Histogram{
-				Hist: tt.fields.Hist,
-				mu:   tt.fields.mu,
-				Key:  tt.fields.Keys,
-			}
-			p.ScanData(tt.data, 3, true)
-			p.SortPositions()
-			//p.BalanceByteUsage(tt.args)
-			//p.Reduce()
-			//p.DeleteEmptyKeys()
-			assert.Equal(t, tt.exp, tt.fields.Hist)
-		})
-	}
-}
-
-func TestHistogram_Reduce2(t *testing.T) {
-	var m sync.Mutex
-	type fields struct {
-		Hist map[string]Pat
-		mu   *sync.Mutex
-		Keys []string
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		data   []byte
-		ring   bool
-		exp    map[string]Pat
-	}{ // test cases:
 		{
-			"",
-			fields{map[string]Pat{}, &m, nil},
-			[]byte("aaaaa"), true,
+			"", fields{map[string]Pat{}, &m, nil}, []byte("ABABCAB"), 3, true, true,
 			map[string]Pat{
-				s2h("aa"):  {0, []int{}},
-				s2h("aaa"): {5, []int{0, 1, 2, 3, 4}},
+				s2h("ABA"): {2, []int{0, 5}}, // "414241":pattern.Pat{Weight:2, Pos:[]int{0, 5}},
+				s2h("BAB"): {2, []int{1, 6}}, // "424142":pattern.Pat{Weight:2, Pos:[]int{1, 6}},
+				s2h("ABC"): {1, []int{2}},    // "414243":pattern.Pat{Weight:1, Pos:[]int{2}},
+				s2h("BCA"): {1, []int{3}},    // "424341":pattern.Pat{Weight:1, Pos:[]int{3}},
+				s2h("CAB"): {1, []int{4}},    // "434142":pattern.Pat{Weight:1, Pos:[]int{4}}}
+			},
+		},
+		{
+			"", fields{map[string]Pat{}, &m, nil}, []byte("ABABCAB"), 3, false, true,
+			map[string]Pat{
+				s2h("ABA"): {1, []int{0}}, // "414241":pattern.Pat{Weight:2, Pos:[]int{0, 5}},
+				s2h("BAB"): {1, []int{1}}, // "424142":pattern.Pat{Weight:2, Pos:[]int{1, 6}},
+				s2h("ABC"): {1, []int{2}}, // "414243":pattern.Pat{Weight:1, Pos:[]int{2}},
+				s2h("BCA"): {1, []int{3}}, // "424341":pattern.Pat{Weight:1, Pos:[]int{3}},
+				s2h("CAB"): {1, []int{4}}, // "434142":pattern.Pat{Weight:1, Pos:[]int{4}}}
+			},
+		},
+		{
+			"", fields{map[string]Pat{}, &m, nil}, []byte("ABCABC"), 3, false, true,
+			map[string]Pat{
+				s2h("ABC"): {2, []int{0, 3}}, // "414243":pattern.Pat{Weight:1, Pos:[]int{2}},
+				s2h("BCA"): {1, []int{1}},    // "424142":pattern.Pat{Weight:2, Pos:[]int{1, 6}},
+				s2h("CAB"): {1, []int{2}},    // "434142":pattern.Pat{Weight:1, Pos:[]int{4}}}
+			},
+		},
+		{
+			"", fields{map[string]Pat{}, &m, nil}, []byte("ABCABCABC"), 3, false, true,
+			map[string]Pat{
+				s2h("ABC"): {3, []int{0, 3, 6}}, // "414243":pattern.Pat{Weight:1, Pos:[]int{2}},
+				s2h("BCA"): {2, []int{1, 4}},    // "424142":pattern.Pat{Weight:2, Pos:[]int{1, 6}},
+				s2h("CAB"): {2, []int{2, 5}},    // "434142":pattern.Pat{Weight:1, Pos:[]int{4}}}
+			},
+		},
+		{
+			"", fields{map[string]Pat{}, &m, nil}, []byte("ABCABCABCABC"), 4, false, true,
+			map[string]Pat{ ////////////////////////////// 0123456789ab
+				//s2h("ABC"):  {3, []int{0, 3, 6}}, // "414243":pattern.Pat{Weight:1, Pos:[]int{2}},
+				//s2h("BCA"):  {2, []int{1, 4}},    // "424142":pattern.Pat{Weight:2, Pos:[]int{1, 6}},
+				//s2h("CAB"):  {2, []int{2, 5}},    // "434142":pattern.Pat{Weight:1, Pos:[]int{4}}}
+				s2h("ABCA"): {3, []int{0, 3, 6}}, // "41424341":pattern.Pat{Weight:3, Pos:[]int{0, 3, 6}},
+				s2h("BCAB"): {3, []int{1, 4, 7}}, //  "42434142":pattern.Pat{Weight:3, Pos:[]int{1, 4, 7}},
+				s2h("CABC"): {3, []int{2, 5, 8}}, // "43414243":pattern.Pat{Weight:3, Pos:[]int{2, 5, 8}}
 			},
 		},
 	}
@@ -210,68 +222,14 @@ func TestHistogram_Reduce2(t *testing.T) {
 				mu:   tt.fields.mu,
 				Key:  tt.fields.Keys,
 			}
-			p.ScanData(tt.data, 3, true)
+			p.ScanData(tt.data, tt.maxLen, tt.ring)
 			//p.BalanceByteUsage(tt.args)
-			p.Reduce()
-			//p.DeleteEmptyKeys()
+			if tt.reduce {
+				p.Reduce()
+			}
+			p.DeleteEmptyKeys()
 			p.SortPositions()
 			assert.Equal(t, tt.exp, tt.fields.Hist)
-		})
-	}
-}
-
-func _TestHistogram_ReduceOverlappingKeys(t *testing.T) {
-	var mu sync.Mutex
-	type fields struct {
-		Hist map[string]Pat
-		mu   *sync.Mutex
-		Keys []string
-	}
-	type args struct {
-		equalSize1stKey []string
-		equalSize2ndKey []string
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		exp    map[string]Pat
-	}{ // test cases:
-		{
-			"",
-			fields{map[string]Pat{"1a1a": {3, []int{0, 1, 5}}, "1a1a1a": {1, []int{0}}}, &mu, nil}, // the histogram in p
-			args{[]string{"1a1a1a"}, []string{"1a1a"}},                                             // the function arguments
-			map[string]Pat{"1a1a": {1, []int{5}}, "1a1a1a": {1, []int{0}}},                         // the expected result in p
-		},
-		{
-			"", // case: |xx1a1a1a1axx...|
-			fields{map[string]Pat{"1a1a": {9, []int{0, 2, 3, 4, 5, 6, 8, 10, 20}}, "1a1a1a1a": {2, []int{2, 32}}}, &mu, nil}, // the histograms in p
-			args{[]string{"1a1a1a1a"}, []string{"1a1a"}},                                          // the function arguments
-			map[string]Pat{"1a1a": {6, []int{0, 5, 6, 8, 10, 20}}, "1a1a1a1a": {2, []int{2, 32}}}, // the expected result in p
-		},
-		{
-			"",
-			fields{map[string]Pat{"1122": {2, []int{8, 32}}, "112233": {1, []int{8}}}, &mu, nil},
-			args{[]string{"112233"}, []string{"1122"}},
-			map[string]Pat{"1122": {1, []int{32}}, "112233": {1, []int{8}}},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			p := &Histogram{
-				Hist: tt.fields.Hist,
-				mu:   tt.fields.mu,
-				Key:  tt.fields.Keys,
-			}
-			p.ReduceOverlappingKeys(tt.args.equalSize1stKey, tt.args.equalSize2ndKey)
-			p.SortPositions()
-			e := tt.exp
-			a := p.Hist
-			fmt.Println("exp:", reflect.ValueOf(e).Type(), e)
-			fmt.Println("act:", reflect.ValueOf(a).Type(), a)
-			result := reflect.DeepEqual(e, a)
-			assert.True(t, result)
-			assert.Equal(t, tt.exp, p.Hist)
 		})
 	}
 }
@@ -299,7 +257,7 @@ func TestHistogram_AddWeigths(t *testing.T) {
 	}
 }
 
-func _TestHistogram_ReduceSubKey(t *testing.T) {
+func TestHistogram_ReduceSubKey(t *testing.T) {
 	var mu sync.Mutex
 	type args struct {
 		bkey   string

@@ -66,7 +66,7 @@ func (p *Histogram) AddWeigths() {
 // Reduce searches the keys if they contain sub-keys.
 // If a sub-key is found inside a key with count n,
 // The sub-key count is reduced by n.
-// It uses
+// It uses the key positions.
 func (p *Histogram) Reduce() {
 	if Verbose {
 		fmt.Println("Reducing histogram with length", len(p.Hist), "...")
@@ -182,12 +182,12 @@ func (p *Histogram) getMatchingSubKeyPositions(bkey, subKey string) []int {
 // if they match with the bkey positions. Example: if subkey has positions 14, 18, 42 and bkey has
 // position 10 and subkey is at index is 4 and 8 and, then the subkey positions 14, 18 are removed.
 func (p *Histogram) ReduceSubKey(bkey, subKey string) {
+	p.mu.Lock()
 	pos := p.getMatchingSubKeyPositions(bkey, subKey)
 	if len(pos) > 0 {
-		p.mu.Lock()
 		p.DeletePositionsOfKey(subKey, pos)
-		p.mu.Unlock()
 	}
+	p.mu.Unlock()
 }
 
 // ReduceOverlappingKeys checks for all biggerKeys if the smallerKeys are part of them

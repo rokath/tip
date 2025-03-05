@@ -2,6 +2,66 @@ package pattern
 
 
 /*
+
+
+
+func TestHistogram_ReduceOverlappingKeys(t *testing.T) {
+	var mu sync.Mutex
+	type fields struct {
+		Hist map[string]Pat
+		mu   *sync.Mutex
+		Keys []string
+	}
+	type args struct {
+		equalSize1stKey []string
+		equalSize2ndKey []string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		exp    map[string]Pat
+	}{ // test cases:
+		{
+			"",
+			fields{map[string]Pat{"1a1a": {3, []int{0, 1, 5}}, "1a1a1a": {1, []int{0}}}, &mu, nil}, // the histogram in p
+			args{[]string{"1a1a1a"}, []string{"1a1a"}},                                             // the function arguments
+			map[string]Pat{"1a1a": {1, []int{5}}, "1a1a1a": {1, []int{0}}},                         // the expected result in p
+		},
+		{
+			"", // case: |xx1a1a1a1axx...|
+			fields{map[string]Pat{"1a1a": {9, []int{0, 2, 3, 4, 5, 6, 8, 10, 20}}, "1a1a1a1a": {2, []int{2, 32}}}, &mu, nil}, // the histograms in p
+			args{[]string{"1a1a1a1a"}, []string{"1a1a"}},                                          // the function arguments
+			map[string]Pat{"1a1a": {6, []int{0, 5, 6, 8, 10, 20}}, "1a1a1a1a": {2, []int{2, 32}}}, // the expected result in p
+		},
+		{
+			"",
+			fields{map[string]Pat{"1122": {2, []int{8, 32}}, "112233": {1, []int{8}}}, &mu, nil},
+			args{[]string{"112233"}, []string{"1122"}},
+			map[string]Pat{"1122": {1, []int{32}}, "112233": {1, []int{8}}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := &Histogram{
+				Hist: tt.fields.Hist,
+				mu:   tt.fields.mu,
+				Key:  tt.fields.Keys,
+			}
+			p.ReduceOverlappingKeys(tt.args.equalSize1stKey, tt.args.equalSize2ndKey)
+			p.SortPositions()
+			e := tt.exp
+			a := p.Hist
+			fmt.Println("exp:", reflect.ValueOf(e).Type(), e)
+			fmt.Println("act:", reflect.ValueOf(a).Type(), a)
+			result := reflect.DeepEqual(e, a)
+			assert.True(t, result)
+			assert.Equal(t, tt.exp, p.Hist)
+		})
+	}
+}
+
+
 func Test_countOverlapping2(t *testing.T) {
 	type args struct {
 		s   string
