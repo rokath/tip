@@ -4,8 +4,8 @@
 
 ```diff
 
-+ Compress small buffers fast and efficient with Zeroes Elemination +
---> Works with big buffers too but will not compress like establisched zip tools ❗
++ Compress very small buffers fast and efficient with Zeroes Elemination +
+--> Works with several-KByte buffers too but will not compress like established zip tools ❗
 
 ```
 
