@@ -84,7 +84,15 @@ If there is a buffer of, let's say 20 bytes, we can consider it as a 20-digit nu
 
 Find the 127 most common pattern in sample data, similar to the real data, and assign the IDs 1-127 to them. This is done once offline and the generated ID table gets part of the tiny packer code as well as for the tiny unpacker code. For that task a generator tool was build.
 
-At runtime the actual buffer is searched for matching patterns from the ID table beginning with the longest ones. All these found patterns get replaced by the IDs later. All unreplacable bytes are collected into one separate buffer. N unreplacable bytes occupy N\*8 bits. These are distributed onto N\*8/7 7-bit bytes, all getting the MSBit set to avoid zeroes and to distinguish them later from the ID bytes. In fact we do not change these N\*8 bits, we simply reorder them slightly. This bit reordering is de-facto the number transformation to the base 128, mentioned above.
+At runtime the actual buffer is searched for matching patterns from the ID table beginning with the longest ones. All these found patterns get replaced by the IDs later. 
+
+Even the pattern ID table is somehow "good", it is important, how the pattern are fitted into the actual buffer. 
+
+1. Start with the longest pattern and go to the shorter ones then.
+2. Find longest pattern fitting to the buffer start or end and reduce the buffer then and repeat.
+3. If no fitting pattern was found, set buffer start +1 and repeat and then buffer end -1 and repeat.
+
+All unreplacable bytes are collected into one separate buffer. N unreplacable bytes occupy N\*8 bits. These bits are distributed onto N\*8/7 7-bit bytes, all getting the MSBit set to avoid zeroes and to distinguish them later from the ID bytes. In fact we do not change these N\*8 bits, we simply reorder them slightly. This bit reordering is de-facto the number transformation to the base 128, mentioned above.
 
 After replacing all found patterns with their IDs, which all have MSBit=0, the unreplacable bytes are replaced with the bit-reordered unreplacable bytes, having MSBit=1.
 
@@ -97,20 +105,21 @@ On the receiver side all bytes with MSBit=0 are identified as IDs and are replac
 ## 2. <a id='id-table-generation'></a>ID Table Generation
 
 * We create a bunch of test files with data similar to those we want to pack in the future.
-  * For now `ti_generate` takes a longer text file, splits it into sentences and treats each as a separate sample buffer.
+  * `ti_generate` takes a single file and treats it as a separate sample buffer.
   * Also a folder name is accepted and all files are processed then.
 * We assume a longest pattern, like 8 for example.
   * `ti_generate` accepts it as parameter.
   * The longest possible pattern is 255 bytes long.
-* We take the first 8 bytes of some sample data and move that window in 1-byte steps over the sample data and build a histogram over all found pattern and their occurances count.
-* The same is done with all smaller pattern sizes, ergo 7, 6, 5, 4, 3, 2. Not interesting are 1-byte patterns, because their replacement by an ID gives no compression effect.
+  * For very short buffers, 4 to 8 bytes as maximum is recommended as max size N.
+* We take the first N bytes of some sample data and move that window in 1-byte steps over the sample data and build a histogram over all found pattern and their occurances count.
+* The same is done with all smaller pattern sizes, ergo N, ..., 3, 2. Not interesting are 1-byte patterns, because their replacement by an ID gives no compression effect.
 * The 127 most often occuring pattern are sorted by descending size and are used to create the file `idTable.c`.
 
 ### 2.1. <a id='id-table-generation-questions'></a>ID Table Generation Questions
 
 * It is not clear, if the this way created ID table is optimal. Especially, when pattern are sub-pattern of other patterns. That is easily the case with sample data containing the same bytes in longer rows.
 * Also it could make sense to use the length of a pattern as weigth. If, for example a 5-bytes long pattern occurs 100 times and a 2-bytes long pattern exists 200 times in the sample data - which should get preceedence to get into the ID table? My guess is, to multiply the pattern length with its occureances count gives a good approximation.
-* We could also just determine all pattern from 2 to 8 bytes length and then go byte by byte through the sample data and increment for each byte the pattern counter for the pattern containing this byte on the right place.
+* We could also just determine all pattern from 2 to N bytes length and then go byte by byte through the sample data and increment for each byte the pattern counter for the pattern containing this byte on the right place.
 * It could make sense, to build several ID tables and then measure how good the packing is with the different tables.
 
 ``` c
