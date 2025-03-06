@@ -80,7 +80,12 @@ int main(void)
   /* USER CODE BEGIN 1 */
 #if !TRICE_OFF
   TriceInit(); // This so early, to allow trice logs inside interrupts from the beginning. Only needed for RTT.
+  //trice("Hi\n");
+  //trice("Hi\n");
+  //trice("Hi\n");
   TriceHeadLine("  NUCLEO-G0B1RE with tip  ");
+  //trice("Hi\n");
+  //trice("Hi\n");
 #endif
   /* USER CODE END 1 */
 
@@ -104,9 +109,27 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-#if !TRICE_OFF
-  LogTriceConfiguration();
+#if !TRICE_OFF  
+//LogTriceConfiguration();
 #endif
+  static uint8_t buf[100] = {0};
+  static uint8_t pkg[100] = {0};
+//static uint8_t src[] = { 0x0d, 0x0a, 0x0d, 0x0a, 0x74, 0x68, 0x65, 0x20, 0x0d, 0x0a }; // ok
+//static uint8_t src[] = { 0x55, 0x74, 0x68, 0x65, 0x20, 0x55, 0x74, 0x68, 0x65, 0x20 }; // ok
+  static uint8_t src[] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0xaa, 0xbb, 0x38, 0x39, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66 };
+  //static char* in = "ABCABCABC123";
+  //static uint8_t src[100] = {0};
+  size_t slen =  sizeof(src); //   strlen(in);
+  //  memcpy(src,in,slen);
+  trice8B("rd:%02x \n", src, slen);
+
+  size_t plen = tip(pkg, src, slen);
+
+  trice8B("wr:%02x \n", pkg, plen);
+  
+  size_t blen = tiu(buf, pkg, plen);
+  trice8B("att:%02x \n", buf, blen);
+
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -313,12 +336,14 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+    /*
     static uint8_t dst[100] = {0};
     static uint8_t src[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
     size_t slen = sizeof(src);
     size_t dlen = tip(dst, src, slen);
     trice8B("rd:%02x ", src, slen);
     trice8B("wr:%02x ", dst, dlen);
+	*/
     osDelay(1000);
   }
   /* USER CODE END 5 */

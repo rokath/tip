@@ -22,9 +22,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "pack.h"
-#include "unpack.h"
 #include "trice.h"
+#include "tip.h"
 //#include <limits.h> // INT_MAX
 /* USER CODE END Includes */
 
@@ -355,6 +354,14 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+    /*
+    static uint8_t dst[100] = {0};
+    static uint8_t src[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+    size_t slen = sizeof(src);
+    size_t dlen = tip(dst, src, slen);
+    trice8B("rd:%02x ", src, slen);
+    trice8B("wr:%02x ", dst, dlen);
+	*/
     osDelay(1000);
   }
   /* USER CODE END 5 */

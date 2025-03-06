@@ -187,7 +187,7 @@ static size_t collectUnreplacableBytes( uint8_t * dst, replace_t * rlist, int rc
     return lst - dst;
 }
 
-#if 0 // 0 side
+#if 1 // 0 side
 
 // buildReplaceList starts with biggest table pattern and searches for matches.
 replace_t * buildReplaceList(int * rcount, const uint8_t * table, const uint8_t * src, size_t slen){
@@ -224,7 +224,7 @@ replace_t * buildReplaceList(int * rcount, const uint8_t * table, const uint8_t 
 
 #endif
 
-#if 1 // 1 side
+#if 0 // 1 side
 
 // buildReplaceList starts with src and tries to find biggest matching pattern from table at buf = src.
 // If one was found, buf is incremented by found pattern size and we start over.
@@ -252,7 +252,9 @@ repeat:
         replaceableListInsert( rlist, rcount, k, id, offset, nlen );
         k++;
         buf += nlen;
-        goto repeat;
+        if( !(buf < src + slen) ){
+            return rlist;
+        }
     }
     buf++;
     if( buf < src + slen ){

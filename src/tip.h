@@ -10,10 +10,13 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include "tipConfig.h"
+#include "pack.h"
+#include "unpack.h"
 
-//! TIP_SRC_BUFFER_SIZE_MAX is the maximun allowed input data buffer length.
-//! Its size has influence on the statically allocated RAM.
-#define TIP_SRC_BUFFER_SIZE_MAX 65535u // bytes
+#ifndef TIP_SRC_BUFFER_SIZE_MAX
+#error "needs to #define TIP_SRC_BUFFER_SIZE_MAX 100u // bytes (max65535)"
+#endif // #ifndef TIP_SRC_BUFFER_SIZE_MAX
 
 #if TIP_SRC_BUFFER_SIZE_MAX > 256u*1024u*1024u
 #error invalid TIP_SRC_BUFFER_SIZE_MAX value

@@ -3,6 +3,10 @@
 		"Type": "TRICE32_0",
 		"Strg": "att:🐁 Speedy Gonzales B  32-bit time stamp\\n"
 	},
+	"13076": {
+		"Type": "trice8B",
+		"Strg": "wr:%02x \\n"
+	},
 	"13112": {
 		"Type": "trice",
 		"Strg": "deb:TRICE_DIRECT_OUTPUT == %d, TRICE_DEFERRED_OUTPUT == %d\\n"
@@ -18,6 +22,14 @@
 	"13278": {
 		"Type": "TriceS",
 		"Strg": "w: Hello! 👋🙂 \\n\\n        ✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨        \\n        🎈🎈🎈🎈%s🎈🎈🎈🎈\\n        🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃🍃        \\n\\n\\n"
+	},
+	"13288": {
+		"Type": "trice",
+		"Strg": "Hi\\n"
+	},
+	"13316": {
+		"Type": "trice",
+		"Strg": "Hi\\n"
 	},
 	"13335": {
 		"Type": "TRice",
@@ -58,6 +70,10 @@
 	"13714": {
 		"Type": "trice8B",
 		"Strg": "rd:%02x "
+	},
+	"13782": {
+		"Type": "trice",
+		"Strg": "Hi\\n"
 	},
 	"13828": {
 		"Type": "trice",
@@ -183,6 +199,10 @@
 		"Type": "TRice",
 		"Strg": "msg:StartTask02:Diagnostics and TriceTransfer\\n"
 	},
+	"14704": {
+		"Type": "trice",
+		"Strg": "Hi\\n"
+	},
 	"14739": {
 		"Type": "Trice",
 		"Strg": "info:A Buffer:\\n"
@@ -202,6 +222,14 @@
 	"14846": {
 		"Type": "trice16",
 		"Strg": "diag:TriceDataOffsetDepthMax = %d of %d (TRICE_DATA_OFFSET)\\n"
+	},
+	"14893": {
+		"Type": "trice8B",
+		"Strg": "rd:%02x \\n"
+	},
+	"14990": {
+		"Type": "trice8B",
+		"Strg": "att:%02x \\n"
 	},
 	"15013": {
 		"Type": "trice16",
@@ -286,6 +314,10 @@
 	"16163": {
 		"Type": "trice16",
 		"Strg": "err:TriceErrorCount = %u\\n"
+	},
+	"16173": {
+		"Type": "trice",
+		"Strg": "Hi\\n"
 	},
 	"16252": {
 		"Type": "TRice",
