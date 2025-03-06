@@ -23,31 +23,31 @@ static void replaceableListInsert( replace_t * r, int * rcount, int k, uint8_t b
 static size_t generateTipPacket( uint8_t * dst, uint8_t * u7, uint32_t u7Size, replace_t * rlist, int rcount );
 
 size_t tip( uint8_t* dst, const uint8_t * src, size_t len ){
-    size_t dstLimit = ((74899*len)>>16)+1;  // The max possible dst size is len*8/7+1 or (65536*8/7+1)>>16;
+    size_t dstLimit = ((74899*len)>>16)+1;  // The max possible dst size is len*8/7+1 or ((len*65536*8/7)>>16)+1;
     return tiPack( dst, dstLimit, idTable, src, len );
 }
 
 //! @brief tiPack encodes src buffer with size len into dst buffer and returns encoded len.
 //! @details For the tip encoding it uses the linked idTable.c object.
 // - Some bytes groups in the src buffer are replacable with IDs 0x01...0x7f and some not.
-// - The rlist r holds the replace information. Additionally the dst buffer is prefilled with id from both sides.
-// - Example: dst = 5, 6, 0, ..., 0, 2, 3, 4; and rlist = 001111110001110000011
+// - The rlist r holds the replace information. Additionally the dst buffer is prefilled with IDs from both sides.
+// - Example: dst = 5, 6, 0, ..., 0, 2, 3, 4; and rlist = 00111111000111000001111110111
+// - ID 5 has 2 and ID 6 4 bytes, so ID 2 and 4 have 3 bytes and ID 3 has 5 bytes.
 // - The unreplacable bytes are collected into a buffer.
 size_t tiPack( uint8_t* dst, size_t dstLimit, const uint8_t * table, const uint8_t * src, size_t slen ){
     if( slen > TIP_SRC_BUFFER_SIZE_MAX ){
         return 0;
     }
-    
-    memset(dst, 0, );
+    memset(dst, 0, dstLimit);
     uint8_t * rlist = newReplaceBits();
-    setReplaceBits(dst, rlist, table, src, slen);
+    setReplaceBits(dst, dstLimit, rlist, table, src, slen);
     // All unreplacable bytes are stretched inside to 7-bit units. This makes the data a bit longer.
     static uint8_t ur[TIP_SRC_BUFFER_SIZE_MAX*8u/7u+1]; 
     size_t ubSize = getUnreplacableBytes(ur, rlist, src );
     uint8_t * urLimit = &ur[sizeof(ur)]; // first address after the ur buffer.
     size_t urSize = shift87bit( urLimit - 1, ur, ubSize );
     uint8_t * u7 = urLimit - urSize;
-    size_t tipSize = buildTipPacket( dst, u7, urSize, rlist );
+    size_t tipSize = buildTipPacket( dst, dstLimit, urSize, rlist );
     return tipSize;
 }
 
@@ -93,7 +93,7 @@ void setBits( uint8_t * bitList, size_t pos, size_t len ){
 // If a pattern was found at front or back we start over.
 // If none found, we increment buf by 1 and decrement bufLimit and start over.
 // It is possible, the same pattern is found again at the same place, but we do not care, we just set the bits.
-void setReplaceBits(uint8_t dst, uint8_t * rlist, const uint8_t * table, const uint8_t * src, size_t slen){
+void setReplaceBits(uint8_t * dst, uint8_t * dstLimit, uint8_t * rlist, const uint8_t * table, const uint8_t * src, size_t slen){
     const uint8_t * buf = src;
     const uint8_t * bufLimit = src + slen;
     int frontSearch = 1;
@@ -113,6 +113,7 @@ repeat:
             frontMatch = 1;
             offset_t offset = buf - src; // relative pattern position
             setBits( rlist, offset, nlen );
+            *dst++ = id;
             buf += nlen;
             if( !(buf < src + slen)){
                 frontSearch = 0;
@@ -122,6 +123,7 @@ repeat:
             backMatch = 1;
             offset_t offset = bufLimit-nlen - src; // relative pattern position
             setBits( rlist, offset, nlen );
+            *--dstLimit = id;
             bufLimit -= nlen;
             if( !(src < bufLimit) ){
                 backSearch = 0;
@@ -145,9 +147,6 @@ repeat:
         goto repeat;
     }
 }
-
-
-
 
 // generateTipPacket uses r and u to build the tip.
 //! @param dst start of result data
