@@ -80,9 +80,11 @@ If there is a buffer of, let's say 20 bytes, we can consider it as a 20-digit nu
 
 ### 1.3. <a id='the-tip-idea'></a>The TiP Idea
 
-#### 1.3.1. <a id='packing'></a>Packing
+#### 1.3.0 Training 
 
-Find the 127 most common pattern in sample data, similar to the real data, and assign the IDs 1-127 to them. This is done once offline and the generated ID table gets part of the tiny packer code as well as for the tiny unpacker code. For that task a generator tool was build.
+Find the 127 most common pattern in sample data, similar to the real data expected later, and assign the IDs 1-127 to them. This is done once offline and the generated ID table gets part of the tiny packer code as well as for the tiny unpacker code. For that task a generator tool was build.
+
+#### 1.3.1. <a id='packing'></a>Packing
 
 At runtime the actual buffer is searched for matching patterns from the ID table beginning with the longest ones. All these found patterns get replaced by the IDs later. 
 
@@ -107,7 +109,7 @@ On the receiver side all bytes with MSBit=0 are identified as IDs and are replac
 * We create a bunch of test files with data similar to those we want to pack in the future.
   * `ti_generate` takes a single file and treats it as a separate sample buffer.
   * Also a folder name is accepted and all files are processed then.
-* We assume a longest pattern, like 8 for example.
+* We assume a longest pattern, like N=8 for example.
   * `ti_generate` accepts it as parameter.
   * The longest possible pattern is 255 bytes long.
   * For very short buffers, 4 to 8 bytes as maximum is recommended as max size N.
