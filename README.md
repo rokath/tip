@@ -35,8 +35,8 @@ https://www.markdownguide.org/basic-syntax/#reference-style-links
 
 ```diff
 
-+ Compress small buffers fast and efficient with Zeroes Elemination. +
--->  Works with big buffers too but will not compress like established zip tools ❗
++ Compress very small buffers fast and efficient with Zeroes Elemination. +
+-->  Works with several-KByte buffers too but will not compress like established zip tools ❗
 
 ```
 
@@ -93,7 +93,7 @@ Table of Contents Generation:
 
 ## 2. <a id='about-the-project'></a>About The Project
 
-* Usual compressors cannot succeed on small data, because they add a translation table into the data.
+* Usual compressors cannot succeed on very small buffers, because they add a translation table into the data.
 * **TiP** is an adaptable small buffer packer suitable for embedded devices. Like [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) it removes all zeroes from the data, but additionally tries data compression. 
   * [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) adds 1 byte overhead per each starting 255 bytes.
   * The TiP worst-case overhead is 1 byte per each starting 7 bytes for uncompressable data, but the expected packed size is about 60% of the unpacked data.
