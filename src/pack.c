@@ -1,4 +1,4 @@
-//! @file pack.c
+8//! @file pack.c
 //! @brief This is the tip pack code. Works also without unpack.c.
 //! @details Written for ressources constraint embedded devices.
 //! This tip code avoids heavy stack usage by using static buffers and is therefore not re-entrant.
@@ -135,11 +135,13 @@ repeat:
         // continue with next pattern  
     }
     // Arriving here means that no table pattern fits to buf or bufLimit
-    buf++;
-    bufLimit--;
+    u = *buf++;
+    *dst++ = 0x80 & u;
     if( !(buf < src + slen)){
         frontSearch = 0;
     }
+    u = *bufLimit--;
+    *--dstLimit = 0x80 & u;
     if( !(src < bufLimit) ){
         backSearch = 0;
     }
