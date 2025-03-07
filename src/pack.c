@@ -87,17 +87,33 @@ void setBits( uint8_t * bitList, size_t pos, size_t len ){
     // todo
 }
 
-// setReplaceBits starts with buf=src and tries to find biggest matching pattern from table at buf AND bufLimit-nlen.
-// If a pattern was found at buf, buf is incremented by found pattern size.
-// If a pattern was found at bufLimit-nlen, bufLimit is decremented by found pattern size.
-// If a pattern was found at front or back we start over.
-// If none found, we increment buf by 1 and decrement bufLimit and start over.
-// It is possible, the same pattern is found again at the same place, but we do not care, we just set the bits.
-void setReplaceBits(uint8_t * dst, uint8_t * dstLimit, uint8_t * rlist, const uint8_t * table, const uint8_t * src, size_t slen){
-    const uint8_t * buf = src;
-    const uint8_t * bufLimit = src + slen;
-    int frontSearch = 1;
-    int backSearch = 1;
+//! buildTiPacket starts with buf=src and tries to find biggest matching pattern from table at buf AND bufLimit-nlen.
+//! If a pattern was found at buf, buf is incremented by found pattern size.
+//! If a pattern was found at bufLimit-nlen, bufLimit is decremented by found pattern size.
+//! If a pattern was found at front or back we start over.
+//! If none found, we increment buf by 1 (if possible) and decrement bufLimit (if possible) and start over.
+//! It is possible, the same pattern is found again at the same place, but we do not care.
+//! Why searching from 2 sides:
+//! - ABC12ABC: table: C12,ABC,12A,12 -> ABC, 12A, uuu = 5 bytes, when only front search.
+//! - ABC12ABC: table: C12,ABC,12A,12 -> uuu, C12, ABC = 5 bytes, when only back search.
+//! - ABC12ABC: table: C12,ABC,12A,12 -> ABC, 12, ABC = 3 bytes, when front and back search, but how to match?
+//! 2 possibilities:
+//! - ABC 12A uuu        is front search result.
+//! -       uuu C12 ABC  is back search result.
+//! - If we subtract, we get a remaining 12
+void buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
+    const uint8_t * buf = src;             // src front pointer
+    const uint8_t * bufLimit = src + slen; // src back pointer
+    uint8_t * pkg = dst;                   // pkg front ponter
+    uint8_t * pkgLimit = dstLimit;         // pkg back pointer
+    int frontSearch = 1;                   // front search flag
+    int backSearch = 1;                    // back search flag
+    uint8_t u;            // unreplacable byte (not covered by a matching pattern)
+    uint8_t msb;          // most significant bit of u
+    uint8_t u7f = 0x80;   // collected bits 7 of u in front
+    uint8_t u7b = 0x80;   // collected bits 7 of u in back
+    size_t cu7f = 0;      // count of collected u7f bits
+    size_t cu7b = 0;      // count of collected u7b bits
 repeat:
     initGetNextPattern(table);
     for( int id = 1; id < 0x80; id++ ){ // traverse the ID table. It is sorted by decreasing pattern length.    
@@ -111,19 +127,19 @@ repeat:
         }
         if( frontSearch && 0 == strncmp((void*)buf, (void*)needle, nlen) ){ // match at buf front
             frontMatch = 1;
-            offset_t offset = buf - src; // relative pattern position
-            setBits( rlist, offset, nlen );
-            *dst++ = id;
-            buf += nlen;
+            //offset_t offset = buf - src; // relative pattern position
+            //setBits( rlist, offset, nlen );
+            *pkg++ = id; // write id
+            buf += nlen; // adjust front pointer
             if( !(buf < src + slen)){
                 frontSearch = 0;
             }
         }
         if( backSearch && 0 == strncmp((void*)(bufLimit-nlen), (void*)needle, nlen) ){ // match at buf back
             backMatch = 1;
-            offset_t offset = bufLimit-nlen - src; // relative pattern position
-            setBits( rlist, offset, nlen );
-            *--dstLimit = id;
+            //offset_t offset = bufLimit-nlen - src; // relative pattern position
+            //setBits( rlist, offset, nlen );
+            *--pkgLimit = id;
             bufLimit -= nlen;
             if( !(src < bufLimit) ){
                 backSearch = 0;
@@ -135,25 +151,44 @@ repeat:
         // continue with next pattern  
     }
     // Arriving here means that no table pattern fits to buf or bufLimit
-    u = *buf++;
-    umsb |= (0x80 & u)>>++frontMSCnt;
-    *dst++ = 0x80 & u;
-    if (frontMSCnt == 7){
-        *dst++ = 0x80 & umsb;
-        frontMSCnt = 0;
-        umsb = 0;
-    }
-    if( !(buf < src + slen)){
-        frontSearch = 0;
-    }
-    u = *bufLimit--;
-    *--dstLimit = 0x80 & u;
-    if( !(src < bufLimit) ){
-        backSearch = 0;
-    }
-    if( frontSearch || backSearch ){
+    if( frontSearch && !backSearch){ // back search done
+        u = *buf++;
+        msb = 0x80 & u;
+        u7f |= msb>>++cu7f;
+        *pkg++ = 0x80 | u; // store 7 lsb and set msb
+        if (cu7f == 7){
+            *pkg++ = u7f;
+            cu7f = 0;
+            u7f = 0x80; // set msb already here
+        }
+        if( !(buf < src + slen)){
+            frontSearch = 0;
+        }
         goto repeat;
     }
+    if( !frontSearch && backSearch ){ // front search done
+        u = *bufLimit--;
+        msb = 0x80 & u;
+        u7b |= msb>>++cu7b;
+        *--pkgLimit = 0x80 | u; // store 7 lsb and set msb
+        if (cu7b == 7){
+            *--pkgLimit = u7b;
+            cu7b = 0;
+            u7b = 0x80; // set msb already here
+        }
+        if( !(src < bufLimit) ){
+            backSearch = 0;
+        }
+        goto repeat;
+    }
+    if( frontSearch && backSearch ){
+        ?
+        goto repeat;
+    }
+    // Arriving here means, that buf is >= src+slen and bufLimit is <= src.
+    // In dst starts the packet front and its limit is pkg.
+    // At dstLimit ends the packet back and its start is pkgLimit.
+    // We need to unite u7f and u7b and to move the package end to touch the package start.
 }
 
 // generateTipPacket uses r and u to build the tip.
