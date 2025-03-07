@@ -56,16 +56,42 @@ size_t tiPack( uint8_t * dst, const uint8_t * table, const uint8_t * src, size_t
 }
 
 
+int matchingIDpositions = 0;
 
-size_t buildTiPacket0(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
+typedef struct{
+    uint8_t ID;
+    int pos;
+} IDposition_t;
+
+static IDposition_t IDpos[100];
+
+void addMatch( uint8_t id, int offset){
+    IDpos[matchingIDpositions].ID = id;
+    IDpos[matchingIDpositions].pos = offset;
+    matchingIDpositions++;
+}
+
+size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
+    size_t pkgSize = 0;   // final ti packgae size
     initGetNextPattern(table);
     for( int id = 1; id < 0x80; id++ ){ // traverse the ID table. It is sorted by decreasing pattern length.    
-    const uint8_t * needle = NULL;
-    size_t nlen;
-    getNextPattern( &needle, &nlen );
-    if( nlen == 0 ){ // end of table if less 127 IDs
-        break; 
+        const uint8_t * needle = NULL;
+        size_t nlen;
+        getNextPattern( &needle, &nlen );
+        if( nlen == 0 ){ // end of table if less 127 IDs
+            break; 
+        }
+        uint8_t * pos = memmem(src, slen, needle, nlen);
+        if(pos == NULL){
+            continue;
+        }
+        int offset = pos - src;
+        addMatch(id, offset);
     }
+    for( int i = 0; i < matchingIDpositions; i++ ){
+        // todo: find arrangements
+    }
+    return pkgSize;
 }
 
 
