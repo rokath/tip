@@ -101,8 +101,6 @@ repeat:
         }
         if( frontSearch && 0 == strncmp((void*)buf, (void*)needle, nlen) ){ // match at buf front
             frontMatch = 1;
-            //offset_t offset = buf - src; // relative pattern position
-            //setBits( rlist, offset, nlen );
             *pkg++ = id; // write id
             buf += nlen; // adjust front pointer
             if( !(buf < src + slen)){
@@ -111,8 +109,6 @@ repeat:
         }
         if( backSearch && 0 == strncmp((void*)(bufLimit-nlen), (void*)needle, nlen) ){ // match at buf back
             backMatch = 1;
-            //offset_t offset = bufLimit-nlen - src; // relative pattern position
-            //setBits( rlist, offset, nlen );
             *--pkgLimit = id;
             bufLimit -= nlen;
             if( !(src < bufLimit) ){
