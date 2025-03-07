@@ -84,7 +84,15 @@ If there is a buffer of, let's say 20 bytes, we can consider it as a 20-digit nu
 
 Find the 127 most common pattern in sample data, similar to the real data expected later, and assign the IDs 1-127 to them. This is done once offline and the generated ID table gets part of the tiny packer code as well as for the tiny unpacker code. For that task a generator tool was build.
 
-#### 1.3.1. <a id='packing'></a>Packing
+#### Unreplacable Bytes Handling
+
+All unreplacable bytes are collected into one separate buffer. N unreplacable bytes occupy N\*8 bits. These bits are distributed onto N\*8/7 7-bit bytes, all getting the MSBit set to avoid zeroes and to distinguish them later from the ID bytes. In fact we do not change these N\*8 bits, we simply reorder them slightly. This bit reordering is de-facto the number transformation to the base 128, mentioned above.
+
+After replacing all found patterns with their IDs, which all have MSBit=0, the unreplacable bytes are replaced with the bit-reordered unreplacable bytes, having MSBit=1.
+
+#### 1.3.1. <a id='packing'></a>Pattern Assignment Issues
+
+##### Searching from front or back
 
 At runtime the actual buffer is searched for matching patterns from the ID table beginning with the longest ones. All these found patterns get replaced by the IDs later. 
 
@@ -94,11 +102,30 @@ Even the pattern ID table is somehow "good", it is important, how the pattern ar
 2. Find longest pattern fitting to the buffer start or end and reduce the buffer then and repeat.
 3. If no fitting pattern was found, set buffer start +1 and repeat and then buffer end -1 and repeat.
 
-All unreplacable bytes are collected into one separate buffer. N unreplacable bytes occupy N\*8 bits. These bits are distributed onto N\*8/7 7-bit bytes, all getting the MSBit set to avoid zeroes and to distinguish them later from the ID bytes. In fact we do not change these N\*8 bits, we simply reorder them slightly. This bit reordering is de-facto the number transformation to the base 128, mentioned above.
+This method can give different results when starting from front or back. Example: s="ABCD", t="ABC", "BCD".
 
-After replacing all found patterns with their IDs, which all have MSBit=0, the unreplacable bytes are replaced with the bit-reordered unreplacable bytes, having MSBit=1.
+Also it could be better to start at offset 1. Example: s="XABCABC", t="XA", "ABC" -> "XA", "B", "C", "ABC" = 5 bytes, when starting at offset 0 OR -> "X", "ABC", "ABC" = 4 bytes, when starting aat offset 1.
 
-Now the packing is done and no zeroes are existing anymore.
+##### Make a Fitting Table
+
+- For each ID pattern a slice is generated containing all positions in s. Examples:
+
+s       | ID1 | ID2 | sl1 | sl2 | score1 | score2
+--------|-----|-----|-----|-----|--------|-------
+ABCD    | ABC | BCD | 0   | 1   | 3      | 3
+XABCABC | XA  | ABC | 0   | 1,4 | 2      | 6
+
+- IDs with empty slices are ignored.
+- Case XABCABC:
+  - ID1-0: 01+uu+ID2-2 (forward)
+  - ID2-1: u+ID2-1+ID2-4 (in both sides)
+  - ID2-2: ID2-4+ID2-1+u (backward)
+
+- Collect all IDs with their positions (only those having a position) in a list with n entries: ID1-0, ID2-1, ID2-4
+- For each ID-X search in both sides to find the next IDs until the borders.
+- This search can get variations by ignoring the next possible match but adding a 1 to the minimal space.
+- As a result we have the dstLen = n IDs + uCount*8/7 +1 and we select the smallest.
+
 
 #### 1.3.2. <a id='unpacking'></a>Unpacking
 
@@ -134,7 +161,7 @@ On the receiver side all bytes with MSBit=0 are identified as IDs and are replac
 
 #### 10 bytes: 123456789a 
 
-p  | m   | length | pattern                         | no pattern    | byte usage count | equ. factor
+p   | m   | length | pattern                         | no pattern    | byte usage count | equ. factor
 ----|-----|--------|---------------------------------|---------------|------------------|------------
 10  | 0   | 1er    | 1 ... a                         |               | 1                | 10/1
 9   | 1   | 2er    | 12 23 ... 9a                    | a1            | 2                | 10/2

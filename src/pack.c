@@ -55,6 +55,20 @@ size_t tiPack( uint8_t * dst, const uint8_t * table, const uint8_t * src, size_t
     return tipSize;
 }
 
+
+
+size_t buildTiPacket0(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
+    initGetNextPattern(table);
+    for( int id = 1; id < 0x80; id++ ){ // traverse the ID table. It is sorted by decreasing pattern length.    
+    const uint8_t * needle = NULL;
+    size_t nlen;
+    getNextPattern( &needle, &nlen );
+    if( nlen == 0 ){ // end of table if less 127 IDs
+        break; 
+    }
+}
+
+
 //! buildTiPacket starts with buf=src and tries to find biggest matching pattern from table at buf AND bufLimit-nlen.
 //! If a pattern was found at buf, buf is incremented by found pattern size.
 //! If a pattern was found at bufLimit-nlen, bufLimit is decremented by found pattern size.
@@ -69,7 +83,7 @@ size_t tiPack( uint8_t * dst, const uint8_t * table, const uint8_t * src, size_t
 //! - ABC 12A uuu        is front search result.
 //! -       uuu C12 ABC  is back search result.
 //! - If we subtract, we get a remaining 12
-size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
+size_t buildTiPacket0(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
     const uint8_t * buf = src;             // src front pointer
     const uint8_t * bufLimit = src + slen; // src back pointer
     uint8_t * pkg = dst;                   // pkg front ponter
