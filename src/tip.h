@@ -19,7 +19,7 @@ extern "C" {
 #endif // #ifndef TIP_SRC_BUFFER_SIZE_MAX
 
 #if TIP_SRC_BUFFER_SIZE_MAX & 7 
-#error "needs to be a multiple of 8 
+#error "needs to be a multiple of 8"
 #endif // #if TIP_SRC_BUFFER_SIZE_MAX & 7 
 
 #if TIP_SRC_BUFFER_SIZE_MAX > 256u*1024u*1024u
