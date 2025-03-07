@@ -10,8 +10,7 @@ extern "C" {
 
 //! TIP_SRC_BUFFER_SIZE_MAX is the maximun allowed input data buffer length.
 //! Its size has influence on the statically allocated RAM.
-//! Must be a multiple of 8.
-#define TIP_SRC_BUFFER_SIZE_MAX 31*8u // 248 bytes (max65528)
+#define TIP_SRC_BUFFER_SIZE_MAX 65528u // bytes (max 65528u)
 
 #ifdef __cplusplus
 }
