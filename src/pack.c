@@ -33,17 +33,6 @@ static void getNextPattern(const uint8_t ** pt, size_t * sz ){
     }
 }
 
-/*
-replace_t * buildReplaceList(int * rcount, const uint8_t * table, const uint8_t * src, size_t slen);
-static size_t collectUnreplacableBytes( uint8_t * dst, replace_t * rlist, int rcount, const uint8_t * src );
-size_t shift87bit( uint8_t* lst, const uint8_t * src, size_t slen );
-static void initGetNextPattern( const uint8_t * table );
-static void getNextPattern(const uint8_t ** pt, size_t * sz );
-static replace_t * newReplaceList(offset_t slen);
-static void replaceableListInsert( replace_t * r, int * rcount, int k, uint8_t by, offset_t offset, uint8_t sz );
-static size_t generateTipPacket( uint8_t * dst, uint8_t * u7, uint32_t u7Size, replace_t * rlist, int rcount );
-*/
-
 size_t tip( uint8_t* dst, const uint8_t * src, size_t len ){
     return tiPack( dst, idTable, src, len );
 }
@@ -94,6 +83,11 @@ size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, c
     size_t cu7f = 0;      // count of collected u7f bits
     size_t cu7b = 0;      // count of collected u7b bits
     size_t pkgSize = 0;   // final ti packgae size
+
+    ///////////////
+    return pkgSize;
+    ///////////////
+
 repeat:
     initGetNextPattern(table);
     for( int id = 1; id < 0x80; id++ ){ // traverse the ID table. It is sorted by decreasing pattern length.    
@@ -180,6 +174,6 @@ repeat:
     ///////
     // todo
     ///////
-    
+
     return pkgSize;
 }
