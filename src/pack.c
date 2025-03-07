@@ -23,7 +23,7 @@ static void replaceableListInsert( replace_t * r, int * rcount, int k, uint8_t b
 static size_t generateTipPacket( uint8_t * dst, uint8_t * u7, uint32_t u7Size, replace_t * rlist, int rcount );
 
 size_t tip( uint8_t* dst, const uint8_t * src, size_t len ){
-    size_t dstLimit = ((74899*len)>>16)+1;  // The max possible dst size is len*8/7+1 or ((len*65536*8/7)>>16)+1;
+    size_t dstLimit = ((18725*len)>>14)+1;  // The max possible dst size is len*8/7+1 or ((len*65536*8/7)>>16)+1;
     return tiPack( dst, dstLimit, idTable, src, len );
 }
 
@@ -76,7 +76,7 @@ static void getNextPattern(const uint8_t ** pt, size_t * sz ){
 //! @retval is a pointer to the replace list.
 //! If the N-th bit in the list is set, it signals that the N-th byte in the unpacked buffer is replacable.
 static uint8_t * newReplaceBits(void){
-    static uint8_t list[TIP_SRC_BUFFER_SIZE_MAX/8]; //!< The whole src buffer could be replacable with 2-byte pattern.
+    static uint8_t list[TIP_SRC_BUFFER_SIZE_MAX/8];
     memset(list, 0, sizeof(list));
     return list;
 };
