@@ -136,7 +136,13 @@ repeat:
     }
     // Arriving here means that no table pattern fits to buf or bufLimit
     u = *buf++;
+    umsb |= (0x80 & u)>>++frontMSCnt;
     *dst++ = 0x80 & u;
+    if (frontMSCnt == 7){
+        *dst++ = 0x80 & umsb;
+        frontMSCnt = 0;
+        umsb = 0;
+    }
     if( !(buf < src + slen)){
         frontSearch = 0;
     }
