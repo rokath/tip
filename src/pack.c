@@ -45,7 +45,7 @@ size_t tip( uint8_t* dst, const uint8_t * src, size_t len ){
 // - ID 5 has 2 and ID 6 4 bytes, so ID 2 and 4 have 3 bytes and ID 3 has 5 bytes.
 // - The unreplacable bytes are collected into a buffer.
 size_t tiPack( uint8_t * dst, const uint8_t * table, const uint8_t * src, size_t slen ){
-    size_t dstSize = ((18725*slen)>>14)+1;  // The max possible dst size is len*8/7+1 or ((len*65536*8/7)>>16)+1;
+    size_t dstSize = ((18725ul*slen)>>14)+1;  // The max possible dst size is len*8/7+1 or ((len*65536*8/7)>>16)+1;
     uint8_t * dstLimit = dst + dstSize;
     if( slen > TIP_SRC_BUFFER_SIZE_MAX ){
         return 0;
@@ -65,7 +65,9 @@ typedef struct{
 
 static IDposition_t IDpos[100];
 
-void addMatch( uint8_t id, int offset){
+// addMatchSorted adds id with offset in a way, that smaller offsets first.
+// On equal offsets, the longer pattern are coming first.
+void addMatchSorted( uint8_t id, int offset){
     IDpos[matchingIDpositions].ID = id;
     IDpos[matchingIDpositions].pos = offset;
     matchingIDpositions++;
@@ -81,15 +83,23 @@ size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, c
         if( nlen == 0 ){ // end of table if less 127 IDs
             break; 
         }
-        uint8_t * pos = memmem(src, slen, needle, nlen);
+        int offset = 0;
+    repeat:
+        uint8_t * pos = memmem(src+offset, slen, needle, nlen);
         if(pos == NULL){
             continue;
         }
-        int offset = pos - src;
+        offset = pos - src;
         addMatch(id, offset);
+        goto repeat;
     }
     for( int i = 0; i < matchingIDpositions; i++ ){
-        // todo: find arrangements
+         for( int k = 0; i < matchingIDpositions; i++ ){
+                if(IDlimit(i) > IDpos(k){
+                    continue;
+                }
+                connect(i,k);
+         }
     }
     return pkgSize;
 }
