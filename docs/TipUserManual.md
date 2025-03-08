@@ -118,19 +118,39 @@ Idx|ID | start| end
 3|22|3|5
 4|55|3|4
 5|61|4|5
+6|55|6|7
 
 Find paths:
 
-idx|idx 
- -|-
-0|3
-1|~
-2|3
-0|4
-2|4
-0|3
-2|4
-2|5
+idx|idx| idx
+ -|-|-
+0|3|6
+1|6|
+2|3|6
+0|4|6
+2|4|6
+0|3|6
+2|4|6
+2|5|6
+
+Algorithm:
+idxE = 0
+If idxS >= idxE add idx in this line
+if any idxE < idxS, this idx cannot open a new line, ergo: 
+find smallest idxE. All idxS < smallest idxE open a new line or several. 
+for each line we have idxE. find idxS ...
+
+all idxS can start a new line
+find smallest idxE
+all lines with idxS > smallest idxE are deleted
+for each line: 
+    all idS > idxE can fork line
+    for forked lines: 
+        find smallest idxE
+	all lines with idxS > smallest idxE are deleted
+    
+
+
 
 An idx can be first only, when no other ends before.
 An idx can follow only, when no other fits before.
