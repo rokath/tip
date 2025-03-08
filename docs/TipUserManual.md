@@ -106,7 +106,34 @@ This method can give different results when starting from front or back. Example
 
 Also it could be better to start at offset 1. Example: s="XABCABC", t="XA", "ABC" -> "XA", "B", "C", "ABC" = 5 bytes, when starting at offset 0 OR -> "X", "ABC", "ABC" = 4 bytes, when starting aat offset 1.
 
-##### Make a Fitting Table
+##### Make a Sorted IDposition Fitting Table
+
+Example:
+
+Idx|ID | start| end
+-|-|-|-
+0|93|0|1
+1|17|1|4
+2|9|1|2
+3|22|3|5
+4|55|3|4
+5|61|4|5
+
+Find paths:
+
+idx|idx 
+ -|-
+0|3
+1|~
+2|3
+0|4
+2|4
+0|3
+2|4
+2|5
+
+An idx can be first only, when no other ends before.
+An idx can follow only, when no other fits before.
 
 - For each ID pattern a slice is generated containing all positions in s. Examples:
 
