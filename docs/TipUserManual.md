@@ -133,21 +133,29 @@ idx|idx| idx
 2|4|6
 2|5|6
 
-Algorithm:
-idxE = 0
-If idxS >= idxE add idx in this line
-if any idxE < idxS, this idx cannot open a new line, ergo: 
-find smallest idxE. All idxS < smallest idxE open a new line or several. 
-for each line we have idxE. find idxS ...
+- Algorithm:
+  - idxE = 0
+  - If idxS >= idxE add idx in this line
+  - if any idxE < idxS, this idx cannot open a new line, ergo: 
+  - find smallest idxE. All idxS < smallest idxE open a new line or several. 
+  - for each line we have idxE. find idxS ...
 
-all idxS can start a new line
-find smallest idxE
-all lines with idxS > smallest idxE are deleted
-for each line: 
-    all idS > idxE can fork line
-    for forked lines: 
-        find smallest idxE
-	all lines with idxS > smallest idxE are deleted
+- all idxS can start a new line
+  - find smallest idxE
+  -'all lines with idxS > smallest idxE are deleted
+  - for each line: 
+    - all idS > idxE can fork line
+    - for forked lines: 
+        - find smallest idxE
+	- all lines with idxS > smallest idxE are deleted
+
+ maybe:
+  - find smallest idxE
+  - all idxS < idxE can start a new line
+  - repeat
+    - forceach line, find smallest idxE for all idxS > line idxE
+    - fork with all idxE < idxS && idxS < smallest idxE
+    - goto repeat
     
 
 
