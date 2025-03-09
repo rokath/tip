@@ -1,4 +1,4 @@
-# TiP - Tiny Packer - User Manual
+*# TiP - Tiny Packer - User Manual
 
 (work in progress)
 
@@ -119,7 +119,7 @@ The maximum path count is ?
   - find smallest idxE (1 here)
   - all idxS < idxE can start a new line (0 ,1, 2)
   - repeat
-    - forceach line, find smallest idxE for all idxS > line idxE
+    - for each line, find smallest idxE for all idxS > line idxE
     - fork with all idxE < idxS && idxS < smallest idxE
     - goto repeat
    
