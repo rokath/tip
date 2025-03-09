@@ -92,21 +92,6 @@ After replacing all found patterns with their IDs, which all have MSBit=0, the u
 
 #### 1.3.1. <a id='packing'></a>Packing
 
-<!--##### Searching from front or back
-
-At runtime the actual buffer is searched for matching patterns from the ID table beginning with the longest ones. All these found patterns get replaced by the IDs later. 
-
-Even the pattern ID table is somehow "good", it is important, how the pattern are fitted into the actual buffer. 
-
-1. Start with the longest pattern and go to the shorter ones then.
-2. Find longest pattern fitting to the buffer start or end and reduce the buffer then and repeat.
-3. If no fitting pattern was found, set buffer start +1 and repeat and then buffer end -1 and repeat.
-
-This method can give different results when starting from front or back. Example: s="ABCD", t="ABC", "BCD".
-
-Also it could be better to start at offset 1. Example: s="XABCABC", t="XA", "ABC" -> "XA", "B", "C", "ABC" = 5 bytes, when starting at offset 0 OR -> "X", "ABC", "ABC" = 4 bytes, when starting aat offset 1.
--->
-
 - For pattern assignment make a Sorted IDposition Fitting Table. Example:
 
 Idx|ID | start| end
@@ -118,6 +103,8 @@ Idx|ID | start| end
 4|55|3|4
 5|61|4|5
 6|55|6|7
+
+Its maximum possible size is 63 bytes. 
 
 - Find paths:
 
@@ -132,54 +119,15 @@ idx|idx| idx|sumLen|ulen|dlen
 2|4|6
 2|5|6
 
+The maximum path len plen is slen/2.
+The maximum path count is ?
 - Algorithm:
-<!--
-  - idxE = 0
-  - If idxS >= idxE add idx in this line
-  - if any idxE < idxS, this idx cannot open a new line, ergo: 
-  - find smallest idxE. All idxS < smallest idxE open a new line or several. 
-  - for each line we have idxE. find idxS ...
-
-- all idxS can start a new line
-  - find smallest idxE
-  -'all lines with idxS > smallest idxE are deleted
-  - for each line: 
-    - all idS > idxE can fork line
-    - for forked lines: 
-        - find smallest idxE
-	- all lines with idxS > smallest idxE are deleted
- maybe:-->
-  - find smallest idxE
-  - all idxS < idxE can start a new line
+  - find smallest idxE (1 here)
+  - all idxS < idxE can start a new line (0 ,1, 2)
   - repeat
     - forceach line, find smallest idxE for all idxS > line idxE
     - fork with all idxE < idxS && idxS < smallest idxE
     - goto repeat
-    
-
-<!--
-
-An idx can be first only, when no other ends before.
-An idx can follow only, when no other fits before.
-
-- For each ID pattern a slice is generated containing all positions in s. Examples:
-
-s       | ID1 | ID2 | sl1 | sl2 | score1 | score2
---------|-----|-----|-----|-----|--------|-------
-ABCD    | ABC | BCD | 0   | 1   | 3      | 3
-XABCABC | XA  | ABC | 0   | 1,4 | 2      | 6
-
-- IDs with empty slices are ignored.
-- Case XABCABC:
-  - ID1-0: 01+uu+ID2-2 (forward)
-  - ID2-1: u+ID2-1+ID2-4 (in both sides)
-  - ID2-2: ID2-4+ID2-1+u (backward)
-
-- Collect all IDs with their positions (only those having a position) in a list with n entries: ID1-0, ID2-1, ID2-4
-- For each ID-X search in both sides to find the next IDs until the borders.
-- This search can get variations by ignoring the next possible match but adding a 1 to the minimal space.
-- As a result we have the dstLen = n IDs + uCount*8/7 +1 and we select the smallest.
--->
 
 #### 1.3.2. <a id='unpacking'></a>Unpacking
 
