@@ -84,15 +84,9 @@ If there is a buffer of, let's say 20 bytes, we can consider it as a 20-digit nu
 
 Find the 127 most common pattern in sample data, similar to the real data expected later, and assign the IDs 1-127 to them. This is done once offline and the generated ID table gets part of the tiny packer code as well as for the tiny unpacker code. For that task a generator tool was build.
 
-#### Packing - Unreplacable Bytes Handling
+#### 1.3.1. <a id='packing'></a>Packing - Pattern Assignment
 
-All unreplacable bytes are collected into one separate buffer. N unreplacable bytes occupy N\*8 bits. These bits are distributed onto N\*8/7 7-bit bytes, all getting the MSBit set to avoid zeroes and to distinguish them later from the ID bytes. In fact we do not change these N\*8 bits, we simply reorder them slightly. This bit reordering is de-facto the number transformation to the base 128, mentioned above.
-
-After replacing, all found patterns are replaced with their IDs, which all have MSBit=0. The unreplacable bytes are replaced with the bit-reordered unreplacable bytes, having MSBit=1. The bit-reordered unreplacable bytes fill the wholes between the IDs.
-
-#### 1.3.1. <a id='packing'></a>Packing
-
-- For pattern assignment make a Sorted IDposition Fitting Table. Example:
+- Make a Sorted IDposition Fitting Table. Example:
 
 Idx|ID | start| end
 -|-|-|-
@@ -128,6 +122,12 @@ The maximum path count is ?
     - forceach line, find smallest idxE for all idxS > line idxE
     - fork with all idxE < idxS && idxS < smallest idxE
     - goto repeat
+   
+#### Packing - Unreplacable Bytes Handling
+
+All unreplacable bytes are collected into one separate buffer. N unreplacable bytes occupy N\*8 bits. These bits are distributed onto N\*8/7 7-bit bytes, all getting the MSBit set to avoid zeroes and to distinguish them later from the ID bytes. In fact we do not change these N\*8 bits, we simply reorder them slightly. This bit reordering is de-facto the number transformation to the base 128, mentioned above.
+
+After replacing, all found patterns are replaced with their IDs, which all have MSBit=0. The unreplacable bytes are replaced with the bit-reordered unreplacable bytes, having MSBit=1. The bit-reordered unreplacable bytes fill the wholes between the IDs.
 
 #### 1.3.2. <a id='unpacking'></a>Unpacking
 
