@@ -45,36 +45,41 @@ size_t tip( uint8_t* dst, const uint8_t * src, size_t len ){
 // - ID 5 has 2 and ID 6 4 bytes, so ID 2 and 4 have 3 bytes and ID 3 has 5 bytes.
 // - The unreplacable bytes are collected into a buffer.
 size_t tiPack( uint8_t * dst, const uint8_t * table, const uint8_t * src, size_t slen ){
-    size_t dstSize = ((18725ul*slen)>>14)+1;  // The max possible dst size is len*8/7+1 or ((len*65536*8/7)>>16)+1;
-    uint8_t * dstLimit = dst + dstSize;
-    if( slen > TIP_SRC_BUFFER_SIZE_MAX ){
+    if( slen == 0 || TIP_SRC_BUFFER_SIZE_MAX < slen ){
         return 0;
     }
+    size_t dstSize = ((18725ul*slen)>>14)+1;  // The max possible dst size is len*8/7+1 or ((len*65536*8/7)>>16)+1;
+    uint8_t * dstLimit = dst + dstSize;
     memset(dst, 0, dstSize);
     size_t tipSize = buildTiPacket(dst, dstLimit, table, src, slen);
     return tipSize;
 }
 
-
-int matchingIDpositions = 0;
-
 typedef struct{
-    uint8_t ID;
-    int pos;
-} IDposition_t;
+    uint8_t id;      // id of pattern found in src
+    uint8_t * start; // pattern start in src
+    uint8_t * limit; // address after pattern
+} IDPosition_t;
 
-static IDposition_t IDpos[100];
+static IDPosition_t IDPos[TIP_SRC_BUFFER_SIZE_MAX-1];
 
-// addMatchSorted adds id with offset in a way, that smaller offsets first.
-// On equal offsets, the longer pattern are coming first.
-void addMatchSorted( uint8_t id, int offset){
-    IDpos[matchingIDpositions].ID = id;
-    IDpos[matchingIDpositions].pos = offset;
-    matchingIDpositions++;
+void insertIDPosSorted( IDPosition_t * idPos, int count, uint8_t id, uint8_t * pos, uint8_t nlen ){
+    int i = 0;
+    for( ; i < count; i++ ){
+        if( idPos[i].start <= pos ){
+            continue;
+        }
+        memmove(idPos+i+1,idPos+i,(count-i)*sizeof(IDPosition_t));
+    }
+    idPos[i].id = id;
+    idPos[i].start = pos;
+    idPos[i].limit = pos + nlen;
 }
 
-size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
-    size_t pkgSize = 0;   // final ti packgae size
+// fillIDPosTable adds id with offset in a way, that smaller offsets first.
+// On equal offsets, the longer pattern are coming first.
+int fillIDPosTable(IDPosition_t * idPos, const uint8_t * table, const uint8_t * src, size_t slen){
+    int idcnt = 0;
     initGetNextPattern(table);
     for( int id = 1; id < 0x80; id++ ){ // traverse the ID table. It is sorted by decreasing pattern length.    
         const uint8_t * needle = NULL;
@@ -84,23 +89,58 @@ size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, c
             break; 
         }
         int offset = 0;
-    repeat:
-        uint8_t * pos = memmem(src+offset, slen, needle, nlen);
-        if(pos == NULL){
-            continue;
+        while(offset<slen){
+            uint8_t * pos = memmem(src+offset, slen-offset, needle, nlen);
+            if(pos == NULL){
+                continue; // pattern not found, try next pattern
+            }
+            insertIDPosSorted( idPos, idcnt, id, pos, nlen);
+            idcnt++;
+            offset++;
+        }        
+    }
+    return idcnt;
+}
+
+offset_t smallestIDEnd(IDPosition_t * IDPos, int count ){
+    return 1;
+} 
+
+// fittingPattern returns 1 if an idx fits between start and limit.
+int fittingPattern( int idcnt, uint8_t * start, uint8_t * limit ){
+    for( int i = 0; i < idcnt; i++ ){
+        if( IDPos[i].start < limit ){
+            return 0;
         }
-        offset = pos - src;
-        addMatch(id, offset);
-        goto repeat;
+        if( start < IDPos[i].limit ){
+            return 0;
+        }
     }
-    for( int i = 0; i < matchingIDpositions; i++ ){
-         for( int k = 0; i < matchingIDpositions; i++ ){
-                if(IDlimit(i) > IDpos(k){
-                    continue;
-                }
-                connect(i,k);
-         }
+    return 1;
+}
+
+size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
+    size_t pkgSize = 0;   // final ti packgae size
+    int idcnt = fillIDPosTable(IDPos, table, src, slen);
+
+    for( int i = 0; i < idcnt; i++ ){
+        for( int k = 0; k < idcnt; k++ ){
+            if( IDPos[i].limit < IDPos[k].start ){
+                if( !fittingPattern(idcnt, IDPos[i].limit, IDPos[k].start) ){ // if no other can fit between
+                    // add k to this line
+                 } else {
+                    // ignore
+                 }
+            }else{
+                // if no other can fit before
+                    // add k to next line
+                // else
+                    // ignore
+            }
+        }
     }
+    // find minimum line
+    // create output
     return pkgSize;
 }
 

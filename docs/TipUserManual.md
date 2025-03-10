@@ -1,4 +1,4 @@
-*# TiP - Tiny Packer - User Manual
+# TiP - Tiny Packer - User Manual
 
 (work in progress)
 
