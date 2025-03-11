@@ -31,13 +31,10 @@ https://www.markdownguide.org/basic-syntax/#reference-style-links
 
 </div>
 
-# TiP - Tiny Packer for Very Small Buffers (from 2 bytes)
+# TiP - Tiny Packer For Very Small Buffers
 
 ```diff
-
-+ Compress very small buffers fast and efficient with Zeroes Elemination. +
--->  Works with several-KByte buffers too but will not compress like established zip tools ❗
-
++ Pack buffers from 2 bytes: Lossless compression and zeroes elimination for easy package framing❗
 ```
 
 ---
