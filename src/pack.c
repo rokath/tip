@@ -61,7 +61,7 @@ typedef struct{
     uint8_t * limit; // address after pattern
 } IDPosition_t;
 
-static IDPosition_t IDPos[TIP_SRC_BUFFER_SIZE_MAX-1];
+static IDPosition_t IDPosTable[TIP_SRC_BUFFER_SIZE_MAX-1];
 
 void insertIDPosSorted( IDPosition_t * idPos, int count, uint8_t id, uint8_t * pos, uint8_t nlen ){
     int i = 0;
@@ -76,9 +76,9 @@ void insertIDPosSorted( IDPosition_t * idPos, int count, uint8_t id, uint8_t * p
     idPos[i].limit = pos + nlen;
 }
 
-// fillIDPosTable adds id with offset in a way, that smaller offsets first.
+// createIDPosTable adds id with offset in a way, that smaller offsets first.
 // On equal offsets, the longer pattern are coming first.
-int fillIDPosTable(IDPosition_t * idPos, const uint8_t * table, const uint8_t * src, size_t slen){
+int createIDPosTable(IDPosition_t * idPos, const uint8_t * table, const uint8_t * src, size_t slen){
     int idcnt = 0;
     initGetNextPattern(table);
     for( int id = 1; id < 0x80; id++ ){ // traverse the ID table. It is sorted by decreasing pattern length.    
@@ -109,22 +109,69 @@ offset_t smallestIDEnd(IDPosition_t * IDPos, int count ){
 // fittingPattern returns 1 if an idx fits between start and limit.
 int fittingPattern( int idcnt, uint8_t * start, uint8_t * limit ){
     for( int i = 0; i < idcnt; i++ ){
-        if( IDPos[i].start < limit ){
+        if( IDPosTable[i].start < limit ){
             return 0;
         }
-        if( start < IDPos[i].limit ){
+        if( start < IDPosTable[i].limit ){
             return 0;
         }
     }
     return 1;
 }
 
+#define MAX_PATH_COUNT 20
+
+// cnt, idx, idx, ...
+//   0,   0,   0, ... // empty path (pcnt=1)
+uint8_t path[MAX_PATH_COUNT][TIP_SRC_BUFFER_SIZE_MAX/2+1] = {0};
+int pcnt = 1;
+
+void newPathsTable( void ){
+    memset(path, 0, sizeof(path));
+    pcnt = 1;
+}
+
+// IDPosAppendableToPath checks if pidx limit is small enough to append IDPos.
+int IDPosAppendableToPath( uint8_t pidx, uint8_t IDPos ){
+    if( pidx == 0 ){
+        return 1; // always
+    }
+    uint8_t i = path[pidx][0] + 1;
+    uint8_t idx = path[pidx][i];
+    if( IDPosTable[idx].limit <= IDPosTable[IDPos].start ){
+        return 1;
+    }
+    return 0;
+}
+
+//
+void forkPath( uint8_t pidx ){
+    uint8_t psize = path[pidx][0] + 1;
+    memcpy(path[++pcnt], path[pidx], psize);
+}
+
+// 
+void appendIDPos( uint8_t pidx, uint8_t idpos ){
+    uint8_t cnt = path[pidx][0]; // pidx idpos count
+    uint8_t idx = cnt + 1; // next free place
+    path[pidx][idx] = idpos; // write idpos
+    path[pidx][0] = cnt + 1; // one more idpos
+}
+
+/*
+* Algorithm:
+  * Start with a single empty path
+  * Loop over (by start sorted) IDPosition table and for each IDPos:
+    * Loop over all paths
+      * If can append IDPos to a path, fork this path and append to the forked path.
+        * It can always append IDPos to at least the empty path (which is forked always).
+*/
 size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
     size_t pkgSize = 0;   // final ti packgae size
-    int idcnt = fillIDPosTable(IDPos, table, src, slen);
-
+    int idcnt = createIDPosTable(IDPos, table, src, slen);
+    addIDPos(0);
     for( int i = 0; i < idcnt; i++ ){
-        for( int k = 0; k < idcnt; k++ ){
+        for( int k = 0; k < pcnt; k++ ){
             if( IDPos[i].limit < IDPos[k].start ){
                 if( !fittingPattern(idcnt, IDPos[i].limit, IDPos[k].start) ){ // if no other can fit between
                     // add k to this line

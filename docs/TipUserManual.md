@@ -115,13 +115,30 @@ idx|idx| idx|sumLen|ulen|dlen
 
 The maximum path len plen is slen/2.
 The maximum path count is ?
-- Algorithm:
-  - find smallest idxE (1 here)
-  - all idxS < idxE can start a new line (0 ,1, 2)
-  - repeat
-    - for each line, find smallest idxE for all idxS > line idxE
-    - fork with all idxE < idxS && idxS < smallest idxE
-    - goto repeat
+
+* Algorithm:
+  * Start with a single empty path
+  * Loop over (by start sorted) IDPosition table and for each IDPos:
+    * Loop over all paths
+      * If can append IDPos to a path, fork this path and append to the forked path.
+        * It can always append IDPos to at least the empty path (which is forked always).
+  * In worst case an IDPos can be added to all exsting path. Example:
+    * 0 IDPos: -> 0                         = 0 + 1 = 1 path
+    * 1 IDPos: -> 0 + 1                             = 1 + 1 = 2 path
+    * 2 IDPos: -> 0 + 1 + 0 + 1 + 2                         = 2 + 3 = 5 path
+    * 3 IDPos: ->                                                   = 5 + 4 = 9 path
+    * 4 IDPos: ->                                                           = 9 + 5 = 14 path = 0 + 1 + 1 + 2 + 3 + 5
+    * 5 IDPos: ->                                                                   = 14 + 5 = 19
+    * n IDPos: -> (n+1)*(n)/2 
+  * Then loop over all paths and compute dlen for each. No need to remove "unfinished" path, like the empty one, because we looking only for the path with the shortest dlen.
+
+
+  * find smallest idxE (1 here)
+  * all idxS < idxE can start a new line (0 ,1, 2)
+  * repeat
+    * for each line, find smallest idxE for all idxS > line idxE
+    * fork with all idxE < idxS && idxS < smallest idxE
+    * goto repeat
    
 #### Packing - Unreplacable Bytes Handling
 
