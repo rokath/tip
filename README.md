@@ -1,4 +1,4 @@
-8<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a id="readme-top"></a>
 
 <!-- PROJECT SHIELDS -->
@@ -31,7 +31,7 @@ https://www.markdownguide.org/basic-syntax/#reference-style-links
 
 </div>
 
-# TiP - Tiny Packer for small buffers
+# TiP - Tiny Packer for Very Small Buffers (from 2 bytes)
 
 ```diff
 
