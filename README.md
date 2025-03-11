@@ -1,4 +1,4 @@
-8<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a id="readme-top"></a>
 
 <!-- PROJECT SHIELDS -->
@@ -31,13 +31,10 @@ https://www.markdownguide.org/basic-syntax/#reference-style-links
 
 </div>
 
-# TiP - Tiny Packer for small buffers
+# TiP - Tiny Packer For Very Small Buffers
 
 ```diff
-
-+ Compress very small buffers fast and efficient with Zeroes Elemination. +
--->  Works with several-KByte buffers too but will not compress like established zip tools ❗
-
++ Pack buffers from 2 bytes: Lossless compression and zeroes elimination for easy package framing❗
 ```
 
 ---
