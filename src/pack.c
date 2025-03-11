@@ -13,26 +13,6 @@
 #include "tip.h"
 #include "memmem.h"
 
-static const uint8_t * nextTablePos = 0;
-static unsigned int nextID = 1;
-
-//! initGetNextPattern causes getNextPattern to start from 0.
-static void initGetNextPattern( const uint8_t * table ){
-    nextTablePos = table;
-    nextID = 1;
-}
-
-//! getNextPattern returns next pattern location in pt and size in sz or *sz == 0.
-//! @param pt is filled with the replace pattern address if exists.
-//! @param sz is filled with the replace size or 0, if not exists.
-static void getNextPattern(const uint8_t ** pt, size_t * sz ){
-    if( (*sz = *nextTablePos++) != 0 ){ // a pattern exists here
-        *pt = nextTablePos;
-        nextTablePos += *sz;
-        return;
-    }
-}
-
 size_t tip( uint8_t* dst, const uint8_t * src, size_t len ){
     return tiPack( dst, idTable, src, len );
 }
@@ -55,32 +35,59 @@ size_t tiPack( uint8_t * dst, const uint8_t * table, const uint8_t * src, size_t
     return tipSize;
 }
 
+//! nextIDPatTablePos points to the ID pattern table next pattern position.
+static const uint8_t * nextIDPatTablePos = NULL;
+
+//! nextPatID is the to nextIDPatTablePos matching pattern ID.
+static unsigned int nextPatID = 1;
+
+//! initGetNextPattern causes getNextPattern to start from 0.
+static void initGetNextPattern( const uint8_t * IDPatTable ){
+    nextIDPatTablePos = IDPatTable;
+    nextPatID = 1;
+}
+
+//! getNextPattern returns next pattern location in pt and size in sz or *sz == 0.
+//! @param pt is filled with the replace pattern address if exists.
+//! @param sz is filled with the replace size or 0, if not exists.
+static void getNextPattern(const uint8_t ** pt, size_t * sz ){
+    if( (*sz = *nextIDPatTablePos++) != 0 ){ // a pattern exists here
+        *pt = nextIDPatTablePos;
+        nextIDPatTablePos += *sz;
+        return;
+    }
+}
+
 typedef struct{
     uint8_t id;      // id of pattern found in src
     uint8_t * start; // pattern start in src
     uint8_t * limit; // address after pattern
 } IDPosition_t;
 
+// IDPosTable holds all IDs with their positions occuring in the current src buffer.
 static IDPosition_t IDPosTable[TIP_SRC_BUFFER_SIZE_MAX-1];
 
-void insertIDPosSorted( IDPosition_t * idPos, int count, uint8_t id, uint8_t * pos, uint8_t nlen ){
-    int i = 0;
-    for( ; i < count; i++ ){
-        if( idPos[i].start <= pos ){
+// IDPosCount is the number of entries inside IDPosTable.
+static int IDPosCount = 0;
+
+// insertIDPosSorted inserts id with pos and len into IDPosTable with smallest pos first.
+static void insertIDPosSorted(uint8_t id, uint8_t * pos, uint8_t len){
+    int i;
+    for( i = 0; i < IDPosCount; i++ ){
+        if( IDPosTable[i].start <= pos ){
             continue;
         }
-        memmove(idPos+i+1,idPos+i,(count-i)*sizeof(IDPosition_t));
+        memmove(IDPosTable+i+1,IDPosTable+i,(IDPosCount-i)*sizeof(IDPosition_t));
     }
-    idPos[i].id = id;
-    idPos[i].start = pos;
-    idPos[i].limit = pos + nlen;
+    IDPosTable[i].id = id;
+    IDPosTable[i].start = pos;
+    IDPosTable[i].limit = pos + len;
 }
 
-// createIDPosTable adds id with offset in a way, that smaller offsets first.
+// newIDPosTable adds id with offset in a way, that smaller offsets first.
 // On equal offsets, the longer pattern are coming first.
-int createIDPosTable(IDPosition_t * idPos, const uint8_t * table, const uint8_t * src, size_t slen){
-    int idcnt = 0;
-    initGetNextPattern(table);
+void newIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_t slen){
+    initGetNextPattern(IDPatTable);
     for( int id = 1; id < 0x80; id++ ){ // traverse the ID table. It is sorted by decreasing pattern length.    
         const uint8_t * needle = NULL;
         size_t nlen;
@@ -94,17 +101,16 @@ int createIDPosTable(IDPosition_t * idPos, const uint8_t * table, const uint8_t 
             if(pos == NULL){
                 continue; // pattern not found, try next pattern
             }
-            insertIDPosSorted( idPos, idcnt, id, pos, nlen);
-            idcnt++;
+            insertIDPosSorted(id, pos, nlen);
+            IDPosCount++;
             offset++;
         }        
     }
-    return idcnt;
 }
 
-offset_t smallestIDEnd(IDPosition_t * IDPos, int count ){
-    return 1;
-} 
+//  offset_t smallestIDEnd(IDPosition_t * IDPos, int count ){
+//      return 1;
+//  } 
 
 // fittingPattern returns 1 if an idx fits between start and limit.
 int fittingPattern( int idcnt, uint8_t * start, uint8_t * limit ){
@@ -119,38 +125,47 @@ int fittingPattern( int idcnt, uint8_t * start, uint8_t * limit ){
     return 1;
 }
 
+//! MAX_PATH_COUNT is the max allowed path count.
 #define MAX_PATH_COUNT 20
 
-// cnt, idx, idx, ...
-//   0,   0,   0, ... // empty path (pcnt=1)
-uint8_t path[MAX_PATH_COUNT][TIP_SRC_BUFFER_SIZE_MAX/2+1] = {0};
-int pcnt = 1;
+//! path holds all possible paths for current src buffer.
+//! - cnt, idx, idx, ...
+//! -   0,   0,   0, ... // empty path (PathCount=1)
+//! -   3,  17,   5,  4, // a path with 3 IDpos
+static uint8_t path[MAX_PATH_COUNT][TIP_SRC_BUFFER_SIZE_MAX/2+1] = {0};
 
-void newPathsTable( void ){
+//! PathCount is the actual path count in path.
+static int PathCount = 1;
+
+// initPathTable resets path table.
+static void initPathTable( void ){
     memset(path, 0, sizeof(path));
-    pcnt = 1;
+    PathCount = 1;
 }
 
-// IDPosAppendableToPath checks if pidx limit is small enough to append IDPos.
-int IDPosAppendableToPath( uint8_t pidx, uint8_t IDPos ){
+//! IDPosAppendableToPath checks if pidx limit is small enough to append IDPos.
+//! \param pidx is the path to check.
+//! \param IDPosIdx is the ID position inside IDPosTable.
+static int IDPosIdxAppendableToPath( uint8_t pidx, uint8_t IDPosIdx ){
     if( pidx == 0 ){
         return 1; // always
     }
     uint8_t i = path[pidx][0] + 1;
     uint8_t idx = path[pidx][i];
-    if( IDPosTable[idx].limit <= IDPosTable[IDPos].start ){
+    if( IDPosTable[idx].limit <= IDPosTable[IDPosIdx].start ){
         return 1;
     }
     return 0;
 }
 
-//
-void forkPath( uint8_t pidx ){
+//! forkPath extends path with a copy of pidx and returns index of copy.
+uint8_t forkPath( uint8_t pidx ){
     uint8_t psize = path[pidx][0] + 1;
-    memcpy(path[++pcnt], path[pidx], psize);
+    memcpy(path[PathCount], path[pidx], psize);
+    return PathCount++;
 }
 
-// 
+// appendIDPos appends idpos to pidx.
 void appendIDPos( uint8_t pidx, uint8_t idpos ){
     uint8_t cnt = path[pidx][0]; // pidx idpos count
     uint8_t idx = cnt + 1; // next free place
@@ -162,36 +177,37 @@ void appendIDPos( uint8_t pidx, uint8_t idpos ){
 * Algorithm:
   * Start with a single empty path
   * Loop over (by start sorted) IDPosition table and for each IDPos:
-    * Loop over all paths
+    * Loop over all paths beginning with the last
       * If can append IDPos to a path, fork this path and append to the forked path.
-        * It can always append IDPos to at least the empty path (which is forked always).
+        * It can always append IDPos to at least the empty path (which is forked always). But only to the empty path, if no other path exists to append.
 */
 size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
-    size_t pkgSize = 0;   // final ti packgae size
-    int idcnt = createIDPosTable(IDPos, table, src, slen);
-    addIDPos(0);
-    for( int i = 0; i < idcnt; i++ ){
-        for( int k = 0; k < pcnt; k++ ){
-            if( IDPos[i].limit < IDPos[k].start ){
-                if( !fittingPattern(idcnt, IDPos[i].limit, IDPos[k].start) ){ // if no other can fit between
-                    // add k to this line
-                 } else {
-                    // ignore
-                 }
-            }else{
-                // if no other can fit before
-                    // add k to next line
-                // else
-                    // ignore
+    newIDPosTable(table, src, slen);               // Get all ID positions in src.
+    initPathTable();                               // Start with a single empty path.
+    for( int i = 0; i < IDPosCount; i++ ){         // Loop over (by start sorted) IDPosition table for each IDPos.
+        int IDPosAppended = 0;
+        for( int k = PathCount - 1; k >= 0; k-- ){ // Loop over all so far existing paths from the end
+            if( IDPosIdxAppendableToPath(k, i) ){  // IDPos i fits to path k.
+                uint8_t n = forkPath(k);
+                appendIDPos(n,i);
+                IDPosAppended = 1;
             }
         }
+        if( !IDPosAppended ){       // Create a new path with IDPos i.
+            path[PathCount][0] = 1; // one IDPos
+            path[PathCount][1] = i; // the IDPos
+            PathCount++;            // one more path
+        }
     }
+
+    size_t pkgSize = 0;   // final ti packgae size
+
     // find minimum line
     // create output
     return pkgSize;
 }
 
-
+/*
 //! buildTiPacket starts with buf=src and tries to find biggest matching pattern from table at buf AND bufLimit-nlen.
 //! If a pattern was found at buf, buf is incremented by found pattern size.
 //! If a pattern was found at bufLimit-nlen, bufLimit is decremented by found pattern size.
@@ -310,3 +326,4 @@ repeat:
 
     return pkgSize;
 }
+*/
