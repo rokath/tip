@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"reflect"
+
 	"github.com/tj/assert"
 )
 
@@ -89,5 +91,30 @@ func TestTIPackTIUnpack(t *testing.T) {
 func assertNoZeroes(t *testing.T, b []byte) {
 	for _, x := range b {
 		assert.NotEqual(t, x, 0)
+	}
+}
+
+func TestNewIDPositionTable(t *testing.T) {
+	type args struct {
+		idTable []byte
+		in      []byte
+	}
+	tests := []struct {
+		name         string
+		args         args
+		wantPosTable []IDPos
+	}{ // test cases:
+		{
+			"",
+			args{[]byte{2, 0xaa, 0xbb, 0}, []byte{0xff, 0x00, 0xaa, 0xbb, 0xee, 0xaa, 0xbb, 0xcc }},
+			[]IDPos{ {1, 2, 4}, {1, 5, 7} },
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotPosTable := NewIDPositionTable(tt.args.idTable, tt.args.in); !reflect.DeepEqual(gotPosTable, tt.wantPosTable) {
+				t.Errorf("NewIDPositionTable() = %v, want %v", gotPosTable, tt.wantPosTable)
+			}
+		})
 	}
 }

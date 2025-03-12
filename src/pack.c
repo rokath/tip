@@ -13,6 +13,8 @@
 #include "tip.h"
 #include "memmem.h"
 
+#define STATIC
+
 size_t tip( uint8_t* dst, const uint8_t * src, size_t len ){
     return tiPack( dst, idTable, src, len );
 }
@@ -58,18 +60,11 @@ static void getNextPattern(const uint8_t ** pt, size_t * sz ){
     }
 }
 
-//! IDPosition_t could get smaller, by storing only the offset, but this way the code is faster.
-typedef struct{
-    uint8_t id;      // id of pattern found in src
-    uint8_t * start; // pattern start in src
-    uint8_t * limit; // address after pattern
-} IDPosition_t;
-
 //! IDPosTable holds all IDs with their positions occuring in the current src buffer.
-static IDPosition_t IDPosTable[TIP_SRC_BUFFER_SIZE_MAX-1];
+STATIC IDPosition_t IDPosTable[TIP_SRC_BUFFER_SIZE_MAX-1];
 
 //! IDPosCount is the number of entries inside IDPosTable.
-static int IDPosCount = 0;
+STATIC int IDPosCount = 0;
 
 //! insertIDPosSorted inserts id with pos and len into IDPosTable with smallest pos first.
 static void insertIDPosSorted(uint8_t id, uint8_t * pos, uint8_t len){
@@ -92,6 +87,7 @@ void newIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_t slen)
     for( int id = 1; id < 0x80; id++ ){ // traverse the ID table. It is sorted by decreasing pattern length.    
         const uint8_t * needle = NULL;
         size_t nlen;
+        repeat:
         getNextPattern( &needle, &nlen );
         if( nlen == 0 ){ // end of table if less 127 IDs
             break; 
@@ -100,7 +96,7 @@ void newIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_t slen)
         while(offset<slen){
             uint8_t * pos = memmem(src+offset, slen-offset, needle, nlen);
             if(pos == NULL){
-                continue; // pattern not found, try next pattern
+                goto repeat; // pattern not found, try next pattern
             }
             insertIDPosSorted(id, pos, nlen);
             IDPosCount++;

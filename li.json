@@ -5,7 +5,7 @@
 	},
 	"13076": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 128
+		"Line": 129
 	},
 	"13112": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
@@ -25,11 +25,11 @@
 	},
 	"13288": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 87
+		"Line": 88
 	},
 	"13316": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 85
+		"Line": 86
 	},
 	"13335": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
@@ -73,7 +73,11 @@
 	},
 	"13782": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 83
+		"Line": 84
+	},
+	"13812": {
+		"File": "examples/F030_inst/Core/Src/main.c",
+		"Line": 113
 	},
 	"13828": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
@@ -110,6 +114,14 @@
 	"14023": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
 		"Line": 65
+	},
+	"14078": {
+		"File": "examples/F030_inst/Core/Src/stm32f0xx_it.c",
+		"Line": 168
+	},
+	"14079": {
+		"File": "examples/F030_inst/Core/Src/main.c",
+		"Line": 115
 	},
 	"14118": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
@@ -179,6 +191,14 @@
 		"File": "../trice/examples/exampleData/triceExamples.c",
 		"Line": 24
 	},
+	"14428": {
+		"File": "examples/G0B1_inst/Core/Src/main.c",
+		"Line": 127
+	},
+	"14453": {
+		"File": "examples/F030_inst/Core/Src/main.c",
+		"Line": 120
+	},
 	"14499": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
 		"Line": 52
@@ -201,7 +221,7 @@
 	},
 	"14704": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 88
+		"Line": 89
 	},
 	"14739": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
@@ -225,7 +245,7 @@
 	},
 	"14893": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 124
+		"Line": 125
 	},
 	"14990": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
@@ -234,6 +254,10 @@
 	"15013": {
 		"File": "../trice/examples/exampleData/triceLogDiagData.c",
 		"Line": 69
+	},
+	"15015": {
+		"File": "examples/F030_inst/Core/Src/main.c",
+		"Line": 117
 	},
 	"15019": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
@@ -255,6 +279,10 @@
 		"File": "../trice/examples/exampleData/triceExamples.c",
 		"Line": 40
 	},
+	"15364": {
+		"File": "examples/F030_inst/Core/Src/stm32f0xx_it.c",
+		"Line": 162
+	},
 	"15379": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
 		"Line": 34
@@ -270,6 +298,10 @@
 	"15460": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
 		"Line": 76
+	},
+	"15556": {
+		"File": "../trice/examples/exampleData/triceLogDiagData.c",
+		"Line": 56
 	},
 	"15567": {
 		"File": "../trice/examples/exampleData/triceLogDiagData.c",
@@ -317,7 +349,11 @@
 	},
 	"16173": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 84
+		"Line": 85
+	},
+	"16235": {
+		"File": "examples/F030_inst/Core/Src/main.c",
+		"Line": 122
 	},
 	"16252": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
@@ -339,8 +375,60 @@
 		"File": "../trice/examples/exampleData/triceLogDiagData.c",
 		"Line": 19
 	},
+	"16370": {
+		"File": "../trice/examples/exampleData/triceLogDiagData.c",
+		"Line": 77
+	},
+	"16371": {
+		"File": "../trice/examples/exampleData/triceLogDiagData.c",
+		"Line": 75
+	},
+	"16372": {
+		"File": "../trice/examples/exampleData/triceLogDiagData.c",
+		"Line": 69
+	},
+	"16373": {
+		"File": "../trice/examples/exampleData/triceLogDiagData.c",
+		"Line": 67
+	},
 	"16374": {
 		"File": "examples/L432_inst/Core/Src/main.c",
 		"Line": 92
+	},
+	"16375": {
+		"File": "../trice/examples/exampleData/triceLogDiagData.c",
+		"Line": 52
+	},
+	"16376": {
+		"File": "../trice/examples/exampleData/triceLogDiagData.c",
+		"Line": 50
+	},
+	"16377": {
+		"File": "../trice/examples/exampleData/triceLogDiagData.c",
+		"Line": 46
+	},
+	"16378": {
+		"File": "../trice/examples/exampleData/triceLogDiagData.c",
+		"Line": 44
+	},
+	"16379": {
+		"File": "../trice/examples/exampleData/triceLogDiagData.c",
+		"Line": 37
+	},
+	"16380": {
+		"File": "../trice/examples/exampleData/triceLogDiagData.c",
+		"Line": 32
+	},
+	"16381": {
+		"File": "../trice/examples/exampleData/triceLogDiagData.c",
+		"Line": 26
+	},
+	"16382": {
+		"File": "../trice/examples/exampleData/triceLogDiagData.c",
+		"Line": 21
+	},
+	"16383": {
+		"File": "../trice/examples/exampleData/triceLogDiagData.c",
+		"Line": 19
 	}
 }

@@ -75,6 +75,10 @@
 		"Type": "trice",
 		"Strg": "Hi\\n"
 	},
+	"13812": {
+		"Type": "trice8B",
+		"Strg": "rd:%02x \\n"
+	},
 	"13828": {
 		"Type": "trice",
 		"Strg": "deb:TRICE_SINGLE_PACK_MODE\\n"
@@ -110,6 +114,14 @@
 	"14023": {
 		"Type": "trice",
 		"Strg": "deb:TRICE_STATIC_BUFFER, "
+	},
+	"14078": {
+		"Type": "TRICE_S",
+		"Strg": "rx:received command:%s\\n"
+	},
+	"14079": {
+		"Type": "trice8B",
+		"Strg": "rd:%02x \\n"
 	},
 	"14118": {
 		"Type": "TRICE32_0",
@@ -179,6 +191,14 @@
 		"Type": "TRICE32_0",
 		"Strg": "att:🐁 Speedy Gonzales H  16-bit time stamp\\n"
 	},
+	"14428": {
+		"Type": "trice8B",
+		"Strg": "rd:%02x \\n"
+	},
+	"14453": {
+		"Type": "trice8B",
+		"Strg": "wr:%02x \\n"
+	},
 	"14499": {
 		"Type": "Trice",
 		"Strg": "i=%x %x\\n"
@@ -235,6 +255,10 @@
 		"Type": "trice16",
 		"Strg": "err:TriceHalfBufferDepthMax =%4u of%5d (overflow!)\\n"
 	},
+	"15015": {
+		"Type": "trice",
+		"Strg": "%2d: id%2d, start=%p, limit=%p\\n"
+	},
 	"15019": {
 		"Type": "TRICE32_0",
 		"Strg": "att:🐁 Speedy Gonzales L without time stamp\\n"
@@ -255,6 +279,10 @@
 		"Type": "trice",
 		"Strg": "att:🐁 Speedy Gonzales l without time stamp\\n"
 	},
+	"15364": {
+		"Type": "TRice",
+		"Strg": "WARNING:USARTq OverRun Error Flag is set!\\n"
+	},
 	"15379": {
 		"Type": "Trice",
 		"Strg": "att:🐁 Speedy Gonzales f  16-bit time stamp\\n"
@@ -270,6 +298,10 @@
 	"15460": {
 		"Type": "trice",
 		"Strg": "deb:_CYCLE == %d, _PROTECT == %d, _DIAG == %d, XTEA == %d\\n"
+	},
+	"15556": {
+		"Type": "trice16",
+		"Strg": "wrn:TriceDynStringBufTruncateCount = %u\\n"
 	},
 	"15567": {
 		"Type": "trice16",
@@ -319,6 +351,10 @@
 		"Type": "trice",
 		"Strg": "Hi\\n"
 	},
+	"16235": {
+		"Type": "trice8B",
+		"Strg": "att:%02x \\n"
+	},
 	"16252": {
 		"Type": "TRice",
 		"Strg": "att:🐁 Speedy Gonzales c  32-bit time stamp\\n"
@@ -339,8 +375,60 @@
 		"Type": "trice16",
 		"Strg": "WARNING:RTT0_writeDepthMax=%u (BUFFER_SIZE_UP=%u)\\n"
 	},
+	"16370": {
+		"Type": "trice16",
+		"Strg": "err:triceRingBufferDepthMax =%4u of%5d (overflow!)\\n"
+	},
+	"16371": {
+		"Type": "trice16",
+		"Strg": "diag:triceRingBufferDepthMax =%4u of%5d\\n"
+	},
+	"16372": {
+		"Type": "trice16",
+		"Strg": "err:TriceHalfBufferDepthMax =%4u of%5d (overflow!)\\n"
+	},
+	"16373": {
+		"Type": "trice16",
+		"Strg": "diag:TriceHalfBufferDepthMax =%4u of%5d\\n"
+	},
 	"16374": {
 		"Type": "trice",
 		"Strg": "Hi!\\n"
+	},
+	"16375": {
+		"Type": "trice16",
+		"Strg": "diag:TriceDataOffsetDepthMax = %d of %d (TRICE_DATA_OFFSET)\\n"
+	},
+	"16376": {
+		"Type": "trice16",
+		"Strg": "err:TriceDataOffsetDepthMax = %d of %d (TRICE_DATA_OFFSET)\\n"
+	},
+	"16377": {
+		"Type": "trice16",
+		"Strg": "err:triceSingleDepthMax =%4u of %d (TRICE_BUFFER_SIZE overflow!)\\n"
+	},
+	"16378": {
+		"Type": "trice16",
+		"Strg": "diag:triceSingleDepthMax =%4u of %d (TRICE_BUFFER_SIZE)\\n"
+	},
+	"16379": {
+		"Type": "trice16",
+		"Strg": "err:TriceDeferredOverflowCount = %u\\n"
+	},
+	"16380": {
+		"Type": "trice16",
+		"Strg": "err:TriceDirectOverflowCount = %u\\n"
+	},
+	"16381": {
+		"Type": "trice16",
+		"Strg": "err:TriceErrorCount = %u\\n"
+	},
+	"16382": {
+		"Type": "trice16",
+		"Strg": "diag:RTT0_writeDepthMax=%u (BUFFER_SIZE_UP=%u)\\n"
+	},
+	"16383": {
+		"Type": "trice16",
+		"Strg": "WARNING:RTT0_writeDepthMax=%u (BUFFER_SIZE_UP=%u)\\n"
 	}
 }

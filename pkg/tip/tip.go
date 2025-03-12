@@ -1,10 +1,6 @@
+// Package tip is a wrapper for testing the target C-code.
+// For some reason inside the *_test.go an 'import "C"' is not possible.
 package tip
-
-// Copyright 2025 Thomas.Hoehenleitner [at] seerose.net
-// Use of this source code is governed by a license that can be found in the LICENSE file.
-
-// Package tip is a wwrapper for executing and a helper for testing the target C-code.
-// For some reason inside the tip_test.go an 'import "C"' is not possible.
 
 // #cgo CFLAGS: -g -Wall -I../../src -I../../../trice/src -I../../examples/L432_inst/Core/inc
 // #include <stdint.h>
@@ -59,4 +55,34 @@ func Unpack(out, in []byte) (ulen int) {
 	ilen := (C.size_t)(len(in))
 	olen := C.tiu(o, i, ilen)
 	return int(olen)
+}
+
+type IDPos struct{
+	id byte
+	start int
+	limit int
+}
+
+// ! NewIDPositionTable is a wrapper for testing C function newIDPosTable and therefore returns posTable.
+func NewIDPositionTable(idTable, in []byte) (posTable []IDPos) {
+	src := (*C.uchar)(unsafe.Pointer(&in[0]))
+	slen := (C.size_t)(len(in))
+	idPatTbl := (*C.uchar)(unsafe.Pointer(&idTable[0]))
+	C.newIDPosTable(idPatTbl, src, slen)
+	n := int(C.IDPosCount)
+	// p := (*[C.TIP_SRC_BUFFER_SIZE_MAX]C.IDPosition_t)(unsafe.Pointer(&C.IDPosTable))
+	// for i := range n {
+	// 	fmt.Println(i, p[i])
+	// }
+	pt := *(*[]C.IDPosition_t)(unsafe.Pointer(&C.IDPosTable))
+	pt = pt[:n]
+
+	posTable = make([]IDPos, n)
+	for i, x := range pt {
+		posTable[i].id = byte(x.id)
+		posTable[i].start = int(*x.start)
+		posTable[i].limit = int(*x.limit)
+	} 
+
+	return
 }
