@@ -71,7 +71,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 #if !TRICE_OFF
   TriceInit(); // This so early, to allow trice logs inside interrupts from the beginning. Only needed for RTT.
-  TriceHeadLine("  𝕹𝖀𝕮𝕷𝕰𝕺-F030R8   ");
+  //TriceHeadLine("  𝕹𝖀𝕮𝕷𝕰𝕺-F030R8   ");
 #endif
   /* USER CODE END 1 */
 
@@ -110,16 +110,19 @@ int main(void)
   //static uint8_t src[100] = {0};
   size_t slen =  sizeof(src); //   strlen(in);
   //  memcpy(src,in,slen);
-  trice8B(iD(13812), "rd:%02x \n", src, slen);
+  trice8B("rd:%02x \n", src, slen);
   newIDPosTable(idTable, src, slen );
-  trice8B(iD(14079), "rd:%02x \n", IDPosTable, IDPosCount * sizeof(IDPosition_t));
-  for( int i = 0; i < IDPosCount; i++ ){
-    trice(iD(15015), "%2d: id%2d, start=%p, limit=%p\n", i, idTable[i].id, idTable[i].start, idTable[i].limit);
+  trice8B("rd:%02x \n", IDPosTable, IDPosTable.count * sizeof(IDPosition_t));
+  for( int i = 0; i < IDPosTable.count; i++ ){
+    trice("%2d: id%2d, start=%d, limit=%d \n", i, IDPosTable.item[i].id, IDPosTable.item[i].start, IDPosLimit(i));
   }
   //size_t plen = tip(pkg, src, slen);
-  //trice8B(iD(14453), "wr:%02x \n", pkg, plen);
+  //trice8B("wr:%02x \n", pkg, plen);
+
+
+
   //size_t blen = tiu(buf, pkg, plen);
-  //trice8B(iD(16235), "att:%02x \n", buf, blen);
+  //trice8B("att:%02x \n", buf, blen);
 
   /* USER CODE END 2 */
 

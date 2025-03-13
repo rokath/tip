@@ -35,6 +35,10 @@
 		"Type": "TRice",
 		"Strg": "msg:StartDefaultTask\\n"
 	},
+	"13364": {
+		"Type": "trice",
+		"Strg": "%2d: id%2d, start=%d, limit=%d \\n"
+	},
 	"13365": {
 		"Type": "trice16",
 		"Strg": "err:triceRingBufferDepthMax =%4u of%5d (overflow!)\\n"

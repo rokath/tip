@@ -5,7 +5,7 @@
 	},
 	"13076": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 129
+		"Line": 128
 	},
 	"13112": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
@@ -25,15 +25,19 @@
 	},
 	"13288": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 88
+		"Line": 87
 	},
 	"13316": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 86
+		"Line": 85
 	},
 	"13335": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
 		"Line": 335
+	},
+	"13364": {
+		"File": "examples/F030_inst/Core/Src/main.c",
+		"Line": 117
 	},
 	"13365": {
 		"File": "../trice/examples/exampleData/triceLogDiagData.c",
@@ -73,7 +77,7 @@
 	},
 	"13782": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 84
+		"Line": 83
 	},
 	"13812": {
 		"File": "examples/F030_inst/Core/Src/main.c",
@@ -221,7 +225,7 @@
 	},
 	"14704": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 89
+		"Line": 88
 	},
 	"14739": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
@@ -245,7 +249,7 @@
 	},
 	"14893": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 125
+		"Line": 124
 	},
 	"14990": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
@@ -349,11 +353,11 @@
 	},
 	"16173": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 85
+		"Line": 84
 	},
 	"16235": {
 		"File": "examples/F030_inst/Core/Src/main.c",
-		"Line": 122
+		"Line": 125
 	},
 	"16252": {
 		"File": "../trice/examples/exampleData/triceExamples.c",

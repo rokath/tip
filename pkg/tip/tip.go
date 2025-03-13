@@ -60,7 +60,6 @@ func Unpack(out, in []byte) (ulen int) {
 type IDPos struct{
 	id byte
 	start int
-	limit int
 }
 
 // ! NewIDPositionTable is a wrapper for testing C function newIDPosTable and therefore returns posTable.
@@ -69,7 +68,7 @@ func NewIDPositionTable(idTable, in []byte) (posTable []IDPos) {
 	slen := (C.size_t)(len(in))
 	idPatTbl := (*C.uchar)(unsafe.Pointer(&idTable[0]))
 	C.newIDPosTable(idPatTbl, src, slen)
-	n := int(C.IDPosCount)
+	n := int(C.IDPosTable.count)
 	// p := (*[C.TIP_SRC_BUFFER_SIZE_MAX]C.IDPosition_t)(unsafe.Pointer(&C.IDPosTable))
 	// for i := range n {
 	// 	fmt.Println(i, p[i])
@@ -80,8 +79,8 @@ func NewIDPositionTable(idTable, in []byte) (posTable []IDPos) {
 	posTable = make([]IDPos, n)
 	for i, x := range pt {
 		posTable[i].id = byte(x.id)
-		posTable[i].start = int(*x.start)
-		posTable[i].limit = int(*x.limit)
+		posTable[i].start = int(x.start)
+		//posTable[i].limit = int(*x.limit)
 	} 
 
 	return
