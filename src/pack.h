@@ -21,10 +21,10 @@ size_t tip( uint8_t* dst, const uint8_t * src, size_t len );
 size_t tiPack( uint8_t * dst, const uint8_t * table, const uint8_t * src, size_t slen );
 size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen);
 
-//! IDPosition_t could get smaller, by storing only the offset, but this way the code is faster.
+//! IDPosition_t ...
 typedef struct{
     uint8_t id;     // id of pattern found in src
-    offset_t start; // id pattern start
+    offset_t start; // id pattern start in src
 } IDPosition_t;
 
 typedef struct {
