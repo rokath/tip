@@ -49,7 +49,7 @@ static const uint8_t * nextIDPatTablePos = NULL;
 //! initGetNextPattern causes getNextPattern to start from 0.
 static void initGetNextPattern( const uint8_t * IDPatTable ){
     nextIDPatTablePos = IDPatTable;
-    nextPatID = 1;
+    //nextPatID = 1;
 }
 
 //! getNextPattern returns next pattern location in pt and size in sz or *sz == 0.
