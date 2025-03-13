@@ -73,7 +73,10 @@ static void insertIDPosSorted(uint8_t id, offset_t offset){
         if( IDPosTable.item[i].start <= offset ){
             continue;
         }
-        memmove(&IDPosTable.item[i+1],&IDPosTable.item[i],(IDPosTable.count-i)*sizeof(IDPosition_t));
+        IDPosition_t *dst = &IDPosTable.item[i+1];
+        IDPosition_t *src = &IDPosTable.item[i];
+        size_t size = (IDPosTable.count-i)*sizeof(IDPosition_t);
+        memmove(dst, src, size);
     }
     IDPosTable.item[i].id = id;
     IDPosTable.item[i].start = offset;
@@ -102,7 +105,7 @@ void newIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_t slen)
             }
             offset_t loc = pos - src;
             insertIDPosSorted(id, loc);
-            offset = loc + 1; // We can do that, because we search the identical pattern in the while loop.
+            offset = loc + 1; // We search the identical pattern in the while loop.
             // "xxxxxPPPxxx" - after finding first PP, we need to find the 2nd PP inside PPP.
         }
     }
@@ -111,18 +114,19 @@ void newIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_t slen)
 //! MAX_PATH_COUNT is the max allowed path count.
 #define MAX_PATH_COUNT 20
 
-//! path holds all possible paths for current src buffer.
-//! - cnt, idx, idx, ...
-//! -   3,  17,   5,  4, // a path with 3 IDpos
-static uint8_t path[MAX_PATH_COUNT][TIP_SRC_BUFFER_SIZE_MAX/2+1] = {0};
+typedef struct {
+    int count; //! count is the actual paths count in paths.
+    //! path holds all possible paths for current src buffer.
+    //! - cnt, idx, idx, ...
+    //! -   3,  17,   5,  4, // a path with 3 IDpos
+    uint8_t path[MAX_PATH_COUNT][TIP_SRC_BUFFER_SIZE_MAX/2+1] = {0};
+} paths_t;
 
-//! PathCount is the actual path count in path.
-static int PathCount = 0;
+paths_t paths = {0};
 
 //! initPathTable resets path table.
 static void initPathTable( void ){
-    memset(path, 0, sizeof(path));
-    PathCount = 0;
+    memset(paths, 0, sizeof(paths));
 }
 
 //! IDPatternLength returns pattern length of id. 
