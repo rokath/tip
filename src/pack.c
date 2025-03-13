@@ -44,7 +44,7 @@ size_t tiPack( uint8_t * dst, const uint8_t * table, const uint8_t * src, size_t
 static const uint8_t * nextIDPatTablePos = NULL;
 
 //! nextPatID is the to nextIDPatTablePos matching pattern ID.
-static unsigned int nextPatID = 1;
+// static unsigned int nextPatID = 1;
 
 //! initGetNextPattern causes getNextPattern to start from 0.
 static void initGetNextPattern( const uint8_t * IDPatTable ){
