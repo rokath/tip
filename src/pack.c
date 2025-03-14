@@ -13,8 +13,6 @@
 #include "tip.h"
 #include "memmem.h"
 
-
-
 size_t tip( uint8_t* dst, const uint8_t * src, size_t len ){
     return tiPack( dst, idTable, src, len );
 }
@@ -91,6 +89,7 @@ IDPosTable_t IDPosTable = {0};
 //! and creates a idPosTable specific to the actual src buffer.
 //! It adds IDs with offset in a way, that smaller offsets occur first.
 STATIC void newIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_t slen){
+    memset(&IDPosTable, 0, sizeof(IDPosTable));
     initGetNextPattern(IDPatTable);
     for( int id = 1; id < 0x80; id++ ){ // Traverse the ID table. 
         const uint8_t * needle = NULL;
@@ -115,19 +114,14 @@ STATIC void newIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_
     }
 }
 
-typedef struct {
-    int count; //! count is the actual path count in map.
-    uint8_t path[MAX_PATH_COUNT][TIP_SRC_BUFFER_SIZE_MAX/2+1];
-} map_t;
-
-//! map holds all possible paths for current src buffer.
+//! srcMap holds all possible paths for current src buffer.
 //! - cnt, idx, idx, ...
 //! -   3,  17,   5,  4, // a path with 3 IDpos
-static map_t map = {0};
+STATIC srcMap_t srcMap = {0};
 
-//! initPathTable resets path table.
-static void initPathTable( void ){
-    memset(&map, 0, sizeof(map));
+//! initSrcMap resets path table.
+static void initSrcMap( void ){
+    memset(&srcMap, 0, sizeof(srcMap));
 }
 
 //! IDPatternLength returns pattern length of id. 
@@ -152,36 +146,36 @@ STATIC offset_t IDPosLimit(uint8_t idx){
 //! \param pathIndex is the path to check.
 //! \param IDPosIdx is the ID position inside IDPosTable.
 static int IDPosAppendableToPath( uint8_t pathIndex, uint8_t idPos ){
-    uint8_t pathIdPosCount = map.path[pathIndex][0];
-    uint8_t lastIdPos = map.path[pathIndex][pathIdPosCount];
+    uint8_t pathIdPosCount = srcMap.path[pathIndex][0];
+    uint8_t lastIdPos = srcMap.path[pathIndex][pathIdPosCount];
     if( IDPosLimit(lastIdPos) <= IDPosTable.item[idPos].start ){
         return 1;
     }
     return 0;
 }
 
-//! forkPath extends map with a copy of path pidx and returns index of copy.
+//! forkPath extends srcMap with a copy of path pidx and returns index of copy.
 static uint8_t forkPath( uint8_t pidx ){
-    uint8_t psize = map.path[pidx][0] + 1;
-    memcpy(map.path[map.count], map.path[pidx], psize);
-    return map.count++;
+    uint8_t psize = srcMap.path[pidx][0] + 1;
+    memcpy(srcMap.path[srcMap.count], srcMap.path[pidx], psize);
+    return srcMap.count++;
 }
 
 //! appendIDPos appends idpos to pidx.
 static void appendIDPos( uint8_t pidx, uint8_t idpos ){
-    uint8_t cnt = map.path[pidx][0]; // pidx idpos count
-    uint8_t idx = cnt + 1;       // next free place
-    map.path[pidx][idx] = idpos;     // write idpos
-    map.path[pidx][0] = cnt + 1;     // one more idpos
+    uint8_t cnt = srcMap.path[pidx][0]; // pidx idpos count
+    uint8_t idx = cnt + 1;           // next free place
+    srcMap.path[pidx][idx] = idpos;     // write idpos
+    srcMap.path[pidx][0] = cnt + 1;     // one more idpos
 }
 
-size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
+void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
     newIDPosTable(table, src, slen); // Get all ID positions in src ordered by increasing offset.
-    initPathTable();                 // Start with no path (PathCount=0).
+    initSrcMap();                 // Start with no path (PathCount=0).
     for( int idPos = 0; idPos < IDPosTable.count; idPos++ ){ // Loop over IDPosition table for each IDPos.
         int IDPosAppended = 0;
-        for( int k = map.count - 1; k >= 0; k-- ){ // Loop over all so far existing paths from the end.
-            if( map.count > MAX_PATH_COUNT ){ // Create no new paths for this buffer.
+        for( int k = srcMap.count - 1; k >= 0; k-- ){ // Loop over all so far existing paths from the end.
+            if( srcMap.count > TIP_MAX_PATH_COUNT ){ // Create no new paths for this buffer.
                 IDPosAppended = 1;
                 break;
             }
@@ -192,12 +186,16 @@ size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, c
             }
         }
         if( !IDPosAppended ){ // Create a new path with idPos.
-            int nextIdx = map.count;
-            map.path[nextIdx][0] = 1;     // one IDPos in this new path
-            map.path[nextIdx][1] = idPos; // the IDPos (the first is naurally 0)
-            map.count++;                  // one more path
+            int nextIdx = srcMap.count;
+            srcMap.path[nextIdx][0] = 1;     // one IDPos in this new path
+            srcMap.path[nextIdx][1] = idPos; // the IDPos (the first is naurally 0)
+            srcMap.count++;                  // one more path
         }
     }
+}
+
+size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
+    createSrcMap(table, src, slen);
 
     size_t pkgSize = 0;   // final ti packgae size
 

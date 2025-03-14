@@ -137,6 +137,18 @@ for( int i = 0; i < IDPosTable.count; i++ ){
   trice("%2d: id%2d, start=%d, limit=%d \n", i, IDPosTable.item[i].id, IDPosTable.item[i].start, IDPosLimit(i));
 }
 
+createSrcMap(IdT, src, slen );
+
+
+for( int i = 0; i < srcMap.count; i++ ){
+    int plen = srcMap.path[i][0];
+    trice("att:path %2d: len %2d: ", i, plen);
+    trice8B("msg:%3d\n", &srcMap.path[i][1], plen);
+}
+
+
+
+
 //size_t plen = tip(pkg, src, slen);
 //trice8B("wr:%02x \n", pkg, plen);
 

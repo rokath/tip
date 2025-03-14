@@ -111,6 +111,30 @@ func TestNewIDPositionTable(t *testing.T) {
 			},
 			[]IDPos{{3, 2}, {2, 4}, {3, 6}},
 		},
+		{
+			"",
+			args{
+				[]byte{5, 0, 0, 0, 0, 0, 3, 0xee, 0xff, 0xaa, 2, 0xaa, 0xbb, 0}, // idTable
+				[]byte{0xaa, 0xbb, 0xaa, 0xbb, 0xcc},                            // src
+			},
+			[]IDPos{{3, 0}, {3, 2}},
+		},
+		{
+			"",
+			args{
+				[]byte{5, 0, 0, 0, 0, 0, 3, 0xee, 0xff, 0xaa, 2, 0xaa, 0xbb, 0}, // idTable
+				[]byte{0xff, 0x00, 0xcc}, // src
+			},
+			[]IDPos{},
+		},
+		{
+			"",
+			args{
+				[]byte{5, 0, 0, 0, 0, 0, 3, 0xee, 0xff, 0xaa, 2, 0xaa, 0xaa, 0}, // idTable
+				[]byte{0xaa, 0xaa, 0xaa, 0xaa, 0xaa},                            // src
+			},
+			[]IDPos{{3, 0}, {3, 1}, {3, 2}, {3, 3}},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

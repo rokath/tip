@@ -155,6 +155,10 @@
 		"Type": "TRice",
 		"Strg": "att:🐁 Speedy Gonzales a  32-bit time stamp\\n"
 	},
+	"14160": {
+		"Type": "trice8B",
+		"Strg": "msg:%3d\\n"
+	},
 	"14180": {
 		"Type": "trice16",
 		"Strg": "diag:triceSingleDepthMax =%4u of %d (TRICE_BUFFER_SIZE)\\n"
@@ -314,6 +318,10 @@
 	"15460": {
 		"Type": "trice",
 		"Strg": "deb:_CYCLE == %d, _PROTECT == %d, _DIAG == %d, XTEA == %d\\n"
+	},
+	"15493": {
+		"Type": "trice",
+		"Strg": "att:path %2d: len %2d: "
 	},
 	"15556": {
 		"Type": "trice16",
