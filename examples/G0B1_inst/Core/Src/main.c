@@ -83,7 +83,7 @@ int main(void)
   //trice("Hi\n");
   //trice("Hi\n");
   //trice("Hi\n");
-  TriceHeadLine("  NUCLEO-G0B1RE with tip  ");
+  TriceHeadLine("  NUCLEO-G0B1RE  ");
   //trice("Hi\n");
   //trice("Hi\n");
 #endif
@@ -112,6 +112,39 @@ int main(void)
 #if !TRICE_OFF  
 //LogTriceConfiguration();
 #endif
+
+
+
+
+//static uint8_t buf[100] = {0};
+//static uint8_t pkg[100] = {0};
+//static uint8_t src[] = { 0x0d, 0x0a, 0x0d, 0x0a, 0x74, 0x68, 0x65, 0x20, 0x0d, 0x0a }; // ok
+//static uint8_t src[] = { 0x55, 0x74, 0x68, 0x65, 0x20, 0x55, 0x74, 0x68, 0x65, 0x20 }; // ok
+//static uint8_t src[] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0xaa, 0xbb, 0x38, 0x39, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66 };
+//static char* in = "ABCABCABC123";
+//static uint8_t src[100] = {0};
+static const uint8_t IdT[] = {5, 0, 0, 0, 0, 0, 3, 0xee, 0xff, 0xaa, 2, 0xaa, 0xbb, 0}; // idTable
+static       uint8_t src[] = {0xff, 0x00, 0xaa, 0xbb, 0xee, 0xff, 0xaa, 0xbb, 0xcc};
+
+size_t slen =  sizeof(src); //   strlen(in);
+trice8B("rd:%02x \n", src, slen);
+
+newIDPosTable(IdT, src, slen );
+
+trice8B("rd:%02x \n", &IDPosTable.item[0], IDPosTable.count * sizeof(IDPosition_t));
+
+for( int i = 0; i < IDPosTable.count; i++ ){
+  trice("%2d: id%2d, start=%d, limit=%d \n", i, IDPosTable.item[i].id, IDPosTable.item[i].start, IDPosLimit(i));
+}
+
+//size_t plen = tip(pkg, src, slen);
+//trice8B("wr:%02x \n", pkg, plen);
+
+//size_t blen = tiu(buf, pkg, plen);
+//trice8B("att:%02x \n", buf, blen);
+
+
+/*
   static uint8_t buf[100] = {0};
   static uint8_t pkg[100] = {0};
 //static uint8_t src[] = { 0x0d, 0x0a, 0x0d, 0x0a, 0x74, 0x68, 0x65, 0x20, 0x0d, 0x0a }; // ok
@@ -129,7 +162,7 @@ int main(void)
   
   size_t blen = tiu(buf, pkg, plen);
   trice8B("att:%02x \n", buf, blen);
-
+*/
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */

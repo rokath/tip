@@ -13,20 +13,39 @@ extern "C" {
 #include <stddef.h>
 #include "tip.h"
 
-//typedef uint8_t offset_t;
-
-//offset_t IDPosLimit(uint8_t i);
-
 size_t tip( uint8_t* dst, const uint8_t * src, size_t len );
 size_t tiPack( uint8_t * dst, const uint8_t * table, const uint8_t * src, size_t slen );
 size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen);
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Exported for tests
+//
 
+#ifndef STATIC
+#define STATIC
+
+typedef uint8_t offset_t; // todo: why needed here? It is in tip.h!
+
+//! IDPosition_t ...
+typedef struct{
+    uint8_t id;     // id of pattern found in src
+    offset_t start; // id pattern start in src
+} IDPosition_t;
+
+typedef struct {
+    int count; //! count is the number of items inside IDPosTable.
+    IDPosition_t item[TIP_SRC_BUFFER_SIZE_MAX-1];
+} IDPosTable_t;
 
 //! IDPosTable holds all IDs with their positions occuring in the current src buffer.
-//extern IDPosTable_t IDPosTable;
+extern IDPosTable_t IDPosTable;
 
-//void newIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_t slen);
+void newIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_t slen);
+offset_t IDPosLimit(uint8_t idx);
+
+#endif // #ifndef STATIC
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef __cplusplus
 }

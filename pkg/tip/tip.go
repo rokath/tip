@@ -57,8 +57,8 @@ func Unpack(out, in []byte) (ulen int) {
 	return int(olen)
 }
 
-type IDPos struct{
-	id byte
+type IDPos struct {
+	id    byte
 	start int
 }
 
@@ -69,19 +69,11 @@ func NewIDPositionTable(idTable, in []byte) (posTable []IDPos) {
 	idPatTbl := (*C.uchar)(unsafe.Pointer(&idTable[0]))
 	C.newIDPosTable(idPatTbl, src, slen)
 	n := int(C.IDPosTable.count)
-	// p := (*[C.TIP_SRC_BUFFER_SIZE_MAX]C.IDPosition_t)(unsafe.Pointer(&C.IDPosTable))
-	// for i := range n {
-	// 	fmt.Println(i, p[i])
-	// }
-	pt := *(*[]C.IDPosition_t)(unsafe.Pointer(&C.IDPosTable))
-	pt = pt[:n]
-
+	pt := (*[C.TIP_SRC_BUFFER_SIZE_MAX]C.IDPosition_t)(unsafe.Pointer(&C.IDPosTable.item[0]))
 	posTable = make([]IDPos, n)
-	for i, x := range pt {
-		posTable[i].id = byte(x.id)
-		posTable[i].start = int(x.start)
-		//posTable[i].limit = int(*x.limit)
-	} 
-
+	for i := range posTable {
+		posTable[i].id = byte(pt[i].id)
+		posTable[i].start = int(pt[i].start)
+	}
 	return
 }

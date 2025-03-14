@@ -59,6 +59,10 @@
 		"Type": "trice16",
 		"Strg": "diag:TriceHalfBufferDepthMax =%4u of%5d\\n"
 	},
+	"13653": {
+		"Type": "trice8B",
+		"Strg": "att:%02x \\n"
+	},
 	"13660": {
 		"Type": "trice16",
 		"Strg": "diag:RTT0_writeDepthMax=%u (BUFFER_SIZE_UP=%u)\\n"
@@ -235,6 +239,10 @@
 		"Type": "TRICE32_0",
 		"Strg": "att:🐁 Speedy Gonzales C  32-bit time stamp\\n"
 	},
+	"14763": {
+		"Type": "trice",
+		"Strg": "%2d: id%2d, start=%d, limit=%d \\n"
+	},
 	"14768": {
 		"Type": "TRICE32_0",
 		"Strg": "att:🐁 Speedy Gonzales J without time stamp\\n"
@@ -266,6 +274,10 @@
 	"15019": {
 		"Type": "TRICE32_0",
 		"Strg": "att:🐁 Speedy Gonzales L without time stamp\\n"
+	},
+	"15050": {
+		"Type": "trice8B",
+		"Strg": "rd:%02x \\n"
 	},
 	"15093": {
 		"Type": "trice",
@@ -338,6 +350,10 @@
 	"15938": {
 		"Type": "Trice32B",
 		"Strg": "msg:%08x  \\n"
+	},
+	"15942": {
+		"Type": "trice8B",
+		"Strg": "wr:%02x \\n"
 	},
 	"16055": {
 		"Type": "TRice",
