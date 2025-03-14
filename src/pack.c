@@ -13,13 +13,18 @@
 #include "tip.h"
 #include "memmem.h"
 
+#ifndef STATIC
 #define STATIC
+#endif
 
 size_t tip( uint8_t* dst, const uint8_t * src, size_t len ){
     return tiPack( dst, idTable, src, len );
 }
 
-const uint8_t *idPatTable;
+// idPatTable points to param table passed to some functions.
+//! This allows using different idTable's than idTable.c 
+//! especially for testing and not to have to pass it to all functions. 
+static const uint8_t *idPatTable;
 
 //! @brief tiPack encodes src buffer with size len into dst buffer and returns encoded len.
 //! @details For the tip encoding it uses the linked idTable.c object.
@@ -64,7 +69,7 @@ static void getNextPattern(const uint8_t ** pt, size_t * sz ){
 }
 
 //! IDPosTable holds all IDs with their positions occuring in the current src buffer.
-IDPosTable_t IDPosTable = {0};
+static IDPosTable_t IDPosTable = {0};
 
 //! insertIDPosSorted inserts id with pos and len into IDPosTable with smallest pos first.
 static void insertIDPosSorted(uint8_t id, offset_t offset){
@@ -86,7 +91,7 @@ static void insertIDPosSorted(uint8_t id, offset_t offset){
 //! newIDPosTable uses idPatTable and parses src buffer for matching pattern
 //! and creates a idPosTable specific to the actual src buffer.
 //! It adds IDs with offset in a way, that smaller offsets occur first.
-void newIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_t slen){
+static void newIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_t slen){
     initGetNextPattern(IDPatTable);
     for( int id = 1; id < 0x80; id++ ){ // traverse the ID table. It is sorted by decreasing pattern length.    
         const uint8_t * needle = NULL;
@@ -110,9 +115,6 @@ void newIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_t slen)
         }
     }
 }
-
-//! MAX_PATH_COUNT is the max allowed path count.
-#define MAX_PATH_COUNT 20
 
 typedef struct {
     int count; //! count is the actual paths count in paths.
