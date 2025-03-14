@@ -219,16 +219,33 @@ uint8_t MinDstLengthPath(void){
     return pathIndex;
 }
 
+typedef struct {
+    int count;
+    uint8_t buf[TIP_SRC_BUFFER_SIZE_MAX];
+    uint8_t * next;
+} ur8_t;
+
+ur8_t ur8 = {0};
+
+void initUr8( void ){
+    memset(&ur8, 0, sizeof(ur8) );
+    ur8.next = ur8.buf;
+}
+
 size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
     createSrcMap(table, src, slen);
     uint8_t pidx = MinDstLengthPath(); // find minimum line
     size_t pkgSize = 0;  // final ti package size
-    uint8_t posIdCunt = srcMap.path[pidx][0];
-    for( int i = 0; i < posIdCunt; i++ ){
-        IDPosition_t idPos = IDPosTable.item[srcMap.path[pidx][i]]; 
+    uint8_t posIdCount = srcMap.path[pidx][0];
+    initUr8();
+    for( int i = 0; i < posIdCount; i++ ){
+        IDPosition_t idPos = IDPosTable.item[srcMap.path[pidx][i]];
+        uint8_t id = idPos.id;
         offset_t from = idPos.start;
         offset_t len = IDPosLength(i);
-
+        offset_t ulen = from - src;
+        memcpy( ur8.next, src+?, ulen );
+        ur8.next += ulen;
         // collect u7...
     }
    
