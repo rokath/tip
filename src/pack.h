@@ -43,8 +43,6 @@ extern IDPosTable_t IDPosTable;
 void newIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_t slen);
 offset_t IDPosLimit(uint8_t idx);
 
-
-
 typedef struct {
     int count; //! count is the actual path count in srcMap.
     uint8_t path[TIP_MAX_PATH_COUNT][TIP_SRC_BUFFER_SIZE_MAX/2+1];

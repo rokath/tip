@@ -8,6 +8,7 @@
 //! It is possible to use different tables at the same time, but the code needs to be changed a bit then.
 //! @author thomas.hoehenleitner [at] seerose.net
 
+#include <stddef.h>
 #include <string.h>
 #include "pack.h"
 #include "tip.h"
@@ -194,12 +195,43 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
     }
 }
 
+//! IDPosLength returns first offset after ID position idx.
+STATIC offset_t IDPosLength(uint8_t idx){
+    uint8_t id = IDPosTable.item[idx].id;
+    offset_t len = IDPatternLength( id );
+    return len;
+}
+
+//! MinDstLengthPath returns srcMap path index which results in a shortest package.
+uint8_t MinDstLengthPath(void){
+    offset_t maxSum = 0;
+    uint8_t pathIndex = 0;
+    for( int i = 0; i < srcMap.count; i++ ){
+        offset_t sum = 0;
+        for( int k = 0; k < srcMap.path[i][0]; k++ ){
+            sum += IDPosLength(k);
+        }
+        if( sum > maxSum ){
+            maxSum = sum;
+            pathIndex = i;
+        }
+    }
+    return pathIndex;
+}
+
 size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
     createSrcMap(table, src, slen);
+    uint8_t pidx = MinDstLengthPath(); // find minimum line
+    size_t pkgSize = 0;  // final ti package size
+    uint8_t posIdCunt = srcMap.path[pidx][0];
+    for( int i = 0; i < posIdCunt; i++ ){
+        IDPosition_t idPos = IDPosTable.item[srcMap.path[pidx][i]]; 
+        offset_t from = idPos.start;
+        offset_t len = IDPosLength(i);
 
-    size_t pkgSize = 0;   // final ti packgae size
-
-    // find minimum line
+        // collect u7...
+    }
+   
     // create output
     return pkgSize;
 }
