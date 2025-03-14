@@ -68,6 +68,17 @@ static void getNextPattern(const uint8_t ** pt, size_t * sz ){
     }
 }
 
+//! IDPosition_t ...
+typedef struct{
+    uint8_t id;     // id of pattern found in src
+    offset_t start; // id pattern start in src
+} IDPosition_t;
+
+typedef struct {
+    int count; //! count is the number of items inside IDPosTable.
+    IDPosition_t item[TIP_SRC_BUFFER_SIZE_MAX-1];
+} IDPosTable_t;
+
 //! IDPosTable holds all IDs with their positions occuring in the current src buffer.
 static IDPosTable_t IDPosTable = {0};
 
