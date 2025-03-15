@@ -157,7 +157,7 @@ static size_t collectUnreplacableBytes( uint8_t * dst, replace_t * rlist, int rc
 //! @param slen is the 8-bit byte count.
 //! @param lst is the last address inside the dst buffer.
 //! @retval is count of 7-bit bytes after operation. 
-//! @details The dst buffer is filled from the end.Thas allows to do an in-buffer conversion.
+//! @details The dst buffer is filled from the end.That allows to do an in-buffer conversion.
 //! The destination address is computable afterwards: dst = lim - retval.
 //! lim is allowed to be "close" behind buf + slen, thus making in-place conversion possible.
 //! Example: slen=17, limit=24
