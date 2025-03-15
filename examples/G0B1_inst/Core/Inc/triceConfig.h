@@ -17,7 +17,7 @@ extern "C" {
 #define TriceStamp16 TIM17->CNT     // 0...999 us
 #define TriceStamp32 HAL_GetTick()  // 0...2^32-1 ms (wraps after 49.7 days)
 
-#define TRICE_BUFFER TRICE_STATIC_BUFFER
+#define TRICE_BUFFER TRICE_STACK_BUFFER
 
 // Windows: trice log -p jlink -args "-Device STM32G0B1RE" -pf none -prefix off -hs off -d16 -showID "deb:%5d" -i ../../til.json -li ../../li.json
 // Unix:   ./RTTLogUnix.sh or manually:

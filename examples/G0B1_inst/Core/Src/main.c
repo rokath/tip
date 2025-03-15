@@ -309,12 +309,12 @@ void StartDefaultTask(void const * argument)
   TRice("msg:StartDefaultTask\n");
 
 
-  uint64_t sum = 0;
-  for( uint64_t i = 0; i < 1000000u; i++ ){
-    sum += i;
-  }
-  trice64("Hi, sum is %u\n", sum);
-  TriceHeadLine("  NUCLEO-G0B1RE  ");
+  //  uint64_t sum = 0;
+  //  for( uint64_t i = 0; i < 1000000u; i++ ){
+  //    sum += i;
+  //  }
+  //  trice64("Hi, sum is %u\n", sum);
+  //BUG!!!TriceHeadLine("  NUCLEO-G0B1RE  123");
 //LogTriceConfiguration();
 
 
@@ -347,7 +347,7 @@ size_t slen =  sizeof(src); //   strlen(in);
 // ok     trice8B("msg:%3d\n", &srcMap.path[i][1], plen);
 // ok }
 
-trice8B( "MSG:%02x \n", src, slen);
+trice8B( "buf: %02x\n", src, slen);
 trice8B( "exp: %02x\n", exp, sizeof(exp) ); 
 offset_t dlen = tiPack( dst, IdT, src, slen );
 trice8B( "tip: %02x\n", dst, dlen ); 
