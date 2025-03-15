@@ -219,41 +219,57 @@ uint8_t MinDstLengthPath(void){
     return pathIndex;
 }
 
-/*typedef struct {
-    int count;
-    uint8_t buf[TIP_SRC_BUFFER_SIZE_MAX];
-    uint8_t * next;
-} ur8_t;
-
-ur8_t ur8 = {0};
-
-void initUr8( void ){
-    memset(&ur8, 0, sizeof(ur8) );
-    ur8.next = ur8.buf;
-}*/
-
-size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
-    createSrcMap(table, src, slen);
-    uint8_t pidx = MinDstLengthPath(); // find minimum line
-    size_t pkgSize = 0;  // final ti package size
-    uint8_t posIdCount = srcMap.path[pidx][0];
-    memset(dst, 0, dstLimit-dst; // initUr8();
-    uint8_t * ur8next = dst;
-    for( int i = 0; i < posIdCount; i++ ){
-        IDPosition_t idPos = IDPosTable.item[srcMap.path[pidx][i]];
+//! selectUnreplacableBytes coppies all unreplacable bytes from src to dst.
+//! It uses idPatTable and the path index pidx in the actual srcMap, which is linked to IDPosTable.
+size_t selectUnreplacableBytes( uint8_t * dst, uint8_t pidx, const uint8_t * src, size_t slen ){
+    uint8_t * path = srcMap.path[pidx]; // This is the path we use. 
+    uint8_t count = path[0]; // The path contains: count, IDPosTable index, IDPosTable index, ...
+    const uint8_t * srcNext = src; // next position for src buffer read
+    uint8_t * dstNext = dst;       // next position for dst buffer write
+    uint8_t * tidx = path+1; // Here are starting the IDPosTable indices.
+    for( int i = 0; i < count; i++ ){
+        IDPosition_t idPos = IDPosTable.item[tidx[i]];
         uint8_t id = idPos.id;
-        offset_t from = idPos.start;
-        offset_t len = IDPosLength(i);
-        offset_t ulen = from - src;
-        uint8_t * snext = src;
-        memcpy( ur8next, src+from, len );
-        ur8next += ulen;
-        // collect u7...
+        const uint8_t * patternFrom = src + idPos.start; // pattern start in src buffer
+        offset_t u8len = patternFrom - srcNext; // count of unreplacable bytes
+        memcpy( dstNext, srcNext, u8len );
+        srcNext += IDPatternLength( id );
+        dstNext += u8len;
     }
-   
-    // create output
-    return pkgSize;
+    size_t rest = slen - (srcNext - src);
+    memcpy( dstNext, srcNext, rest );
+    dstNext += rest;
+    size_t len = dstNext - dst;
+    return len;
 }
+
+//! createOutput uses the u7 buffer and pidx to intermix transformed unreplacable bytes and pattern IDs.
+//! It uses idPatTable and the path index pidx in the actual srcMap, which is linked to IDPosTable.
+size_t createOutput( uint8_t * dst, uint8_t pidx, const uint8_t * u7src, size_t u7len, const uint8_t * src ){
+    uint8_t * path = srcMap.path[pidx]; // This is the path we use. 
+    uint8_t count = path[0]; // The path contains: count, IDPosTable index, IDPosTable index, ...
+    const uint8_t * srcNext = src; // next position for src buffer read
+    uint8_t * dstNext = dst;       // next position for dst buffer write
+    uint8_t * tidx = path+1; // Here are starting the IDPosTable indices.
+    const uint8_t * u7Next = u7src;
+    for( int i = 0; i < count; i++ ){
+        IDPosition_t idPos = IDPosTable.item[tidx[i]];
+        uint8_t id = idPos.id;
+        const uint8_t * patternFrom = src + idPos.start; // pattern start in src buffer
+        offset_t u8len = patternFrom - srcNext; // count of unreplacable bytes
+        srcNext += IDPatternLength( id );
+        memcpy( dstNext, u7Next, u8len ); // Copy u8len bytes from u7src buffer.
+        u7Next += u8len;
+        dstNext += u8len;
+        *dstNext++ = id; // Write the pattern replace id.
+    }
+    size_t rest = u7len - (u7Next - u7src);
+    memcpy( dstNext, u7Next, rest );
+    dstNext += rest;
+    size_t len = dstNext - dst;
+    return len;
+}
+
 
 //! shift87bit transforms slen 8-bit bytes in src to 7-bit units.
 //! @param src is the bytes source buffer.
@@ -288,4 +304,18 @@ size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, c
         msb = 0x80;
     }
     return lst - dst;
+}
+
+size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
+    createSrcMap(table, src, slen);
+    uint8_t pidx = MinDstLengthPath(); // find minimum line 
+    
+    memset(dst, 0, dstLimit-dst);
+    size_t u8Count = selectUnreplacableBytes(dst, pidx, src, slen );
+
+    size_t u7Count = shift87bit( dstLimit-1, dst, u8Count );
+    uint8_t * u7src = dstLimit - u7Count;
+
+    size_t pkgSize = createOutput( dst, pidx, u7src, u7Count, src );
+    return pkgSize; // final ti package size
 }

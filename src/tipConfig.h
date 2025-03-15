@@ -10,7 +10,7 @@ extern "C" {
 
 //! TIP_SRC_BUFFER_SIZE_MAX is the maximun allowed input data buffer length.
 //! Its size has influence on the statically allocated RAM.
-#define TIP_SRC_BUFFER_SIZE_MAX 200u // 65528u // bytes (max 65528u)
+#define TIP_SRC_BUFFER_SIZE_MAX 65528u // bytes (max 65528u)
 
 //! TIP_MAX_PATH_COUNT is the max allowed path count.
 //! Its size has influence on the statically allocated RAM.

@@ -9,7 +9,7 @@ import (
 
 var idTable = []byte{0}
 
-func _Test_main(t *testing.T) {
+func Test_main(t *testing.T) {
 	buf := []byte{0xd1, 0xd2, 0xd3}
 	pkg := []byte{0xf0, 0xd1, 0xd2, 0xd3}
 	out := make([]byte, 1000)

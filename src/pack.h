@@ -24,7 +24,7 @@ size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, c
 #ifndef STATIC
 #define STATIC
 
-typedef uint8_t offset_t; // todo: why needed here? It is in tip.h!
+// typedef uint8_t offset_t; // todo: why needed here? It is in tip.h!
 
 //! IDPosition_t ...
 typedef struct{

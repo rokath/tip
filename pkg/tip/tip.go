@@ -12,7 +12,6 @@ package tip
 import "C"
 
 import (
-	"fmt"
 	"unsafe"
 )
 
