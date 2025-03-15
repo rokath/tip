@@ -1,6 +1,6 @@
 package main
 
-// #cgo CFLAGS: -g -Wall -I../../src -I../../../trice/src -I../../examples/L432_inst/Core/inc
+// #cgo CFLAGS: -g -Wall -I../../src -I../../../trice/src
 // #include "tip.h"
 // unsigned maxSize(){
 // 	return TIP_SRC_BUFFER_SIZE_MAX;

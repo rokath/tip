@@ -227,16 +227,19 @@ size_t selectUnreplacableBytes( uint8_t * dst, uint8_t pidx, const uint8_t * src
     const uint8_t * srcNext = src; // next position for src buffer read
     uint8_t * dstNext = dst;       // next position for dst buffer write
     uint8_t * tidx = path+1; // Here are starting the IDPosTable indices.
+    offset_t u8sum = 0;
     for( int i = 0; i < count; i++ ){
         IDPosition_t idPos = IDPosTable.item[tidx[i]];
         uint8_t id = idPos.id;
         const uint8_t * patternFrom = src + idPos.start; // pattern start in src buffer
         offset_t u8len = patternFrom - srcNext; // count of unreplacable bytes
         memcpy( dstNext, srcNext, u8len );
-        srcNext += IDPatternLength( id );
+        offset_t len = IDPatternLength( id );
+        srcNext += len;
         dstNext += u8len;
+        u8sum += u8len;
     }
-    size_t rest = slen - (srcNext - src);
+    size_t rest = slen - (srcNext - src) - u8sum; // total - pattern sum - u8sum
     memcpy( dstNext, srcNext, rest );
     dstNext += rest;
     size_t len = dstNext - dst;
@@ -257,7 +260,8 @@ size_t createOutput( uint8_t * dst, uint8_t pidx, const uint8_t * u7src, size_t 
         uint8_t id = idPos.id;
         const uint8_t * patternFrom = src + idPos.start; // pattern start in src buffer
         offset_t u8len = patternFrom - srcNext; // count of unreplacable bytes
-        srcNext += IDPatternLength( id );
+        offset_t patlen = IDPatternLength( id );
+        srcNext += patlen;
         memcpy( dstNext, u7Next, u8len ); // Copy u8len bytes from u7src buffer.
         u7Next += u8len;
         dstNext += u8len;
@@ -314,7 +318,7 @@ size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, c
     size_t u8Count = selectUnreplacableBytes(dst, pidx, src, slen );
 
     size_t u7Count = shift87bit( dstLimit-1, dst, u8Count );
-    uint8_t * u7src = dstLimit - u7Count;
+    uint8_t * u7src = dstLimit-1 - u7Count;
 
     size_t pkgSize = createOutput( dst, pidx, u7src, u7Count, src );
     return pkgSize; // final ti package size

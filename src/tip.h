@@ -11,8 +11,6 @@ extern "C" {
 
 #include <stdint.h>
 #include "tipConfig.h"
-#include "pack.h"
-#include "unpack.h"
 
 #ifndef TIP_SRC_BUFFER_SIZE_MAX
 #error "needs to #define TIP_SRC_BUFFER_SIZE_MAX 248u // bytes (max65535)"
@@ -32,15 +30,11 @@ typedef uint16_t offset_t;
 typedef uint8_t offset_t;
 #endif
 
+#include "pack.h"
+#include "unpack.h"
+
 extern const uint8_t idTable[];
-/*
-//! @brief replace_t is a replace type descriptor.
-typedef struct {
-    offset_t bo; // bo is the buffer offset, where replace bytes starts. It holds the list element count on index 0 instea
-    uint8_t  sz; // sz is the replace size (2-255).
-    uint8_t  id; // id is the replace byte 0x01 to 0x7f.
-} replace_t;
-*/
+
 #ifdef __cplusplus
 }
 #endif

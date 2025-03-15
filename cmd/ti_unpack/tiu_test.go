@@ -9,10 +9,10 @@ import (
 
 func Test_main(t *testing.T) {
 	pkg := []byte{0xf0, 0xd1, 0xd2, 0xd3}
-	//buf := []byte{0xd1, 0xd2, 0xd3}
+	exp := []byte{0xd1, 0xd2, 0xd3}
 	out := make([]byte, 1000)
 	n := tip.Unpack(out, pkg)
 	assert.Equal(t, 3, n)
-	//act := out[:n]
-	//assert.Equal(t, buf, act)
+	act := out[:n]
+	assert.Equal(t, exp, act)
 }
