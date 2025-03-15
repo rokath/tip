@@ -78,15 +78,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-#if !TRICE_OFF
-  TriceInit(); // This so early, to allow trice logs inside interrupts from the beginning. Only needed for RTT.
-  //trice("Hi\n");
-  //trice("Hi\n");
-  //trice("Hi\n");
-  TriceHeadLine("  NUCLEO-G0B1RE  ");
-  //trice("Hi\n");
-  //trice("Hi\n");
-#endif
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -95,7 +87,8 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  TriceInit(); // This so early, to allow trice logs inside interrupts from the beginning. Only needed for RTT.
+  trice("msg:Hi\n");
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -109,72 +102,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-#if !TRICE_OFF  
-//LogTriceConfiguration();
-#endif
 
-
-
-
-//static uint8_t buf[100] = {0};
-//static uint8_t pkg[100] = {0};
-//static uint8_t src[] = { 0x0d, 0x0a, 0x0d, 0x0a, 0x74, 0x68, 0x65, 0x20, 0x0d, 0x0a }; // ok
-//static uint8_t src[] = { 0x55, 0x74, 0x68, 0x65, 0x20, 0x55, 0x74, 0x68, 0x65, 0x20 }; // ok
-//static uint8_t src[] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0xaa, 0xbb, 0x38, 0x39, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66 };
-//static char* in = "ABCABCABC123";
-//static uint8_t src[100] = {0};
-static const uint8_t IdT[] = {5, 0, 0, 0, 0, 0, 3, 0xee, 0xff, 0xaa, 2, 0xaa, 0xbb, 0}; // idTable
-static       uint8_t src[] = {0xff, 0x00, 0xaa, 0xbb, 0xee, 0xff, 0xaa, 0xbb, 0xcc};
-
-size_t slen =  sizeof(src); //   strlen(in);
-trice8B("rd:%02x \n", src, slen);
-
-newIDPosTable(IdT, src, slen );
-
-trice8B("rd:%02x \n", &IDPosTable.item[0], IDPosTable.count * sizeof(IDPosition_t));
-
-for( int i = 0; i < IDPosTable.count; i++ ){
-  trice("%2d: id%2d, start=%d, limit=%d \n", i, IDPosTable.item[i].id, IDPosTable.item[i].start, IDPosLimit(i));
-}
-
-createSrcMap(IdT, src, slen );
-
-
-for( int i = 0; i < srcMap.count; i++ ){
-    int plen = srcMap.path[i][0];
-    trice("att:path %2d: len %2d: ", i, plen);
-    trice8B("msg:%3d\n", &srcMap.path[i][1], plen);
-}
-
-
-
-
-//size_t plen = tip(pkg, src, slen);
-//trice8B("wr:%02x \n", pkg, plen);
-
-//size_t blen = tiu(buf, pkg, plen);
-//trice8B("att:%02x \n", buf, blen);
-
-
-/*
-  static uint8_t buf[100] = {0};
-  static uint8_t pkg[100] = {0};
-//static uint8_t src[] = { 0x0d, 0x0a, 0x0d, 0x0a, 0x74, 0x68, 0x65, 0x20, 0x0d, 0x0a }; // ok
-//static uint8_t src[] = { 0x55, 0x74, 0x68, 0x65, 0x20, 0x55, 0x74, 0x68, 0x65, 0x20 }; // ok
-  static uint8_t src[] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0xaa, 0xbb, 0x38, 0x39, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66 };
-  //static char* in = "ABCABCABC123";
-  //static uint8_t src[100] = {0};
-  size_t slen =  sizeof(src); //   strlen(in);
-  //  memcpy(src,in,slen);
-  trice8B("rd:%02x \n", src, slen);
-
-  size_t plen = tip(pkg, src, slen);
-
-  trice8B("wr:%02x \n", pkg, plen);
-  
-  size_t blen = tiu(buf, pkg, plen);
-  trice8B("att:%02x \n", buf, blen);
-*/
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -376,8 +304,84 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
+  osDelay(100);
   TRICE_UNUSED(argument)
   TRice("msg:StartDefaultTask\n");
+
+
+  uint64_t sum = 0;
+  for( uint64_t i = 0; i < 1000000u; i++ ){
+    sum += i;
+  }
+  trice64("Hi, sum is %u\n", sum);
+  TriceHeadLine("  NUCLEO-G0B1RE  ");
+//LogTriceConfiguration();
+
+
+static uint8_t IdT[] = {3, 0xaa, 0xaa, 0xaa, 0}; // idTable
+static uint8_t src[] = { 0xd1, 0xaa, 0xaa, 0xaa, 0xd2};
+static uint8_t exp[] = { 0xe0, 0x01, 0xd1, 0xd2};
+static uint8_t dst[100] = {0};
+
+//static uint8_t buf[100] = {0};
+//static uint8_t pkg[100] = {0};
+//static uint8_t src[] = { 0x0d, 0x0a, 0x0d, 0x0a, 0x74, 0x68, 0x65, 0x20, 0x0d, 0x0a }; // ok
+//static uint8_t src[] = { 0x55, 0x74, 0x68, 0x65, 0x20, 0x55, 0x74, 0x68, 0x65, 0x20 }; // ok
+//static uint8_t src[] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0xaa, 0xbb, 0x38, 0x39, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66 };
+//static char* in = "ABCABCABC123";
+//static uint8_t src[100] = {0};
+//static const uint8_t IdT[] = {5, 0, 0, 0, 0, 0, 3, 0xee, 0xff, 0xaa, 2, 0xaa, 0xbb, 0};
+//static       uint8_t src[] = {0xff, 0x00, 0xaa, 0xbb, 0xee, 0xff, 0xaa, 0xbb, 0xcc};
+
+size_t slen =  sizeof(src); //   strlen(in);
+
+// ok newIDPosTable(IdT, src, slen );
+// ok trice8B("rd:%02x \n", &IDPosTable.item[0], IDPosTable.count * sizeof(IDPosition_t));
+// ok for( int i = 0; i < IDPosTable.count; i++ ){
+// ok   trice("%2d: id%2d, start=%d, limit=%d \n", i, IDPosTable.item[i].id, IDPosTable.item[i].start, IDPosLimit(i));
+// ok }
+// ok createSrcMap(IdT, src, slen );
+// ok for( int i = 0; i < srcMap.count; i++ ){
+// ok     int plen = srcMap.path[i][0];
+// ok     trice("att:path %2d: len %2d: ", i, plen);
+// ok     trice8B("msg:%3d\n", &srcMap.path[i][1], plen);
+// ok }
+
+trice8B( "MSG:%02x \n", src, slen);
+trice8B( "exp: %02x\n", exp, sizeof(exp) ); 
+offset_t dlen = tiPack( dst, IdT, src, slen );
+trice8B( "tip: %02x\n", dst, dlen ); 
+
+
+//size_t plen = tip(pkg, src, slen);
+//trice8B("wr:%02x \n", pkg, plen);
+
+//size_t blen = tiu(buf, pkg, plen);
+//trice8B("att:%02x \n", buf, blen);
+
+
+/*
+  static uint8_t buf[100] = {0};
+  static uint8_t pkg[100] = {0};
+//static uint8_t src[] = { 0x0d, 0x0a, 0x0d, 0x0a, 0x74, 0x68, 0x65, 0x20, 0x0d, 0x0a }; // ok
+//static uint8_t src[] = { 0x55, 0x74, 0x68, 0x65, 0x20, 0x55, 0x74, 0x68, 0x65, 0x20 }; // ok
+  static uint8_t src[] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0xaa, 0xbb, 0x38, 0x39, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66 };
+  //static char* in = "ABCABCABC123";
+  //static uint8_t src[100] = {0};
+  size_t slen =  sizeof(src); //   strlen(in);
+  //  memcpy(src,in,slen);
+  trice8B("rd:%02x \n", src, slen);
+
+  size_t plen = tip(pkg, src, slen);
+
+  trice8B("wr:%02x \n", pkg, plen);
+  
+  size_t blen = tiu(buf, pkg, plen);
+  trice8B("att:%02x \n", buf, blen);
+*/
+
+
+
   /* Infinite loop */
   for(;;)
   {

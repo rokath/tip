@@ -59,6 +59,10 @@
 		"Type": "trice16",
 		"Strg": "diag:TriceHalfBufferDepthMax =%4u of%5d\\n"
 	},
+	"13564": {
+		"Type": "trice64",
+		"Strg": "Hi, sum is %u\\n"
+	},
 	"13653": {
 		"Type": "trice8B",
 		"Strg": "att:%02x \\n"
@@ -130,6 +134,10 @@
 	"14079": {
 		"Type": "trice8B",
 		"Strg": "rd:%02x \\n"
+	},
+	"14117": {
+		"Type": "trice8B",
+		"Strg": "exp: %02x\\n"
 	},
 	"14118": {
 		"Type": "TRICE32_0",
@@ -223,6 +231,10 @@
 		"Type": "trice8B",
 		"Strg": "rd:%02x \\n"
 	},
+	"14596": {
+		"Type": "trice",
+		"Strg": "msg:Hi\\n"
+	},
 	"14597": {
 		"Type": "Trice16F",
 		"Strg": "att:ARemoteFunctionName"
@@ -283,6 +295,10 @@
 		"Type": "trice8B",
 		"Strg": "rd:%02x \\n"
 	},
+	"15072": {
+		"Type": "trice8B",
+		"Strg": "MSG:%02x \\n"
+	},
 	"15093": {
 		"Type": "trice",
 		"Strg": "deb:TRICE_DOUBLE_BUFFER, "
@@ -290,6 +306,10 @@
 	"15138": {
 		"Type": "trice16",
 		"Strg": "err:TriceDataOffsetDepthMax = %d of %d (TRICE_DATA_OFFSET)\\n"
+	},
+	"15248": {
+		"Type": "trice",
+		"Strg": "Hi, sum is %u\\n"
 	},
 	"15259": {
 		"Type": "TriceS",
@@ -330,6 +350,10 @@
 	"15567": {
 		"Type": "trice16",
 		"Strg": "err:TriceDeferredOverflowCount = %u\\n"
+	},
+	"15637": {
+		"Type": "trice8B",
+		"Strg": "msg: %02x\\n"
 	},
 	"15644": {
 		"Type": "TriceS",
@@ -398,6 +422,14 @@
 	"16300": {
 		"Type": "trice16",
 		"Strg": "err:TriceDirectOverflowCount = %u\\n"
+	},
+	"16306": {
+		"Type": "trice8B",
+		"Strg": "msg: %02x\\n"
+	},
+	"16352": {
+		"Type": "trice8B",
+		"Strg": "tip: %02x\\n"
 	},
 	"16364": {
 		"Type": "trice16",

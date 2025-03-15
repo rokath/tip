@@ -2,7 +2,7 @@
 // For some reason inside the *_test.go an 'import "C"' is not possible.
 package tip
 
-// #cgo CFLAGS: -g -Wall -I../../src -I../../../trice/src -I../../examples/L432_inst/Core/inc
+// #cgo CFLAGS: -g -Wall -I../../src.config -I../../src -I../../../trice/src
 // #include <stdint.h>
 // #include <stddef.h>
 // #include "memmem.c"
