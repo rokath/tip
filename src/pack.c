@@ -21,7 +21,7 @@ size_t tip( uint8_t* dst, const uint8_t * src, size_t len ){
 // idPatTable points to param table passed to some functions.
 //! This allows using different idTable's than idTable.c 
 //! especially for testing and not to have to pass it to all functions. 
-static const uint8_t *idPatTable;
+static const uint8_t *idPatTable = idTable;
 
 //! @brief tiPack encodes src buffer with size len into dst buffer and returns encoded len.
 //! @details For the tip encoding it uses the linked idTable.c object.
