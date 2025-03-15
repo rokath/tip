@@ -261,7 +261,7 @@ size_t createOutput( uint8_t * dst, uint8_t pidx, const uint8_t * u7src, size_t 
         const uint8_t * patternFrom = src + idPos.start; // pattern start in src buffer
         offset_t u8len = patternFrom - srcNext; // count of unreplacable bytes
         offset_t patlen = IDPatternLength( id );
-        srcNext += patlen;
+        srcNext += patlen + u8len;
         memcpy( dstNext, u7Next, u8len ); // Copy u8len bytes from u7src buffer.
         u7Next += u8len;
         dstNext += u8len;
