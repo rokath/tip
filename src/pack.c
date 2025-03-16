@@ -14,10 +14,14 @@
 #include "pack.h"
 #include "tip.h"
 #include "memmem.h"
+#define DEBUG 1
 
+#if DEBUG
 void printIDPositionTable( void );
 void printPath( uint8_t pidx );
 void printSrcMap( void );
+#endif
+
 static loc_t IDPattern( const uint8_t ** patternAddress, uint8_t id );
 
 size_t tip( uint8_t* dst, const uint8_t * src, size_t len ){
@@ -189,7 +193,10 @@ static void appendIDPos( uint8_t pidx, uint8_t idpos ){
 
 void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
     newIDPosTable(table, src, slen); // Get all ID positions in src ordered by increasing offset.
+
+#if DEBUG
     printIDPositionTable();
+#endif
 
     initSrcMap();                 // Start with no path (PathCount=0).
     for( int idPos = 0; idPos < IDPosTable.count; idPos++ ){ // Loop over IDPosition table for each IDPos.
@@ -269,7 +276,11 @@ size_t selectUnreplacableBytes( uint8_t * dst, uint8_t pidx, const uint8_t * src
 //! createOutput uses the u7 buffer and pidx to intermix transformed unreplacable bytes and pattern IDs.
 //! It uses idPatTable and the path index pidx in the actual srcMap, which is linked to IDPosTable.
 size_t createOutput( uint8_t * dst, uint8_t pidx, const uint8_t * u7src, size_t u7len, const uint8_t * src ){
+
+#if DEBUG
     printPath(pidx);
+#endif
+
     uint8_t * path = srcMap.path[pidx]; // This is the path we use. 
     uint8_t count = path[0]; // The path contains: count, IDPosTable index, IDPosTable index, ...
     const uint8_t * srcNext = src; // next position for src buffer read
@@ -333,25 +344,37 @@ size_t createOutput( uint8_t * dst, uint8_t pidx, const uint8_t * u7src, size_t 
 
 size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
     createSrcMap(table, src, slen);
-    printSrcMap();
 
-    uint8_t pidx = MinDstLengthPath(); // find minimum line 
+#if DEBUG
+    printSrcMap();
+#endif
+
+    uint8_t pidx = MinDstLengthPath(); // find minimum line
+
+#if DEBUG
     printf( "MinDstLengthPath: %u\n", pidx );
+#endif
 
     memset(dst, 0, dstLimit-dst);
     loc_t u8Count = selectUnreplacableBytes(dst, pidx, src, slen );
-    printf( "u8Count: %ul\n", u8Count );
+
+#if DEBUG
+   printf( "u8Count: %ul\n", u8Count );
+#endif
 
     loc_t u7Count = shift87bit( dstLimit-1, dst, u8Count );
     uint8_t * u7src = dstLimit - u7Count;
+
+#if DEBUG
     printf( "u7Count: %ul\n", u7Count );
+#endif
 
     size_t pkgSize = createOutput( dst, pidx, u7src, u7Count, src );
     return pkgSize; // final ti package size
 }
 
 
-
+#if DEBUG
 
 void printPath( uint8_t pidx ){
     uint8_t * path = srcMap.path[pidx]; 
@@ -380,3 +403,5 @@ void printIDPositionTable( void ){
         printf("IDpos%3d:id:%3d, pos:%5d, '%s'\n", i, id, loc, s);
     }
 }
+
+#endif
