@@ -65,9 +65,9 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 //! The pattern position + 1 is the replace id.
 //! The generator pattern max size was`, maxPatternSize, `and the list pattern max size is:`, maxListPatternSize)
 	start := fmt.Sprintf("const uint8_t idTable[] = { // from %s\n", loc)
-	fill := spaces(9 + 6*maxListPatternSize)
-	fill2 := spaces(maxListPatternSize - 5)
-	fmt.Fprintf(oh, start+"%s// ASCII%s|  count  id\n", fill, fill2)
+	fill := spaces(len("    xxx, ") + len("0x00, ")*maxListPatternSize)
+	fill2 := spaces(maxListPatternSize - len("ASCII"))
+	fmt.Fprintf(oh, start+"%s// `ASCII%s`|  count  id\n", fill, fill2)
 	for i, x := range idList {
 		pls := createPatternLineString(x.Bytes, maxListPatternSize) // todo: review and improve code
 		sz := len(x.Bytes)

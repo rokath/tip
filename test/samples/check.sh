@@ -1,5 +1,5 @@
 #!/bin/bash
-maxPatternSize=4
+maxPatternSize=10
 fn="./try.txt"
 #fn="./trice.bin.sample"
 #fn="../../docs/TipUserManual.md"

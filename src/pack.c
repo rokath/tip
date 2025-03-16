@@ -10,9 +10,15 @@
 
 #include <stddef.h>
 #include <string.h>
+#include <stdio.h>
 #include "pack.h"
 #include "tip.h"
 #include "memmem.h"
+
+void printIDPositionTable( void );
+void printPath( uint8_t pidx );
+void printSrcMap( void );
+static offset_t IDPattern( const uint8_t ** patternAddress, uint8_t id );
 
 size_t tip( uint8_t* dst, const uint8_t * src, size_t len ){
     return tiPack( dst, idTable, src, len );
@@ -135,6 +141,17 @@ static offset_t IDPatternLength( uint8_t id ){
     return len;
 }
 
+//! IDPattern writes pattern address of id and returns pattern length.. 
+static offset_t IDPattern( const uint8_t ** patternAddress, uint8_t id ){
+    const uint8_t * next = idPatTable;
+    for( int i = 1; i < id; i++ ){
+        next += 1 + *next;
+    }
+    uint8_t len = *next++;
+    *patternAddress = next;
+    return len;
+}
+
 //! IDPosLimit returns first offset after ID position idx.
 STATIC offset_t IDPosLimit(uint8_t idx){
     uint8_t id = IDPosTable.item[idx].id;
@@ -172,6 +189,8 @@ static void appendIDPos( uint8_t pidx, uint8_t idpos ){
 
 void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
     newIDPosTable(table, src, slen); // Get all ID positions in src ordered by increasing offset.
+    printIDPositionTable();
+
     initSrcMap();                 // Start with no path (PathCount=0).
     for( int idPos = 0; idPos < IDPosTable.count; idPos++ ){ // Loop over IDPosition table for each IDPos.
         int IDPosAppended = 0;
@@ -186,10 +205,11 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
                 IDPosAppended = 1;
             }
         }
-        if( !IDPosAppended ){ // Create a new path with idPos.
+        if( !IDPosAppended ){ 
             int nextIdx = srcMap.count;
+            printf( "Create a new path%3d with idPos%3d (id%3d, loc%3d)\n", nextIdx, idPos, IDPosTable.item[idPos].id, IDPosTable.item[idPos].start );
             srcMap.path[nextIdx][0] = 1;     // one IDPos in this new path
-            srcMap.path[nextIdx][1] = idPos; // the IDPos (the first is naurally 0)
+            srcMap.path[nextIdx][1] = idPos; // the IDPos (the first is naturally 0)
             srcMap.count++;                  // one more path
         }
     }
@@ -249,6 +269,7 @@ size_t selectUnreplacableBytes( uint8_t * dst, uint8_t pidx, const uint8_t * src
 //! createOutput uses the u7 buffer and pidx to intermix transformed unreplacable bytes and pattern IDs.
 //! It uses idPatTable and the path index pidx in the actual srcMap, which is linked to IDPosTable.
 size_t createOutput( uint8_t * dst, uint8_t pidx, const uint8_t * u7src, size_t u7len, const uint8_t * src ){
+    printPath(pidx);
     uint8_t * path = srcMap.path[pidx]; // This is the path we use. 
     uint8_t count = path[0]; // The path contains: count, IDPosTable index, IDPosTable index, ...
     const uint8_t * srcNext = src; // next position for src buffer read
@@ -312,14 +333,50 @@ size_t createOutput( uint8_t * dst, uint8_t pidx, const uint8_t * u7src, size_t 
 
 size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
     createSrcMap(table, src, slen);
-    uint8_t pidx = MinDstLengthPath(); // find minimum line 
-    
-    memset(dst, 0, dstLimit-dst);
-    size_t u8Count = selectUnreplacableBytes(dst, pidx, src, slen );
+    printSrcMap();
 
-    size_t u7Count = shift87bit( dstLimit-1, dst, u8Count );
+    uint8_t pidx = MinDstLengthPath(); // find minimum line 
+    printf( "MinDstLengthPath: %u\n", pidx );
+
+    memset(dst, 0, dstLimit-dst);
+    offset_t u8Count = selectUnreplacableBytes(dst, pidx, src, slen );
+    printf( "u8Count: %ul\n", u8Count );
+
+    offset_t u7Count = shift87bit( dstLimit-1, dst, u8Count );
     uint8_t * u7src = dstLimit - u7Count;
+    printf( "u7Count: %ul\n", u7Count );
 
     size_t pkgSize = createOutput( dst, pidx, u7src, u7Count, src );
     return pkgSize; // final ti package size
+}
+
+
+
+
+void printPath( uint8_t pidx ){
+    uint8_t * path = srcMap.path[pidx]; 
+    uint8_t plen = path[0];
+    printf( "path%3d: plen%3d: ", pidx, plen);
+    for( int k = 0; k < plen; k++ ){
+        printf( "idx%3d, ", path[k+1]);
+    }
+    printf( "\n" );
+}
+
+void printSrcMap( void ){
+    for( int i = 0; i < srcMap.count; i++ ){
+        printPath(i);
+    }
+}
+
+void printIDPositionTable( void ){
+    for( int i = 0; i < IDPosTable.count; i++ ){
+        uint8_t id = IDPosTable.item[i].id;
+        offset_t loc = IDPosTable.item[i].start;
+        const uint8_t * pattern;
+        offset_t length = IDPattern( &pattern, id);
+        uint8_t s[100] = {0};
+        memcpy(s, pattern, length);
+        printf("IDpos%3d:id:%3d, pos:%5d, '%s'\n", i, id, loc, s);
+    }
 }
