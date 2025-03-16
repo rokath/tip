@@ -240,17 +240,18 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
             loc_t kkk_limit = kkk_start + kkk_len;
 
             // case
-            // -  path: lll...kkk        - path k                                   | comment / action
+            //   path: lll...kkk        - path k                                   | comment / action
             // 0 patt:   nnn            - new pattern lays complete before          | not possible, becaus position table is sorted by loc
-            // 1 patt:     nnN          - new pattern overlaps only start           |    
+            // 1 patt:      nnN         - new pattern overlaps only start           |    
             // 2 patt:     nnNNN        - new pattern overlaps start and ends equal |
             // 3 patt:     nnNNNnn      - new pattern overlaps full                 |
             // 4 patt:       NNN        - new pattern matches exactly               |
             // 5 patt:       NN         - new pattern matches start and is shorter  |
+            //10 patt:        N         - new pattern lays coplete inside           |
             // 6 patt:        NN        - new pattern matches end and is shorter    |
             // 7 patt:       NNNnn      - new pattern overlaps end and starts equal |
             // 8 patt:         Nnn      - new pattern overlaps only end             |
-            // 9  patt:            nnn   - new pattern lays complete after           | fork path k and append pattern
+            // 9 patt:           nnn    - new pattern lays complete after           | fork path k and append pattern
 
             int detected = -1;
             if( nnn_limit <= kkk_start ){
@@ -258,16 +259,18 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
                 printf( "new pattern lays complete before\n");
                 continue; // with next path
             }
-            if( nnn_start < kkk_start && nnn_limit <= kkk_limit ){
+            if( nnn_start < kkk_start && nnn_limit < kkk_limit ){
                 detected = 1;
                 printf( "new pattern overlaps only start\n");
                 continue; // with next path
             }
-  
-  hier weiter
-  
+            if( nnn_start < kkk_start && nnn_limit == kkk_limit ){
+                detected = 2;
+                printf( "new pattern overlaps only start\n");
+                continue; // with next path
+            }
             if( nnn_start < kkk_start && nnn_limit > kkk_limit ){
-                detected = 0;
+                detected = 3;
                 printf( "new pattern overlaps full\n");
                 continue; // with next path
             }
@@ -276,22 +279,76 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
                 printf( "new pattern matches exactly\n");
                 continue; // with next path
             }
+            if( nnn_start == kkk_start && nnn_limit < kkk_limit ){
+                detected = 5;
+                printf( "new pattern matches exactly\n");
+                continue; // with next path
+            }
+            if( nnn_start > kkk_start && nnn_limit < kkk_limit ){
+                detected = 10;
+                printf( "new pattern lays completely inside\n");
+                continue; // with next path
+            }
+            if( nnn_start > kkk_start && nnn_limit == kkk_limit ){
+                detected = 6;
+                printf( "new pattern matches end and is shorter\n");
+                continue; // with next path
+            }
             if( nnn_start == kkk_start && nnn_limit > kkk_limit ){
-                detected = 0;
+                detected = 7;
                 printf( "new pattern matches start and is longer\n");
                 continue; // with next path
             }
             if( nnn_start > kkk_start && nnn_limit > kkk_limit ){
-                detected = 0;
+                detected = 8;
                 printf( "new pattern overlaps end\n");
                 continue; // with next path
             }
             if( nnn_start >= nnn_limit ){
-                detected = 0;
+                detected = 9;
                 printf( "new pattern lays complete after \n");
+                append = 1;
                 continue; // with next path
             }
-
+            /*
+            switch(detected){
+                case 0:
+                    continue; // with next path
+                break;
+                case 1:
+                    continue; // with next path
+                break;
+                case 2:
+                    continue; // with next path
+                break;
+                case 3:
+                    continue; // with next path
+                break;
+                case 4:
+                    continue; // with next path
+                break;
+                case 5:
+                    continue; // with next path
+                break;
+                case 10:
+                    continue; // with next path
+                break;
+                case 6:
+                    continue; // with next path
+                break;
+                case 7:
+                    continue; // with next path
+                break;
+                case 8:
+                    continue; // with next path
+                break;
+                case 9:
+                    continue; // with next path
+                break;
+                default:
+                    for(;;);
+                break;
+            }*/
 
             if( ){
                 IDPosAppended = 1; // Do not add any further paths.
