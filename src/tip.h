@@ -23,11 +23,11 @@ extern "C" {
 #if TIP_SRC_BUFFER_SIZE_MAX > 256u*1024u*1024u
 #error invalid TIP_SRC_BUFFER_SIZE_MAX value
 #elif TIP_SRC_BUFFER_SIZE_MAX > 0xfff8u
-typedef uint32_t offset_t;
+typedef uint32_t loc_t;
 #elif TIP_SRC_BUFFER_SIZE_MAX > 0xf8u
-typedef uint16_t offset_t;
+typedef uint16_t loc_t;
 #else
-typedef uint8_t offset_t;
+typedef uint8_t loc_t;
 #endif
 
 #include "pack.h"

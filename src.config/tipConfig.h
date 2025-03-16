@@ -14,7 +14,7 @@ extern "C" {
 
 //! TIP_MAX_PATH_COUNT is the max allowed path count.
 //! Its size has influence on the statically allocated RAM.
-#define TIP_MAX_PATH_COUNT 20
+#define TIP_MAX_PATH_COUNT 2000
 
 #ifdef __cplusplus
 }

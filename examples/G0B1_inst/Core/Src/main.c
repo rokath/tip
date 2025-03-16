@@ -354,7 +354,7 @@ size_t slen =  sizeof(src); //   strlen(in);
 
 trice8B( "buf: %02x\n", src, slen);
 trice8B( "exp: %02x\n", exp, sizeof(exp) ); 
-offset_t dlen = tiPack( dst, IdT, src, slen );
+loc_t dlen = tiPack( dst, IdT, src, slen );
 trice8B( "tip: %02x\n", dst, dlen ); 
 
 

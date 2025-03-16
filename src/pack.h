@@ -24,12 +24,12 @@ size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, c
 #ifndef STATIC
 #define STATIC
 
-// typedef uint8_t offset_t; // todo: why needed here? It is in tip.h!
+// typedef uint8_t loc_t; // todo: why needed here? It is in tip.h!
 
 //! IDPosition_t ...
 typedef struct{
     uint8_t id;     // id of pattern found in src
-    offset_t start; // id pattern start in src
+    loc_t start; // id pattern start in src
 } IDPosition_t;
 
 typedef struct {
@@ -41,7 +41,7 @@ typedef struct {
 extern IDPosTable_t IDPosTable;
 
 void newIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_t slen);
-offset_t IDPosLimit(uint8_t idx);
+loc_t IDPosLimit(uint8_t idx);
 
 typedef struct {
     int count; //! count is the actual path count in srcMap.
