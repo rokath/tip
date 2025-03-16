@@ -45,7 +45,7 @@ loc_t IDPosLimit(uint8_t idx);
 
 typedef struct {
     int count; //! count is the actual path count in srcMap.
-    uint8_t path[TIP_MAX_PATH_COUNT][TIP_SRC_BUFFER_SIZE_MAX/2+1];
+    uint8_t path[TIP_MAX_PATH_COUNT][TIP_SRC_BUFFER_SIZE_MAX/2+1]; // each path contains a count and count indexes into the IDPosTable.
 } srcMap_t;
 
 extern srcMap_t srcMap;

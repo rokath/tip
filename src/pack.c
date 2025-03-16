@@ -14,7 +14,10 @@
 #include "pack.h"
 #include "tip.h"
 #include "memmem.h"
-#define DEBUG 1
+
+#ifndef DEBUG
+#define DEBUG 0
+#endif
 
 #if DEBUG
 void printIDPositionTable( void );
@@ -96,10 +99,10 @@ IDPosTable_t IDPosTable = {0};
     IDPosTable.count++;
 }
 
-//! newIDPosTable uses idPatTable and parses src buffer for matching pattern
+//! createIDPosTable uses idPatTable and parses src buffer for matching pattern
 //! and creates a idPosTable specific to the actual src buffer.
 //! It adds IDs with offset in a way, that smaller offsets occur first.
-STATIC void newIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_t slen){
+STATIC void createIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_t slen){
     memset(&IDPosTable, 0, sizeof(IDPosTable));
     initGetNextPattern(IDPatTable);
     for( int id = 1; id < 0x80; id++ ){ // Traverse the ID table. 
@@ -130,11 +133,6 @@ STATIC void newIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_
 //! -   3,  17,   5,  4, // a path with 3 IDpos
 STATIC srcMap_t srcMap = {0};
 
-//! initSrcMap resets path table.
-static void initSrcMap( void ){
-    memset(&srcMap, 0, sizeof(srcMap));
-}
-
 //! IDPatternLength returns pattern length of id. 
 static loc_t IDPatternLength( uint8_t id ){
     const uint8_t * next = idPatTable;
@@ -156,6 +154,22 @@ static loc_t IDPattern( const uint8_t ** patternAddress, uint8_t id ){
     return len;
 }
 
+//! forkPath extends srcMap with a copy of path pidx and returns index of copy.
+static uint8_t forkPath( uint8_t pidx ){
+    uint8_t psize = srcMap.path[pidx][0] + 1;
+    memcpy(srcMap.path[srcMap.count], srcMap.path[pidx], psize);
+    return srcMap.count++;
+}
+
+//! appendIDPos appends idpos to pidx.
+static void appendIDPos( uint8_t pidx, uint8_t idpos ){
+    uint8_t cnt = srcMap.path[pidx][0]; // pidx idpos count
+    uint8_t idx = cnt + 1;           // next free place
+    srcMap.path[pidx][idx] = idpos;     // write idpos
+    srcMap.path[pidx][0] = cnt + 1;     // one more idpos
+}
+
+/*
 //! IDPosLimit returns first offset after ID position idx.
 STATIC loc_t IDPosLimit(uint8_t idx){
     uint8_t id = IDPosTable.item[idx].id;
@@ -175,35 +189,112 @@ static int IDPosAppendableToPath( uint8_t pathIndex, uint8_t idPos ){
     }
     return 0;
 }
-
-//! forkPath extends srcMap with a copy of path pidx and returns index of copy.
-static uint8_t forkPath( uint8_t pidx ){
-    uint8_t psize = srcMap.path[pidx][0] + 1;
-    memcpy(srcMap.path[srcMap.count], srcMap.path[pidx], psize);
-    return srcMap.count++;
-}
-
-//! appendIDPos appends idpos to pidx.
-static void appendIDPos( uint8_t pidx, uint8_t idpos ){
-    uint8_t cnt = srcMap.path[pidx][0]; // pidx idpos count
-    uint8_t idx = cnt + 1;           // next free place
-    srcMap.path[pidx][idx] = idpos;     // write idpos
-    srcMap.path[pidx][0] = cnt + 1;     // one more idpos
-}
+*/
 
 void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
-    newIDPosTable(table, src, slen); // Get all ID positions in src ordered by increasing offset.
+    createIDPosTable(table, src, slen); // Get all ID positions in src ordered by increasing offset.
 
 #if DEBUG
     printIDPositionTable();
 #endif
 
-    initSrcMap();                 // Start with no path (PathCount=0).
-    for( int idPos = 0; idPos < IDPosTable.count; idPos++ ){ // Loop over IDPosition table for each IDPos.
+    memset(&srcMap, 0, sizeof(srcMap)); // Start with no path (PathCount=0).
+    for( int i = 0; i < IDPosTable.count; i++ ){ // Loop over IDPosition table for each IDPos.
+        IDPosition_t idPos = IDPosTable.item[i];
+        uint8_t nnn_id = idPos.id;
+        loc_t nnn_start = idPos.start;
+        loc_t nnn_len = IDPatternLength( nnn_id );
+        loc_t nnn_limit = nnn_start + nnn_len;
         int IDPosAppended = 0;
         for( int k = srcMap.count - 1; k >= 0; k-- ){ // Loop over all so far existing paths from the end.
             if( srcMap.count > TIP_MAX_PATH_COUNT ){ // Create no new paths for this buffer.
-                IDPosAppended = 1;
+
+                #if DEBUG
+                printf( "srcMap is full (%d paths)", TIP_MAX_PATH_COUNT);
+                #endif
+
+                IDPosAppended = 1; // Do not add any further paths.
+                break;
+            }
+
+            uint8_t * path = srcMap.path[k]; // path is next path in srcMap.
+            uint8_t pcnt = path[0]; // pcnt is the number od IDPosTable indices in this path.
+
+            //  #if DEBUG
+            //  uint8_t * pidx = path+1; // pidx is start of pcnt IDPosTable indices.
+            //  for( int l = 0; l < pcnt; l++ ){
+            //      IDPosition_t PathIdPos = IDPosTable.item[l];
+            //      uint8_t lll_Id = PathIdPos.id;
+            //      loc_t lll_start = PathIdPos.start;
+            //      loc_t lll_len = IDPatternLength( lll_Id );
+            //      loc_t lll_limit = lll_start + lll_len;
+            //  }
+            //  #endif
+
+            uint8_t idx = path[pcnt]; // idx ist last index in this path
+
+            IDPosition_t referencedIdPos = IDPosTable.item[idx]; // referencedIdPos is the referenced idPos of idx, the last path entry.
+            uint8_t kkk_Id = referencedIdPos.id;
+            loc_t kkk_start = referencedIdPos.start;
+            loc_t kkk_len = IDPatternLength( kkk_Id );
+            loc_t kkk_limit = kkk_start + kkk_len;
+
+            // case
+            // -  path: lll...kkk        - path k                                   | comment / action
+            // 0 patt:   nnn            - new pattern lays complete before          | not possible, becaus position table is sorted by loc
+            // 1 patt:     nnN          - new pattern overlaps only start           |    
+            // 2 patt:     nnNNN        - new pattern overlaps start and ends equal |
+            // 3 patt:     nnNNNnn      - new pattern overlaps full                 |
+            // 4 patt:       NNN        - new pattern matches exactly               |
+            // 5 patt:       NN         - new pattern matches start and is shorter  |
+            // 6 patt:        NN        - new pattern matches end and is shorter    |
+            // 7 patt:       NNNnn      - new pattern overlaps end and starts equal |
+            // 8 patt:         Nnn      - new pattern overlaps only end             |
+            // 9  patt:            nnn   - new pattern lays complete after           | fork path k and append pattern
+
+            int detected = -1;
+            if( nnn_limit <= kkk_start ){
+                detected = 0;
+                printf( "new pattern lays complete before\n");
+                continue; // with next path
+            }
+            if( nnn_start < kkk_start && nnn_limit <= kkk_limit ){
+                detected = 1;
+                printf( "new pattern overlaps only start\n");
+                continue; // with next path
+            }
+  
+  hier weiter
+  
+            if( nnn_start < kkk_start && nnn_limit > kkk_limit ){
+                detected = 0;
+                printf( "new pattern overlaps full\n");
+                continue; // with next path
+            }
+            if( nnn_start == kkk_start && nnn_limit == kkk_limit ){
+                detected = 4;
+                printf( "new pattern matches exactly\n");
+                continue; // with next path
+            }
+            if( nnn_start == kkk_start && nnn_limit > kkk_limit ){
+                detected = 0;
+                printf( "new pattern matches start and is longer\n");
+                continue; // with next path
+            }
+            if( nnn_start > kkk_start && nnn_limit > kkk_limit ){
+                detected = 0;
+                printf( "new pattern overlaps end\n");
+                continue; // with next path
+            }
+            if( nnn_start >= nnn_limit ){
+                detected = 0;
+                printf( "new pattern lays complete after \n");
+                continue; // with next path
+            }
+
+
+            if( ){
+                IDPosAppended = 1; // Do not add any further paths.
                 break;
             }
             if( IDPosAppendableToPath(k, idPos) ){ // ID position idPos fits to path k.
