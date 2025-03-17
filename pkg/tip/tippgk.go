@@ -62,12 +62,12 @@ type IDPos struct {
 	start int
 }
 
-// ! NewIDPositionTable is a wrapper for testing C function newIDPosTable and therefore returns posTable.
+// ! NewIDPositionTable is a wrapper for testing C function createIDPosTable and therefore returns posTable.
 func NewIDPositionTable(idTable, in []byte) (posTable []IDPos) {
 	src := (*C.uchar)(unsafe.Pointer(&in[0]))
 	slen := (C.size_t)(len(in))
 	idPatTbl := (*C.uchar)(unsafe.Pointer(&idTable[0]))
-	C.newIDPosTable(idPatTbl, src, slen)
+	C.createIDPosTable(idPatTbl, src, slen)
 	n := int(C.IDPosTable.count)
 	pt := (*[C.TIP_SRC_BUFFER_SIZE_MAX]C.IDPosition_t)(unsafe.Pointer(&C.IDPosTable.item[0]))
 	posTable = make([]IDPos, n)

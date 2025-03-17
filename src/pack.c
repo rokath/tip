@@ -161,14 +161,13 @@ static uint8_t forkPath( uint8_t pidx ){
     return srcMap.count++;
 }
 
-//! appendIDPos appends idpos to pidx.
-static void appendIDPos( uint8_t pidx, uint8_t idpos ){
+//! appendPosTableIndexToPath appends position table index pti to pidx.
+static void appendPosTableIndexToPath( uint8_t pidx, uint8_t pti ){
     uint8_t cnt = srcMap.path[pidx][0]; // pidx idpos count
-    uint8_t idx = cnt + 1;           // next free place
-    srcMap.path[pidx][idx] = idpos;     // write idpos
+    uint8_t idx = cnt + 1;              // next free place
+    srcMap.path[pidx][idx] = pti;       // write pti
     srcMap.path[pidx][0] = cnt + 1;     // one more idpos
 }
-
 /*
 //! IDPosLimit returns first offset after ID position idx.
 STATIC loc_t IDPosLimit(uint8_t idx){
@@ -199,14 +198,19 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
 #endif
 
     memset(&srcMap, 0, sizeof(srcMap)); // Start with no path (PathCount=0).
-    for( int i = 0; i < IDPosTable.count; i++ ){ // Loop over IDPosition table for each IDPos.
-        IDPosition_t idPos = IDPosTable.item[i];
+    for( int pti = 0; pti < IDPosTable.count; pti++ ){ // Loop over IDPosition table.
+        IDPosition_t idPos = IDPosTable.item[pti]; // For each next idPos nnn:
         uint8_t nnn_id = idPos.id;
         loc_t nnn_start = idPos.start;
         loc_t nnn_len = IDPatternLength( nnn_id );
         loc_t nnn_limit = nnn_start + nnn_len;
         int IDPosAppended = 0;
-        for( int k = srcMap.count - 1; k >= 0; k-- ){ // Loop over all so far existing paths from the end.
+        #if DEBUG
+        char msg[200];
+        int mlen = 0;
+        int mlenMax = 0;
+        #endif
+    for( int k = srcMap.count - 1; k >= 0; k-- ){ // Loop over all so far existing paths from the end.
             if( srcMap.count > TIP_MAX_PATH_COUNT ){ // Create no new paths for this buffer.
 
                 #if DEBUG
@@ -222,150 +226,110 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
 
             //  #if DEBUG
             //  uint8_t * pidx = path+1; // pidx is start of pcnt IDPosTable indices.
-            //  for( int l = 0; l < pcnt; l++ ){
-            //      IDPosition_t PathIdPos = IDPosTable.item[l];
-            //      uint8_t lll_Id = PathIdPos.id;
-            //      loc_t lll_start = PathIdPos.start;
-            //      loc_t lll_len = IDPatternLength( lll_Id );
-            //      loc_t lll_limit = lll_start + lll_len;
+            //  for( int p = 0; p < pcnt; p++ ){
+            //      IDPosition_t PathIdPos = IDPosTable.item[p];
+            //      uint8_t ppp_Id = PathIdPos.id;
+            //      loc_t ppp_start = PathIdPos.start;
+            //      loc_t ppp_len = IDPatternLength( ppp_Id );
+            //      loc_t ppp_limit = ppp_start + ppp_len;
             //  }
             //  #endif
 
-            uint8_t idx = path[pcnt]; // idx ist last index in this path
+            uint8_t idx = path[pcnt]; // idx is last index in this path.
 
-            IDPosition_t referencedIdPos = IDPosTable.item[idx]; // referencedIdPos is the referenced idPos of idx, the last path entry.
-            uint8_t kkk_Id = referencedIdPos.id;
-            loc_t kkk_start = referencedIdPos.start;
-            loc_t kkk_len = IDPatternLength( kkk_Id );
-            loc_t kkk_limit = kkk_start + kkk_len;
+            IDPosition_t lastIdPos = IDPosTable.item[idx]; // lastIdPos is the last (referenced) idPos path.
+            uint8_t lll_Id = lastIdPos.id;
+            loc_t lll_start = lastIdPos.start;
+            loc_t lll_len = IDPatternLength( lll_Id );
+            loc_t lll_limit = lll_start + lll_len;
 
             // case
-            //   path: lll...kkk        - path k                                   | comment / action
-            // 0 patt:   nnn            - new pattern lays complete before          | not possible, becaus position table is sorted by loc
-            // 1 patt:      nnN         - new pattern overlaps only start           |    
-            // 2 patt:     nnNNN        - new pattern overlaps start and ends equal |
-            // 3 patt:     nnNNNnn      - new pattern overlaps full                 |
-            // 4 patt:       NNN        - new pattern matches exactly               |
-            // 5 patt:       NN         - new pattern matches start and is shorter  |
-            //10 patt:        N         - new pattern lays coplete inside           |
-            // 6 patt:        NN        - new pattern matches end and is shorter    |
-            // 7 patt:       NNNnn      - new pattern overlaps end and starts equal |
-            // 8 patt:         Nnn      - new pattern overlaps only end             |
-            // 9 patt:           nnn    - new pattern lays complete after           | fork path k and append pattern
+            //   path: ppp...lll        - path k                                    | comment  | action
+            // 0 patt:   nnn            - new pattern lays complete before          | error    | ignore pattern, take next path
+            // 1 patt:     nnnN         - new pattern overlaps only start           | error    | ignore pattern, take next path
+            // 2 patt:     nnNNN        - new pattern overlaps start and ends equal | error    | ignore pattern, take next path
+            // 3 patt:     nnNNNnn      - new pattern overlaps full                 | error    | ignore pattern, take next path
+            // 4 patt:       NNN        - new pattern matches exactly               | error    | ignore pattern, take next path
+            // 5 patt:       NN         - new pattern matches start and is shorter  | possible | cannot append to this path
+            // 6 patt:        N         - new pattern lays coplete inside           | possible | cannot append to this path
+            // 7 patt:        NN        - new pattern matches end and is shorter    | possible | cannot append to this path
+            // 8 patt:       NNNnn      - new pattern overlaps end and starts equal | possible | cannot append to this path
+            // 9 patt:         Nnn      - new pattern overlaps only end             | possible | cannot append to this path
+            //10 patt:          nnnn    - new pattern lays complete after           | possible | fork path k and append pattern to forked
 
-            int detected = -1;
-            if( nnn_limit <= kkk_start ){
-                detected = 0;
-                printf( "new pattern lays complete before\n");
-                continue; // with next path
-            }
-            if( nnn_start < kkk_start && nnn_limit < kkk_limit ){
-                detected = 1;
-                printf( "new pattern overlaps only start\n");
-                continue; // with next path
-            }
-            if( nnn_start < kkk_start && nnn_limit == kkk_limit ){
-                detected = 2;
-                printf( "new pattern overlaps only start\n");
-                continue; // with next path
-            }
-            if( nnn_start < kkk_start && nnn_limit > kkk_limit ){
-                detected = 3;
-                printf( "new pattern overlaps full\n");
-                continue; // with next path
-            }
-            if( nnn_start == kkk_start && nnn_limit == kkk_limit ){
-                detected = 4;
-                printf( "new pattern matches exactly\n");
-                continue; // with next path
-            }
-            if( nnn_start == kkk_start && nnn_limit < kkk_limit ){
-                detected = 5;
-                printf( "new pattern matches exactly\n");
-                continue; // with next path
-            }
-            if( nnn_start > kkk_start && nnn_limit < kkk_limit ){
-                detected = 10;
-                printf( "new pattern lays completely inside\n");
-                continue; // with next path
-            }
-            if( nnn_start > kkk_start && nnn_limit == kkk_limit ){
-                detected = 6;
-                printf( "new pattern matches end and is shorter\n");
-                continue; // with next path
-            }
-            if( nnn_start == kkk_start && nnn_limit > kkk_limit ){
-                detected = 7;
-                printf( "new pattern matches start and is longer\n");
-                continue; // with next path
-            }
-            if( nnn_start > kkk_start && nnn_limit > kkk_limit ){
-                detected = 8;
-                printf( "new pattern overlaps end\n");
-                continue; // with next path
-            }
-            if( nnn_start >= nnn_limit ){
-                detected = 9;
-                printf( "new pattern lays complete after \n");
-                append = 1;
-                continue; // with next path
-            }
-            /*
-            switch(detected){
-                case 0:
-                    continue; // with next path
-                break;
-                case 1:
-                    continue; // with next path
-                break;
-                case 2:
-                    continue; // with next path
-                break;
-                case 3:
-                    continue; // with next path
-                break;
-                case 4:
-                    continue; // with next path
-                break;
-                case 5:
-                    continue; // with next path
-                break;
-                case 10:
-                    continue; // with next path
-                break;
-                case 6:
-                    continue; // with next path
-                break;
-                case 7:
-                    continue; // with next path
-                break;
-                case 8:
-                    continue; // with next path
-                break;
-                case 9:
-                    continue; // with next path
-                break;
-                default:
-                    for(;;);
-                break;
-            }*/
-
-            if( ){
-                IDPosAppended = 1; // Do not add any further paths.
-                break;
-            }
-            if( IDPosAppendableToPath(k, idPos) ){ // ID position idPos fits to path k.
+            if( nnn_start >= lll_limit ){ // case 10
+                #if DEBUG
+                mlen = sprintf( msg, "case 10 !!! - addPatternToForked: nnn_start %d >= %d nnn_limit - new pattern lays complete after", nnn_start, nnn_limit );
+                #endif
                 uint8_t n = forkPath(k); 
-                appendIDPos(n,idPos);
-                IDPosAppended = 1;
+                appendPosTableIndexToPath(n, pti);
+                IDPosAppended = 1; // idPos is appended to at least one path. 
             }
+            else if( nnn_limit <= lll_start ){ // case 0
+                #if DEBUG
+                mlen = sprintf( msg, "case 0 - unexpected, error: nnn_limit %d <= %d lll_start - new pattern lays complete before", nnn_limit, lll_start); // IDPosTable is sorted by rising positions
+                #endif
+            }
+            else if( nnn_start < lll_start && nnn_limit < lll_limit ){ // case 1
+                #if DEBUG
+                mlen = sprintf( msg, "case 1 - unexpected, error: nnn_start %d < %d lll_start && nnn_limit %d < %d lll_limit - new pattern overlaps only start", nnn_start, lll_start, nnn_limit, lll_limit ); // IDPosTable is sorted by rising positions.
+                #endif
+            }
+            else if( nnn_start < lll_start && nnn_limit == lll_limit ){ // case 2
+                #if DEBUG
+                mlen = sprintf( msg, "case 2 - unexpected, error: nnn_start %d < %d lll_start && nnn_limit %d == %d lll_limit - new pattern overlaps only start", nnn_start, lll_start, nnn_limit, lll_limit); // IDPosTable is sorted by rising positions.
+                #endif
+            }
+            else if( nnn_start < lll_start && nnn_limit > lll_limit ){ // case 3
+                #if DEBUG
+                mlen = sprintf( msg, "case 3 - unexpected, error: nnn_start %d < %d lll_start && nnn_limit %d > %d lll_limit - new pattern overlaps full", nnn_start, lll_start, nnn_limit, lll_limit ); // IDPosTable is sorted by rising positions.
+                #endif
+            }
+            else if( nnn_start == lll_start && nnn_limit == lll_limit ){ // case 4
+                #if DEBUG
+                mlen = sprintf( msg, "case 4 - unexpected, error: nnn_start %d == %d lll_start && nnn_limit %d == %d lll_limit - new pattern matches exactly", nnn_start, lll_start, nnn_limit, lll_limit ); // IDPosTable has uniq idPos values.
+                #endif
+            }
+            else if( nnn_start == lll_start && nnn_limit < lll_limit ){ // case 5 
+                #if DEBUG
+                mlen = 0; // sprintf( msg, "case 5 -  cannot append to this path: nnn_start %d == %d lll_start && nnn_limit %d < %d lll_limit - new pattern matches start and is shorter", nnn_start, lll_start, nnn_limit, lll_limit ); // cannot append to this path
+                #endif
+            }
+            else if( nnn_start > lll_start && nnn_limit < lll_limit ){ // case 6
+                #if DEBUG
+                mlen = 0; // sprintf( msg, "case 6 -  cannot append to this path: nnn_start %d > %d lll_start && nnn_limit %d < %d lll_limit - new pattern lays completely inside",  nnn_start, lll_start, nnn_limit, lll_limit ); // cannot append to this path
+                #endif
+            }
+            else if( nnn_start > lll_start && nnn_limit == lll_limit ){ // case 7
+                #if DEBUG
+                mlen = 0; // sprintf( msg, "case 7 -  cannot append to this path: nnn_start %d > %d lll_start && nnn_limit %d == %d lll_limit - new pattern matches end and is shorter", nnn_start, lll_start, nnn_limit, lll_limit); // cannot append to this path
+                #endif
+            }
+            else if( nnn_start == lll_start && nnn_limit > lll_limit ){ // case 8
+                #if DEBUG
+                mlen = sprintf( msg, "case 8 -  cannot append to this path: nnn_start %d == %d lll_start && nnn_limit %d > %d lll_limit - new pattern matches start and is longer", nnn_start,  lll_start, nnn_limit, lll_limit ); // cannot append to this path
+                #endif
+            }
+            else if( nnn_start > lll_start && nnn_limit > lll_limit ){ // case 9
+                #if DEBUG
+                mlen = 0; // sprintf( msg, "case 9 -  cannot append to this path: nnn_start %d > %d lll_start && nnn_limit %d > %d lll_limit - new pattern overlaps end", nnn_start, lll_start, nnn_limit, lll_limit ); // cannot append to this path
+                #endif
+            }
+            #if DEBUG
+            mlenMax = mlen > mlenMax ? mlen : mlenMax;
+            if( mlen > 0 ){
+                printf( "%s (mlenMax %d)\n", msg, mlenMax );
+            }
+            #endif
         }
         if( !IDPosAppended ){ 
             int nextIdx = srcMap.count;
-            printf( "Create a new path%3d with idPos%3d (id%3d, loc%3d)\n", nextIdx, idPos, IDPosTable.item[idPos].id, IDPosTable.item[idPos].start );
-            srcMap.path[nextIdx][0] = 1;     // one IDPos in this new path
-            srcMap.path[nextIdx][1] = idPos; // the IDPos (the first is naturally 0)
-            srcMap.count++;                  // one more path
+            #if DEBUG
+            printf( "Create a new path%3d with pit%3d (id%3d, loc%3d)\n", srcMap.count, pti, idPos.id, idPos.start );
+            #endif
+            srcMap.path[nextIdx][0] = 1;   // one IDPos in this new path
+            srcMap.path[nextIdx][1] = pti; // the pti (the first is naturally 0)
+            srcMap.count++;                // one more path
         }
     }
 }
@@ -535,12 +499,15 @@ void printPath( uint8_t pidx ){
 }
 
 void printSrcMap( void ){
+    printf( "srcMap: -----------\n");
     for( int i = 0; i < srcMap.count; i++ ){
         printPath(i);
     }
+    printf( "-----------\n");
 }
 
 void printIDPositionTable( void ){
+    printf( "IDPositionTable: -----------\n");
     for( int i = 0; i < IDPosTable.count; i++ ){
         uint8_t id = IDPosTable.item[i].id;
         loc_t loc = IDPosTable.item[i].start;
@@ -550,6 +517,7 @@ void printIDPositionTable( void ){
         memcpy(s, pattern, length);
         printf("IDpos%3d:id:%3d, pos:%5d, '%s'\n", i, id, loc, s);
     }
+    printf( "-----------\n");
 }
 
 #endif

@@ -28,7 +28,7 @@ size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, c
 
 //! IDPosition_t ...
 typedef struct{
-    uint8_t id;     // id of pattern found in src
+    uint8_t id;  // id of pattern found in src
     loc_t start; // id pattern start in src
 } IDPosition_t;
 
@@ -40,7 +40,7 @@ typedef struct {
 //! IDPosTable holds all IDs with their positions occuring in the current src buffer.
 extern IDPosTable_t IDPosTable;
 
-void newIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_t slen);
+void createIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_t slen);
 loc_t IDPosLimit(uint8_t idx);
 
 typedef struct {
