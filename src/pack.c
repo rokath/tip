@@ -172,7 +172,7 @@ static void appendPosTableIndexToPath( uint8_t pidx, uint8_t pti ){
     srcMap.path[pidx][idx] = pti;       // write pti
     srcMap.path[pidx][0] = cnt + 1;     // one more idx
     #if DEBUG
-    printf( "forked:" );
+    printf( "fork: " );
     printPath(pidx);
     #endif
 }
@@ -334,12 +334,13 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
         }
         if( !IDPosAppended ){ 
             int nextIdx = srcMap.count;
-            #if DEBUG
-            printf( "Create a new path%3d with pit%3d (id%3d, loc%3d)\n", srcMap.count, pti, idPos.id, idPos.start );
-            #endif
             srcMap.path[nextIdx][0] = 1;   // one IDPos in this new path
             srcMap.path[nextIdx][1] = pti; // the pti (the first is naturally 0)
             srcMap.count++;                // one more path
+            #if DEBUG
+            printf( " new: " ); //path%3d with pit%3d (id%3d, loc%3d)\n", srcMap.count, pti, idPos.id, idPos.start );
+            printPath(nextIdx);
+            #endif
         }
     }
 }
@@ -474,7 +475,7 @@ size_t createOutput( uint8_t * dst, uint8_t pidx, const uint8_t * u7src, size_t 
 size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
     createSrcMap(table, src, slen);
 
-#if DEBUG
+#if 0 // DEBUG
     printSrcMap();
 #endif
 
@@ -519,6 +520,7 @@ void printPath( uint8_t pidx ){
 void printSrcMap( void ){
     printf( "srcMap: -----------\n");
     for( int i = 0; i < srcMap.count; i++ ){
+        printf( "      " );
         printPath(i);
     }
     printf( "-----------\n");
