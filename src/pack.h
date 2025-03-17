@@ -43,11 +43,16 @@ extern IDPosTable_t IDPosTable;
 void createIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, size_t slen);
 //loc_t IDPosLimit(uint8_t idx);
 
-#define TIP_MAX_PATH_COUNT 200
+#ifndef TIP_MAX_PATH_COUNT
+#warning "TIP_MAX_PATH_COUNT undefined"
+#define TIP_MAX_PATH_COUNT 2000
+#endif
+
+typedef uint16_t path_t;
 
 typedef struct {
     int count; //! count is the actual path count in srcMap.
-    uint8_t path[TIP_MAX_PATH_COUNT][TIP_SRC_BUFFER_SIZE_MAX/2+1]; // each path contains a count and count indexes into the IDPosTable.
+    path_t path[TIP_MAX_PATH_COUNT][TIP_SRC_BUFFER_SIZE_MAX/2+1]; // each path contains a count and count indexes into the IDPosTable.
 } srcMap_t;
 
 extern srcMap_t srcMap;

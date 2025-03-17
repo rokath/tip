@@ -3,6 +3,7 @@ maxPatternSize=4
 fn="./try.txt"
 #fn="./trice.bin.sample"
 #fn="../../docs/TipUserManual.md"
+#fn="LICENSE.md"
 time ( \
 go clean -cache && \
 go install ../../... && \
