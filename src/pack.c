@@ -201,6 +201,23 @@ static int IDPosAppendableToPath( uint8_t pathIndex, uint8_t idPos ){
 }
 */
 
+        // shrinkSrcMap removes unneded paths. Exampöe:
+        // src: ABCDABCD
+        //   0: ABCD     - delete
+        //   1: ABC      - delete
+        //   2: AB       - delete
+        //   3: AB  ABCD -    delete
+        //   4: ABC ABCD -    delete
+        //   5: ABCDABCD
+        //   6:     ABC - already not possible!
+        // - After an idx went thru srcMap: ABCD 
+        //   - If several paths contain same idx, remove those where idx is not last:
+        //     - 0&5 -> 5, 1&4 -> 4, 2&3 -> 3 
+        //   - If several paths end with same idx, keep only biggest pathPatternSize.
+        //     - 3&4&5 -> 5
+        void shrinkSrcMap( void ){
+        }
+
 void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
     createIDPosTable(table, src, slen); // Get all ID positions in src ordered by increasing offset.
 
@@ -223,7 +240,8 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
         int mlenMax = 0;
         #endif
 
-        int srcMapCount =  srcMap.count;
+        int srcMapCount = srcMap.count;
+        
         for( int k = 0; k <  srcMapCount; k++ ){ // Loop over all so far existing paths.
             if( srcMapCount > TIP_MAX_PATH_COUNT ){ // Create no new paths for this src buffer.
 
@@ -274,10 +292,11 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
                 #if DEBUG
                 mlen = 0; // sprintf( msg, "case 10 !!! - addPatternToForked: lll_limit %d <= %d nnn_start - new pattern lays complete after", lll_limit, nnn_start );
                 #endif
-                // uint8_t n = forkPath(k); 
-                appendPosTableIndexToPath(k, pti);
+                uint8_t n = forkPath(k); 
+                appendPosTableIndexToPath(n, pti);
                 IDPosAppended = 1; // idx is appended to at least one path now. 
             }
+            /*
             else if( nnn_limit <= lll_start ){ // case 0
                 #if DEBUG
                 mlen = sprintf( msg, "case 0 - unexpected, error: nnn_limit %d <= %d lll_start - new pattern lays complete before", nnn_limit, lll_start); // IDPosTable is sorted by rising positions
@@ -334,6 +353,7 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
                 printf( "%s (mlenMax %d)\n", msg, mlenMax );
             }
             #endif
+            */
         }
         if( !IDPosAppended ){ 
             int nextIdx = srcMap.count;
@@ -345,6 +365,7 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
             printPath(nextIdx);
             #endif
         }
+        shrinkSrcMap();
     }
 }
 
