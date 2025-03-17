@@ -23,8 +23,10 @@
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/ti_pack",
             "env": {},
-            "args": ["-i", "${workspaceFolder}/test/a.txt",
-                     "-v"
+            "args": [
+                    "-i", 
+                    "${workspaceFolder}/test/samples/try.txt", 
+                    "-v"
             ]
         }
     ]
