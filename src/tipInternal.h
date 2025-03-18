@@ -1,16 +1,15 @@
-//! @file tip.h
-//! @brief This is the tip configuration and tip internal common interface.
-//! @author thomas.hoehenleitner [at] seerose.net
+//! @file tipInternal.h
+//! @brief This is the tip internal interface.
 
-#ifndef TIP_H_
-#define TIP_H_
+#ifndef TIP_INTERNAL_H_
+#define TIP_INTERNAL_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <stdint.h>
-#include "tipConfig.h"
+#include "tipConfig.h" // project specific file
 
 #ifndef TIP_SRC_BUFFER_SIZE_MAX
 #error "needs to #define TIP_SRC_BUFFER_SIZE_MAX 248u // bytes (max65535)"
@@ -30,8 +29,20 @@ typedef uint16_t loc_t;
 typedef uint8_t loc_t;
 #endif
 
-#include "pack.h"
-#include "unpack.h"
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Exported for target tests
+//
+
+
+#ifndef DEBUG
+#define DEBUG 1
+#endif
+
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include "ti_pack.h"
+#include "ti_unpack.h"
 
 extern const uint8_t idTable[];
 
@@ -39,4 +50,4 @@ extern const uint8_t idTable[];
 }
 #endif
 
-#endif // TIP_H_
+#endif // TIP_INTERNAL_H_

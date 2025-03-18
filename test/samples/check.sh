@@ -1,9 +1,9 @@
 #!/bin/bash
 maxPatternSize=4
-fn="./try.txt"
+#fn="./try.txt"
 #fn="./trice.bin.sample"
 #fn="../../docs/TipUserManual.md"
-#fn="LICENSE.md"
+fn="LICENSE.md"
 time ( \
 go clean -cache && \
 go install ../../... && \
@@ -16,3 +16,5 @@ ti_unpack -i $fn.tip &&\
 diff -b $fn $fn.tip.untip \
 # rm $fn.tip $fn.tip.untip \
 )
+
+sleep 1000000.000

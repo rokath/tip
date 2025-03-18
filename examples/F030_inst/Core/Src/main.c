@@ -110,12 +110,12 @@ int main(void)
   //static uint8_t src[100] = {0};
   size_t slen =  sizeof(src); //   strlen(in);
   //  memcpy(src,in,slen);
-  trice8B("rd:%02x \n", src, slen);
-  createIDPosTable(idTable, src, slen );
-  trice8B("rd:%02x \n", IDPosTable, IDPosTable.count * sizeof(IDPosition_t));
-  for( int i = 0; i < IDPosTable.count; i++ ){
-    trice("%2d: id%2d, start=%d, limit=%d \n", i, IDPosTable.item[i].id, IDPosTable.item[i].start, IDPosLimit(i));
-  }
+  //  trice8B("rd:%02x \n", src, slen);
+  //  createIDPosTable(idTable, src, slen );
+  //  trice8B("rd:%02x \n", IDPosTable, IDPosTable.count * sizeof(IDPosition_t));
+  //  for( int i = 0; i < IDPosTable.count; i++ ){
+  //    trice("%2d: id%2d, start=%d, limit=%d \n", i, IDPosTable.item[i].id, IDPosTable.item[i].start, IDPosLimit(i));
+  //  }
   //size_t plen = tip(pkg, src, slen);
   //trice8B("wr:%02x \n", pkg, plen);
 

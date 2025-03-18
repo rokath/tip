@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "pack.h": "c"
+        "pack.h": "c",
+        "tip.h": "c",
+        "tipconfig.h": "c"
     }
 }

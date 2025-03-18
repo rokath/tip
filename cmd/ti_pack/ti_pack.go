@@ -1,7 +1,7 @@
 package main
 
 // #cgo CFLAGS: -g -Wall -I../../src.config -I../../src -I../../../trice/src
-// #include "tip.h"
+// #include "tipInternal.h"
 // unsigned maxSize(){
 // 	return TIP_SRC_BUFFER_SIZE_MAX;
 // }

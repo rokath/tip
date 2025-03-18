@@ -1,24 +1,21 @@
-//! @file unpack.c
+//! @file ti_unpack.c
 //! @brief This is the tip unpack code. Works also without pack.c.
 //! @details todo
 //! @author thomas.hoehenleitner [at] seerose.net
 
 #include <string.h>
-#include "unpack.h"
-#include "tip.h"
+#include "ti_unpack.h"
+#include "tipInternal.h"
 
 static size_t collectU7Bytes( uint8_t * dst, const uint8_t * src, size_t slen );
 /*static*/ size_t shift78bit( uint8_t * dst, const uint8_t * src, size_t slen );
 static size_t restorePacket( uint8_t * dst, const uint8_t * table, const uint8_t * u8, size_t u8len, const uint8_t * src, size_t slen );
 static size_t getPatternFromId( uint8_t * pt, const uint8_t * table, uint8_t id );
 
-//! @brief tiu decodes src buffer with size len into dst buffer and returns decoded len.
 size_t tiu( uint8_t * dst, const uint8_t * src, size_t slen ){
     return tiUnpack(dst, idTable, src, slen );
 }
 
-//! @brief tiUnpack decodes src buffer with size slen into dst buffer and returns decoded dlen.
-//! @details For the tip decoding it uses the passed idTable object.
 size_t tiUnpack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen ){
     static uint8_t u78[TIP_SRC_BUFFER_SIZE_MAX*8u/7u+1]; // todo
     size_t u7len = collectU7Bytes( u78, src, slen );
