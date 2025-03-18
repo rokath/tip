@@ -30,7 +30,7 @@ typedef struct {
 } path_t;
 
 //! srcMap_t holds all so far possible paths for the src buffer.
-//! To limit its neede size, after each added IDPosTable idx, obsolete paths are removed.
+//! To limit its needed size, after each added IDPosTable idx, obsolete paths are removed.
 typedef struct {
     unsigned count; // count is the actual path count in srcMap.
     path_t path[TIP_MAX_PATH_COUNT]; // Each path contains a count and count indexes into the IDPosTable.
@@ -62,9 +62,9 @@ size_t tiPack( uint8_t * dst, const uint8_t * table, const uint8_t * src, size_t
 #endif
         return 0;
     }
-    size_t dstSize = ((18725ul*slen)>>14)+1;  // The max possible dst size is len*8/7+1 or ((len*65536*8/7)>>16)+1.
-    uint8_t * dstLimit = dst + dstSize;
-    memset(dst, 0, dstSize);
+    size_t dstSizeMax = ((18725ul*slen)>>14)+1;  // The max possible dst size is len*8/7+1 or ((len*65536*8/7)>>16)+1.
+    uint8_t * dstLimit = dst + dstSizeMax;
+    memset(dst, 0, dstSizeMax);
     idPatTable = table;
     size_t tipSize = buildTiPacket(dst, dstLimit, table, src, slen);
     return tipSize;
@@ -93,12 +93,12 @@ static void getNextPattern(const uint8_t ** pt, size_t * sz ){
 //! IDPosTable holds all IDs with their positions occuring in the current src buffer.
 static IDPosTable_t IDPosTable = {0};
 
-//! insertIDPosSorted inserts id with pos and len into IDPosTable with smallest pos first.
-static void insertIDPosSorted(uint8_t id, loc_t offset){
+//! insertIDPosSorted inserts id with pos into IDPosTable with smallest pos first.
+static void insertIDPosSorted(uint8_t id, loc_t pos){
     int i;
     int insertFlag = 0;
     for( i = 0; i < IDPosTable.count; i++ ){
-        if( offset < IDPosTable.item[i].start ){
+        if( pos < IDPosTable.item[i].start ){
             insertFlag = 1;
             break; // insert here
         }
@@ -110,9 +110,11 @@ static void insertIDPosSorted(uint8_t id, loc_t offset){
         memmove(dst, src, size);
     }
     IDPosTable.item[i].id = id;
-    IDPosTable.item[i].start = offset;
+    IDPosTable.item[i].start = pos;
     IDPosTable.count++;
 }
+
+// TODO: It could be faster to traverse the src buffer.
 
 //! createIDPosTable uses idPatTable and parses src buffer for matching pattern
 //! and creates a idPosTable specific to the actual src buffer.
@@ -147,7 +149,7 @@ static void createIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, si
 
 //! srcMap holds all possible paths for current src buffer.
 //! - cnt, idx, idx, ...
-//! -   3,  17,   5,  4, // a path with 3 IDpos
+//! -   3,  17,   5,  4, // a path with 3 idx into IDPosTable.
 static srcMap_t srcMap = {0};
 
 //! IDPatternLength returns pattern length of id. The max pattern length is 255.
@@ -158,33 +160,6 @@ static uint8_t IDPatternLength( uint8_t id ){
     }
     uint8_t len = *next;
     return len;
-}
-
-// //! IDPattern returns pattern address of id. The max pattern length is 255.
-// static uint8_t * IDPatternAddress( uint8_t id ){
-//     const uint8_t * next = idPatTable;
-//     for( int i = 1; i < id; i++ ){
-//         next += 1 + *next;
-//     }
-//     return next;
-// }
-
-static void printPatternAsASCII( uint8_t id ){
-    const uint8_t * next = idPatTable;
-    for( int i = 1; i < id; i++ ){
-        next += 1 + *next;
-    }
-    uint8_t len = *next++;
-    const uint8_t * pat = next;
-    char msg[256] = {0};
-    for( int i = 0; i < len; i++ ){
-        char c = ' ';
-        if( 32 <= pat[i] && pat[i] < 128 ){
-            c = (char)(pat[i]);
-        }
-        sprintf( msg+i, "%c", c);
-    }
-    printf( msg );
 }
 
 //! forkPath extends srcMap with a copy of path pidx and returns index of copy.
@@ -313,15 +288,15 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
     }
 }
 
-//! IDPosLength returns first offset after ID position idx.
-static uint8_t IDPosLength(uint8_t idx){
-    uint8_t id = IDPosTable.item[idx].id;
+//! IDPosLength returns first offset after ID position pti.
+static uint8_t IDPosLength(uint8_t pti){
+    uint8_t id = IDPosTable.item[pti].id;
     uint8_t len = IDPatternLength( id );
     return len;
 }
 
 //! pathPatternSize returns sum of all pattern lengths in path pidx.
-static loc_t pathPatternSize( unsigned pidx ){
+static loc_t pathPatternSizeSum( unsigned pidx ){
     if( pidx >= srcMap.count ){
 #if DEBUG
         printf( "ERROR: pidx %u >= %u srcMap.count\n", pidx, srcMap.count);
@@ -332,8 +307,8 @@ static loc_t pathPatternSize( unsigned pidx ){
     loc_t pathIdxCount = path.count;
     loc_t sum = 0;
     for( int i = 0; i < pathIdxCount; i++ ){
-        loc_t idx = path.posIndex[i];
-        sum += IDPosLength(idx);
+        loc_t pti = path.posIndex[i];
+        sum += IDPosLength(pti);
     }
     return sum;
 }
@@ -344,7 +319,7 @@ static unsigned MinDstLengthPath(void){
     loc_t maxSum = 0;
     unsigned pidx = 0;
     for( unsigned i = 0; i < srcMap.count; i++ ){
-        loc_t psiz = pathPatternSize(i);
+        loc_t psiz = pathPatternSizeSum(i);
         if( psiz > maxSum ){
             maxSum = psiz;
             pidx = i;
@@ -375,13 +350,14 @@ static unsigned MinDstLengthPath(void){
 //! It uses idPatTable and the path index pidx in the actual srcMap, which is linked to IDPosTable.
 static size_t selectUnreplacableBytes( uint8_t * dst, unsigned pidx, const uint8_t * src, size_t slen ){
     path_t path = srcMap.path[pidx]; // This is the path we use. 
-    loc_t count = path.count;        // The path contains count IDPosTable indicies.
+    loc_t count = path.count;        // The path contains count IDPosTable indicies pti.
     const uint8_t * srcNext = src;   // next position for src buffer read
     uint8_t * dstNext = dst;         // next position for dst buffer write
     loc_t * tidx = path.posIndex;    // Here are starting the IDPosTable indices.
     loc_t u8sum = 0;
     for( int i = 0; i < count; i++ ){
-        IDPosition_t idPos = IDPosTable.item[tidx[i]];
+        loc_t pti = tidx[i];
+        IDPosition_t idPos = IDPosTable.item[pti];
         uint8_t id = idPos.id;
         const uint8_t * patternFrom = src + idPos.start; // pattern start in src buffer
         loc_t u8len = patternFrom - srcNext; // count of unreplacable bytes
@@ -391,6 +367,7 @@ static size_t selectUnreplacableBytes( uint8_t * dst, unsigned pidx, const uint8
         dstNext += u8len;
         u8sum += u8len;
     }
+    // TODO: verify alternatively rest computation
     size_t rest = slen - (srcNext - src); // total - pattern sum
     memcpy( dstNext, srcNext, rest );
     dstNext += rest;
@@ -402,7 +379,7 @@ static size_t selectUnreplacableBytes( uint8_t * dst, unsigned pidx, const uint8
 //! It uses idPatTable and the path index pidx in the actual srcMap, which is linked to IDPosTable.
 static size_t createOutput( uint8_t * dst, unsigned pidx, const uint8_t * u7src, size_t u7len, const uint8_t * src ){
     path_t path = srcMap.path[pidx]; // This is the path we use. 
-    loc_t plen = path.count;        // The path contains: count, IDPosTable index, IDPosTable index, ...
+    loc_t plen = path.count;         // The path contains: count, IDPosTable index, IDPosTable index, ...
     const uint8_t * srcNext = src;   // next position for src buffer read
     uint8_t * dstNext = dst;         // next position for dst buffer write
     //loc_t * tidx = path.posIndex;    // Here are starting the IDPosTable indices.
@@ -410,8 +387,8 @@ static size_t createOutput( uint8_t * dst, unsigned pidx, const uint8_t * u7src,
     // printf( "PATH %d\n", pidx );
     // printPath( "DEBUG:", pidx );
     for( int i = 0; i < plen; i++ ){
-        loc_t idx = path.posIndex[i];
-        IDPosition_t idPos = IDPosTable.item[idx];
+        loc_t pti = path.posIndex[i];
+        IDPosition_t idPos = IDPosTable.item[pti];
         uint8_t id = idPos.id;
         const uint8_t * patternFrom = src + idPos.start; // pattern start in src buffer
         loc_t u8len = patternFrom - srcNext; // count of unreplacable bytes
@@ -465,6 +442,7 @@ static size_t shift87bit( uint8_t * lst, const uint8_t * src, size_t slen ){
     return lst - dst;
 }
 
+// @brief buildTiPacket creates in dst the tip packet of the src buffer. 
 static size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
     createSrcMap(table, src, slen);
     unsigned pidx = MinDstLengthPath(); // find minimum line
@@ -482,6 +460,35 @@ static size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * t
     return pkgSize; // final ti package size
 }
 
+//! IDPattern returns pattern address of id. The max pattern length is 255.
+// static uint8_t * IDPatternAddress( uint8_t id ){
+//     const uint8_t * next = idPatTable;
+//     for( int i = 1; i < id; i++ ){
+//         next += 1 + *next;
+//     }
+//     return next;
+// }
+
+// @brief printPatternAsASCII is a debug helper.
+static void printPatternAsASCII( uint8_t id ){
+    const uint8_t * next = idPatTable;
+    for( int i = 1; i < id; i++ ){
+        next += 1 + *next;
+    }
+    uint8_t len = *next++;
+    const uint8_t * pat = next;
+    char msg[256] = {0};
+    for( int i = 0; i < len; i++ ){
+        char c = ' ';
+        if( 32 <= pat[i] && pat[i] < 128 ){
+            c = (char)(pat[i]);
+        }
+        sprintf( msg+i, "%c", c);
+    }
+    printf( msg );
+}
+
+// @brief printPath is a debug helper.
 static void printPath( char * prefix, unsigned pidx ){
     path_t path = srcMap.path[pidx]; 
     int plen = path.count;
