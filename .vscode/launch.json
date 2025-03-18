@@ -25,7 +25,7 @@
             "env": {},
             "args": [
                     "-i", 
-                    "${workspaceFolder}/test/samples/try.txt", 
+                    "${workspaceFolder}/test/samples/LICENSE.md", 
                     "-v"
             ]
         }
