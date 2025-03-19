@@ -11,13 +11,14 @@
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/ti_generate",
             "env": {},
-            "args": ["-i", "${workspaceFolder}/docs/TipUserManual.md",
-                     "-z", "4",
+            "args": [
+                    //"-i", "${workspaceFolder}/docs/TipUserManual.md",
+                    // "-z", "4",
                      "-v"
             ]
         },
         {
-            "name": "tip launch app",
+            "name": "ti_pack launch app",
             "type": "go",
             "request": "launch",
             "mode": "auto",
@@ -25,7 +26,7 @@
             "env": {},
             "args": [
                     "-i", 
-                    "${workspaceFolder}/test/samples/LICENSE.md", 
+                    "${workspaceFolder}/docs/TipUserManual.md", 
                     "-v"
             ]
         }

@@ -17,4 +17,4 @@ diff -b $fn $fn.tip.untip \
 # rm $fn.tip $fn.tip.untip \
 )
 
-sleep 1000000.000
+# sleep 1000000.000

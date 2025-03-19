@@ -23,7 +23,7 @@ var (
 
 func init() {
 	flag.BoolVar(&help, "h", false, "help")
-	flag.BoolVar(&verbose, "v", false, "help")
+	flag.BoolVar(&verbose, "v", false, "verbose")
 	flag.StringVar(&iFn, "i", "", "input file/folder name")
 	flag.StringVar(&oFn, "o", "idTable.c", "output file name")
 	flag.IntVar(&pattern.PatternSizeMax, "z", 8, "max pattern size to find")
@@ -44,14 +44,26 @@ func doit(w io.Writer, fSys *afero.Afero) {
 		fmt.Fprintln(w, "The TipUserManual explains details.")
 		return
 	}
+	if verbose {
+		if version == "" && commit == "" && date == "" {
+			fmt.Println("experimenal version")
+		} else {
+			fmt.Fprintln(w, version, commit, date)
+		}
+	}
 	if iFn == "" {
-		fmt.Fprintln(w, `"ti_generate -h" prints help`)
+		if ! verbose {
+			fmt.Fprintln(w, `"ti_generate -h" prints help`)
+		}
 		return
 	}
-	if verbose {
-		fmt.Fprintln(w, version, commit, date)
+	err := tiptable.Generate(fSys, oFn, iFn, pattern.PatternSizeMax)
+	if err != nil {
+		fmt.Println(err)
 	}
-	tiptable.Generate(fSys, oFn, iFn, pattern.PatternSizeMax)
+	if verbose {
+		fmt.Println(oFn, "generated")
+	}
 }
 
 func distributeArgs() {
