@@ -22,19 +22,26 @@ Table of Contents Generation:
 -->
 
 <!-- vscode-markdown-toc -->
-* 1. [TiP - Why and How?](#tip---why-and-how?)
-  * 1.1. [Initial Situation](#initial-situation)
-    * 1.1.1. [Framing](#framing)
-    * 1.1.2. [ Very Small Buffer Data Compession](#-very-small-buffer-data-compession)
-  * 1.2. [Bytes and Numbers](#bytes-and-numbers)
-  * 1.3. [The TiP Idea](#the-tip-idea)
-    * 1.3.1. [Packing](#packing)
-    * 1.3.2. [Unpacking](#unpacking)
-* 2. [ID Table Generation](#id-table-generation)
-  * 2.1. [ID Table Generation Questions](#id-table-generation-questions)
-* 3. [Improvement Ideas](#improvement-ideas)
-  * 3.1. [Reserve some IDs for Run-Length Encoding](#reserve-some-ids-for-run-length-encoding)
-  * 3.2. [Minimize Worst-Case Size](#minimize-worst-case-size)
+* 1. [TiP - Why and How? Initial Situation](#tip---why-and-how?-initial-situation)
+  * 1.1. [Framing](#framing)
+  * 1.2. [ Very Small Buffer Data Compession](#-very-small-buffer-data-compession)
+* 2. [Bytes, Numbers and the TiP Idea](#bytes,-numbers-and-the-tip-idea)
+* 3. [ID Table Generation](#id-table-generation)
+  * 3.1. [ID Table Generation Algorithm](#id-table-generation-algorithm)
+  * 3.2. [ID Table Generation Questions](#id-table-generation-questions)
+* 4. [The TiP Algorithm](#the-tip-algorithm)
+  * 4.1. [ID Position Table Generation](#id-position-table-generation)
+  * 4.2. [ID Position Table Processing](#id-position-table-processing)
+  * 4.3. [Packing - Unreplacable Bytes Handling](#packing---unreplacable-bytes-handling)
+  * 4.4. [Unpacking](#unpacking)
+* 5. [ TiP in Action](#-tip-in-action)
+    * 5.1. [Training](#training)
+    * 5.2. [Test Preparation](#test-preparation)
+    * 5.3. [Test Execution](#test-execution)
+    * 5.4. [Test Results Interpretation](#test-results-interpretation)
+* 6. [Improvement Ideas](#improvement-ideas)
+  * 6.1. [Reserve some IDs for Run-Length Encoding](#reserve-some-ids-for-run-length-encoding)
+  * 6.2. [Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter.](#minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter.)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -50,21 +57,19 @@ Table of Contents Generation:
 
 ---
 
-## 1. <a id='tip---why-and-how?'></a>TiP - Why and How?
+##  1. <a id='tip---why-and-how?-initial-situation'></a>TiP - Why and How? Initial Situation
 
-### 1.1. <a id='initial-situation'></a>Initial Situation
-
-#### 1.1.1. <a id='framing'></a>Framing
+###  1.1. <a id='framing'></a>Framing
 
 For low level buffer storage or MCU transfers some kind of framing is needed for resynchronization after failure. An old variant is to declare a special character as escape sign and to start each package with it. And if the escape sign is part of the buffer data, add an escape sign there too. Even the as escape sign selected character occurs seldom in the buffer data, a careful design should consider the possibility of a buffer containing only such characters.
 
 [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) is a newer and much better approach, to achieve framing. It transformes the buffer data containing 256 different characters into a sequence of 255 only characters. That allows to use the spare character as frame delimiter. Usually `0` is used for that.
 
-#### 1.1.2. <a id='-very-small-buffer-data-compession'></a> Very Small Buffer Data Compession
+###  1.2. <a id='-very-small-buffer-data-compession'></a> Very Small Buffer Data Compession
 
-A compression and then COBS framing would do perfectly. But when it comes to very short buffers, like 4 or 20 bytes, **normal zip code fails** to reduce the buffer size.
+A compression and then [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) framing would do perfectly. But when it comes to very short buffers, like 4 or 20 bytes, **normal zip code fails** to reduce the buffer size.
 
-To combine the COBS technique with compression especially for very short buffers, some additional spare characters are needed. That's done with [TCOBS](https://github.com/rokath/tcobs) in a manual coded way, meaning, expected special data properties are reflected in the TCOBS code. See the [TCOBS User Manual](https://github.com/rokath/tcobs/blob/master/docs/TCOBSv2Specification.md) for more details.
+To combine the [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) technique with compression especially for very short buffers, some additional spare characters are needed. That's done with [TCOBS](https://github.com/rokath/tcobs) in a manual coded way, meaning, expected special data properties are reflected in the [TCOBS](https://github.com/rokath/tcobs) code. See the [TCOBS User Manual](https://github.com/rokath/tcobs/blob/master/docs/TCOBSv2Specification.md) for more details.
 
 There is also [SMAZ](https://github.com/antirez/smaz), but suitable only for text buffers mainly in English.
 
@@ -72,202 +77,23 @@ There is also [SMAZ](https://github.com/antirez/smaz), but suitable only for tex
 
 An adaptive solution would be nice, meaning, not depending on a specific data structure like English text or many integers.
 
-### 1.2. <a id='bytes-and-numbers'></a>Bytes and Numbers
+##  2. <a id='bytes,-numbers-and-the-tip-idea'></a>Bytes, Numbers and the TiP Idea
 
-COBS and TCOBS are starting or ending with some control characters and these are linked togeter to distinguish them from data bytes. But there is also an other option.
+[COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) and [TCOBS](https://github.com/rokath/tcobs) are starting or ending with some control characters and these are linked togeter to distinguish them from data bytes. But there is also an other option.
 
-If there is a buffer of, let's say 20 bytes, we can consider it as a 20-digit number with 256 ciphers. To free like 8 characters for special usage, we could transform the 20 times 256 cipher number into a 21 or 22 times 248 ciphers number. This transformation is possible, but very computing intensive because of many divisions by 248, or a different base number. So this is no solution for small MCUs. But a division by 128 is cheap! If we transform the 256 base into a 128 base, we only need to perform a shift operation for the conversion. This way we get 128 special characters usable for compressing and framing.
+If there is a buffer of, let's say 20 bytes, we can consider it as a 20-digit number with 256 ciphers. To free some 8 characters for special usage, we could transform the 20 times 256 cipher number into a 21 or 22 times 248 ciphers number. This transformation is possible, but very computing intensive because of many divisions by 248, or a different base number. So this is no solution for small MCUs. But a division by 128 is cheap! If we transform the 256 base into a 128 base, we only need to perform a shift operation for the conversion. This way we get 128 special characters usable for compressing and framing:
 
-### 1.3. <a id='the-tip-idea'></a>The TiP Idea
+* Byte `00` is not used at all. One aim of TiP is, to get rid of all zeroes in the TiP packets to be able to use `0` as a package delimiter.
+* Bytes `01` to `7f` are used as pattern IDs. These IDs are used as pattern replacements.
+* Before we pack the buffer data, we try to find pattern from the ID table, we can then replace with IDs. See chapter [The TiP Algorithm](#the-tip-algorithm) for the how-to-do.
+* _Unreplacable_ bytes need a transformation in a way, that no bytes in the range 0-127 remain. That is our tranformation to the 128 base. We simply collect them and do a bit shifting in a way, that no most significant bit is used anymore. The MSBits of the reordered unreplacable bytes are all set to 1 and so we have only bytes `80` to `ff` left.
 
-#### Training 
-
-* Find the 127 most common pattern in sample data, similar to the real data expected later, and assign the IDs 1-127 to them. This is done once offline and the generated ID table gets part of the tiny packer code as well as for the tiny unpacker code. For that task a generator tool `ti_generate` was build.
-* Sample data specific result: [./src/idTable.c](../src/idTable.c)
-
-> 🛑 The current ID table generation might not give an optimal result and is matter of further investigation❗
-
-* Training data example (binary [Trice](https://github.com/rokath/trice) output file)
-
-```bash
-$ xxd -g 1 trice.bin.sample
-00000000: 3d 73 2a 00 3e 73 2b 04 ff ff ff ff 3f 73 2c 08  =s*.>s+.....?s,.
-00000010: ff ff ff ff fe ff ff ff 40 73 2d 0c ff ff ff ff  ........@s-.....
-00000020: fe ff ff ff fd ff ff ff 41 73 2e 10 ff ff ff ff  ........As......
-00000030: fe ff ff ff fd ff ff ff fc ff ff ff 42 73 2f 14  ............Bs/.
-00000040: ff ff ff ff fe ff ff ff fd ff ff ff fc ff ff ff  ................
-00000050: fb ff ff ff 43 73 30 18 ff ff ff ff fe ff ff ff  ....Cs0.........
-00000060: fd ff ff ff fc ff ff ff fb ff ff ff fa ff ff ff  ................
-...
-
-$ ti_generate.exe -i trice.bin.sample -z 4 -v -o ../../src/idTable.c
-go clean -cache && go install ../../...
-```
-
-#### Test Preparation
-
-In this sample, the messages are starting with `3d`, `3e`, `3f`, `40`, `41`, `42`, `43`, ... 
-
-* Create sample files:
-
-```bash
-cat trice.bin.sample | dd bs=1 skip=0 count=4 > 3d.bin
-$ xxd -g1 3d.bin
-00000000: 3d 73 2a 00                                      =s*.
-
-$ cat trice.bin.sample | dd bs=1 skip=4 count=8 > 3e.bin
-$ xxd -g1 3e.bin
-00000000: 3e 73 2b 04 ff ff ff ff                          >s+.....
-
-$ cat trice.bin.sample | dd bs=1 skip=12 count=12 > 3f.bin
-$ xxd -g1 3f.bin
-00000000: 3f 73 2c 08 ff ff ff ff fe ff ff ff              ?s,.........
-
-$ cat trice.bin.sample | dd bs=1 skip=24 count=16 > 40.bin
-$ xxd -g1 40.bin
-00000000: 40 73 2d 0c ff ff ff ff fe ff ff ff fd ff ff ff  @s-.............
-
-$ cat trice.bin.sample | dd bs=1 skip=40 count=20 > 41.bin
-$ xxd -g1 41.bin
-00000000: 41 73 2e 10 ff ff ff ff fe ff ff ff fd ff ff ff  As..............
-00000010: fc ff ff ff                                      ....
-
-$ cat trice.bin.sample | dd bs=1 skip=60 count=24 > 42.bin
-$ xxd -g1 42.bin
-00000000: 42 73 2f 14 ff ff ff ff fe ff ff ff fd ff ff ff  Bs/.............
-00000010: fc ff ff ff fb ff ff ff                          ........
-
-$ cat trice.bin.sample | dd bs=1 skip=84 count=28 > 43.bin
-$ xxd -g1 43.bin
-00000000: 43 73 30 18 ff ff ff ff fe ff ff ff fd ff ff ff  Cs0.............
-00000010: fc ff ff ff fb ff ff ff fa ff ff ff              ............
-```
-
-#### Test Execution
-
-```bash
-$ ti_pack.exe -v -i 3d.bin
-file size 4 changed to 1 (rate 25 percent)
-
-$ ti_pack.exe -v -i 3e.bin
-file size 8 changed to 6 (rate 75 percent)
-
-$ ti_pack.exe -v -i 3f.bin
-file size 12 changed to 8 (rate 66 percent)
-
-$ ti_pack.exe -v -i 40.bin
-file size 16 changed to 9 (rate 56 percent)
-
-$ ti_pack.exe -v -i 41.bin
-file size 20 changed to 10 (rate 50 percent)
-
-$ ti_pack.exe -v -i 42.bin
-file size 24 changed to 11 (rate 45 percent)
-
-$ ti_pack.exe -v -i 43.bin
-file size 28 changed to 12 (rate 42 percent)
-```
-
-#### Test Results Interpretation
-
-If the real data are similar to the training data, an average packed size of about 50\% ispossible.
-
-#### 1.3.1. <a id='packing'></a>Packing Algorithm
+The `ti_unpack` then sees bytes `01` to `7f` and knows, that these are IDs, intermixed with bytes `80` to `ff` and knows, that the 7 least significant bits are the unreplacable bytes. The byte places are containing the position informtion for the unreplacable bytes.
 
 
+##  3. <a id='id-table-generation'></a>ID Table Generation
 
-* Step byte by byte thru the `slen` `src` buffer and check if a pattern from the (into `tip`) compiled [./src/idTable.c](../src/idTable.c) matches and build a sorted ID position table. Its max length is slen-1. Example:
-
-IDPositionTable:
-idx  | id  | pos  | ASCII
------|-----|------|-------
-0    | 113 | 0    | '╝{'
-1    | 44  | 4    | '012'
-2    | 84  | 4    | '01'
-3    | 85  | 5    | '12'
-4    | 43  | 7    | ''
-5    | 83  | 7    | ''
-6    | 113 | 8    | '╝{'
-7    | 2   | 12   | '0123'
-8    | 44  | 12   | '012'
-9    | 84  | 12   | '01'
-10   | 45  | 13   | '123'
-11   | 85  | 13   | '12'
-12   | 86  | 14   | '23'
-13   | 113 | 16   | '╝{'
-14   | 2   | 20   | '0123'
-15   | 44  | 20   | '012'
-16   | 84  | 20   | '01'
-17   | 3   | 21   | '1234'
-18   | 45  | 21   | '123'
-...  | ... | ...  | ...
-
-* The pattern in the IDPositionTable:
-  * are a subset of the ID position table pattern 
-  * can occur several times at different positions
-    * Example: ID 44 at pos 4, 12 and 20
-  * can overlap
-     Example: IDs 2, 44, 84, 45, 85 all cover position 13
-
-
-
-
-
-* The implemented packing algorithm results in the best tip packing based on the given ID table.
-
-Its maximum possible size is 63 bytes. 
-
-- Find paths:
-
-idx | idx | idx | sumLen | ulen | dlen
-----|-----|-----|--------|------|-----
-0   | 3   | 6   | 7      | 1    | 9
-1   | 6   |     | 6      | 2    | 9
-2|3|6
-0|4|6
-2|4|6
-0|3|6
-2|4|6
-2|5|6
-
-The maximum path len plen is slen/2.
-The maximum path count is ?
-
-* Algorithm:
-  * Start with a single empty path
-  * Loop over (by start sorted) IDPosition table and for each IDPos:
-    * Loop over all paths
-      * If can append IDPos to a path, fork this path and append to the forked path.
-        * It can always append IDPos to at least the empty path (which is forked always).
-  * In worst case an IDPos can be added to all exsting path. Example:
-    * 0 IDPos: -> 0                         = 0 + 1 = 1 path
-    * 1 IDPos: -> 0 + 1                             = 1 + 1 = 2 path
-    * 2 IDPos: -> 0 + 1 + 0 + 1 + 2                         = 2 + 3 = 5 path
-    * 3 IDPos: ->                                                   = 5 + 4 = 9 path
-    * 4 IDPos: ->                                                           = 9 + 5 = 14 path = 0 + 1 + 1 + 2 + 3 + 5
-    * 5 IDPos: ->                                                                   = 14 + 5 = 19
-    * n IDPos: -> (n+1)*(n)/2 
-  * Then loop over all paths and compute dlen for each. No need to remove "unfinished" path, like the empty one, because we looking only for the path with the shortest dlen.
-
-
-  * find smallest idxE (1 here)
-  * all idxS < idxE can start a new line (0 ,1, 2)
-  * repeat
-    * for each line, find smallest idxE for all idxS > line idxE
-    * fork with all idxE < idxS && idxS < smallest idxE
-    * goto repeat
-   
-#### Packing - Unreplacable Bytes Handling
-
-All unreplacable bytes are collected into one separate buffer. N unreplacable bytes occupy N\*8 bits. These bits are distributed onto N\*8/7 7-bit bytes, all getting the MSBit set to avoid zeroes and to distinguish them later from the ID bytes. In fact we do not change these N\*8 bits, we simply reorder them slightly. This bit reordering is de-facto the number transformation to the base 128, mentioned above.
-
-After replacing, all found patterns are replaced with their IDs, which all have MSBit=0. The unreplacable bytes are replaced with the bit-reordered unreplacable bytes, having MSBit=1. The bit-reordered unreplacable bytes fill the wholes between the IDs.
-
-#### 1.3.2. <a id='unpacking'></a>Unpacking
-
-On the receiver side all bytes with MSBit=0 are identified as IDs and are replaced with the patterns they stay for. All bytes with MSBit=1 are carying the unreplacable bytes bits. These are ordered back to restore the unreplacable bytes which fill the wholes between the patterens then.
-
-## 2. <a id='id-table-generation'></a>ID Table Generation
+###  3.1. <a id='id-table-generation-algorithm'></a>ID Table Generation Algorithm
 
 * We create a bunch of test files with data similar to those we want to pack in the future.
   * `ti_generate` takes a single file and treats it as a separate sample buffer.
@@ -275,12 +101,12 @@ On the receiver side all bytes with MSBit=0 are identified as IDs and are replac
 * We assume a longest pattern, like N=8 for example.
   * `ti_generate` accepts it as parameter.
   * The longest possible pattern is 255 bytes long.
-  * For very short buffers, 4 to 8 bytes as maximum is recommended as max size N.
+  * For very short buffers, 2 to 8 bytes as maximum is recommended as max size N.
 * We take the first N bytes of some sample data and move that window in 1-byte steps over the sample data and build a histogram over all found pattern and their occurances count.
 * The same is done with all smaller pattern sizes, ergo N, ..., 3, 2. Not interesting are 1-byte patterns, because their replacement by an ID gives no compression effect.
 * The 127 most often occuring pattern are sorted by descending size and are used to create the file `idTable.c`.
 
-### 2.1. <a id='id-table-generation-questions'></a>ID Table Generation Questions
+###  3.2. <a id='id-table-generation-questions'></a>ID Table Generation Questions
 
 * It is not clear, if the this way created ID table is optimal. Especially, when pattern are sub-pattern of other patterns. That is easily the case with sample data containing the same bytes in longer rows.
 * Also it could make sense to use the length of a pattern as weigth. If, for example a 5-bytes long pattern occurs 100 times and a 2-bytes long pattern exists 200 times in the sample data - which should get preceedence to get into the ID table? My guess is, to multiply the pattern length with its occureances count gives a good approximation.
@@ -295,7 +121,7 @@ On the receiver side all bytes with MSBit=0 are identified as IDs and are replac
 //         -> 11:2           111:1       1111:1 -> weighted: 11:4           111:3       1111:4
 ```
 
-#### 10 bytes: 123456789a 
+-####  3.2.1. <a id='10-bytes:-123456789a'></a>10 bytes: 123456789a 
 
 p   | m   | length | pattern                         | no pattern    | byte usage count | equ. factor
 ----|-----|--------|---------------------------------|---------------|------------------|------------
@@ -342,9 +168,159 @@ bb0000  | 1     | 4/3            | 4000/3 = 1333 | contains 0000
 0000cc  | 1     | 4/3            | 4000/3 = 1333 | contains 0000
 -->
 
-## 3. <a id='improvement-ideas'></a>Improvement Ideas
+##  4. <a id='the-tip-algorithm'></a>The TiP Algorithm
 
-### 3.1. <a id='reserve-some-ids-for-run-length-encoding'></a>Reserve some IDs for Run-Length Encoding
+###  4.1. <a id='id-position-table-generation'></a>ID Position Table Generation
+
+* Step byte by byte thru the `slen` `src` buffer and check if a pattern from the (into `ti_pack` and `ti_unpack`) compiled [./src/idTable.c](../src/idTable.c) matches and build a sorted ID position table. Its max length is slen-1. Example for file 43.bin:
+
+IDPositionTable:
+idx | ID  | pos | ASCII
+----|-----|-----|-------
+0   | 52  | 4   | '    '
+1   | 95  | 4   | '   '
+2   | 127 | 4   | '  '
+3   | 51  | 5   | '   ■'
+4   | 95  | 5   | '   '
+5   | 127 | 5   | '  '
+6   | 43  | 6   | '  ■ '
+7   | 94  | 6   | '  ■'
+8   | 127 | 6   | '  '
+9   | 35  | 7   | ' ■  '
+... | ... | ... | ...
+
+* The pattern in the IDPositionTable:
+  * are a subset of the [./src/idTable.c](../src/idTable.c) pattern 
+  * can occur several times at different positions, example: ID 127 at pos 4, 5 and 6
+  * can overlap, example: IDs 52, 95, 127, 51, 55 all cover position 5
+
+###  4.2. <a id='id-position-table-processing'></a>ID Position Table Processing
+
+* To build a TiP packet, many different ID position sequences are possible, maybe interrupted by some _unreplacable_ bytes. The TiP packer starts creating a full `srcMap` containing all possible paths. For that it traverses the (by incrementing position sorted) IDPositionTable and checks, if the current ID position is appenable to any paths. If so, these paths are forked and the ID position is appended to the fork. That fork is needed, because the same path is extendable with different ID positions. If the current ID position did not fit to any path, a new path is created. After processing an ID position, some new paths may exist or some paths have been extended with this ID position. Before going to the next ID position from the IDPositionTable, obsolete `srcMap` paths are deleted. Obsolete are paths, if their limit plus the maximum pattern size is smaller than biggest existing path limit. Obsolete paths are too those path, which have an equal limit but wuld result in a bigger TiP packet. Even if they would result in an equal TiP packet size, it is only one of them needed for futher ID position provessing.
+* When the PositionTable was processed completely, a few paths are remaining. A path, which would result in the smallest TiP packet is selected to create the TiP packet.
+
+###  4.3. <a id='packing---unreplacable-bytes-handling'></a>Packing - Unreplacable Bytes Handling
+
+The selected path covers no, some or all bytes with ID pattern. Bytes not covered, are unreplacable bytes.
+All unreplacable bytes are collected into one separate buffer. N unreplacable bytes occupy N\*8 bits. These bits are distributed onto N\*8/7 7-bit bytes, all getting the MSBit set to avoid zeroes and to distinguish them later from the ID bytes. In fact we do not change these N\*8 bits, we simply reorder them slightly. This bit reordering is de-facto the number transformation to the base 128, mentioned above.
+
+After replacing, all found patterns are replaced with their IDs, which all have MSBit=0. The unreplacable bytes are replaced with the bit-reordered unreplacable bytes, having MSBit=1. The bit-reordered unreplacable bytes fill the wholes between the IDs.
+
+###  4.4. <a id='unpacking'></a>Unpacking
+
+On the receiver side all bytes with MSBit=0 are identified as IDs and are replaced with the patterns they stay for. All bytes with MSBit=1 are carying the unreplacable bytes bits. These are ordered back to restore the unreplacable bytes which fill the wholes between the patterens then.
+
+##  5. <a id='-tip-in-action'></a> TiP in Action
+
+> **Follow these steps with your own data, to see quickly if it makes sense for your project.**
+
+####  5.1. <a id='training'></a>Training 
+
+* Find the 127 most common pattern in some sample data, similar to the real data expected later, and assign the IDs 1-127 to them. This is done once offline and the generated ID table gets part of the tiny packer code as well as for the tiny unpacker code. For that task a generator tool `ti_generate` was build.
+* Sample data specific result: [./src/idTable.c](../src/idTable.c)
+
+> 🛑 The current ID table generation might not give an optimal result and is matter of further investigation❗
+
+* Training data example (binary [Trice](https://github.com/rokath/trice) output file)
+
+```bash
+$ xxd -g 1 trice.bin.sample
+00000000: 3d 73 2a 00 3e 73 2b 04 ff ff ff ff 3f 73 2c 08  =s*.>s+.....?s,.
+00000010: ff ff ff ff fe ff ff ff 40 73 2d 0c ff ff ff ff  ........@s-.....
+00000020: fe ff ff ff fd ff ff ff 41 73 2e 10 ff ff ff ff  ........As......
+00000030: fe ff ff ff fd ff ff ff fc ff ff ff 42 73 2f 14  ............Bs/.
+00000040: ff ff ff ff fe ff ff ff fd ff ff ff fc ff ff ff  ................
+00000050: fb ff ff ff 43 73 30 18 ff ff ff ff fe ff ff ff  ....Cs0.........
+00000060: fd ff ff ff fc ff ff ff fb ff ff ff fa ff ff ff  ................
+...
+
+$ ti_generate.exe -i trice.bin.sample -z 4 -v -o ../../src/idTable.c
+go clean -cache && go install ../../...
+```
+
+* The maximum allowed pattern size `-z 4` has influence on the TiP pack results and the best value depends on the data. 
+
+####  5.2. <a id='test-preparation'></a>Test Preparation
+
+* Create some sample files: In this example, the messages are starting with `3d`, `3e`, `3f`, `40`, `41`, `42`, `43`, ... (see [TriceUserManual # Package Format](https://github.com/rokath/trice/blob/master/docs/TriceUserManual.md#package-format)). So we cut out a few single binary Trice messages. 
+
+
+```bash
+cat trice.bin.sample | dd bs=1 skip=0 count=4 > 3d.bin
+$ xxd -g1 3d.bin
+00000000: 3d 73 2a 00                                      =s*.
+# ID -----^^-^^
+# cycle --------^^
+# payloadsize -----^^
+$ cat trice.bin.sample | dd bs=1 skip=4 count=8 > 3e.bin
+$ xxd -g1 3e.bin
+00000000: 3e 73 2b 04 ff ff ff ff                          >s+.....
+# ID -----^^-^^
+# cycle --------^^
+# payloadsize -----^^
+# payload ------------^^-^^-^^-^^
+$ cat trice.bin.sample | dd bs=1 skip=12 count=12 > 3f.bin
+$ xxd -g1 3f.bin
+00000000: 3f 73 2c 08 ff ff ff ff fe ff ff ff              ?s,.........
+# ID -----^^-^^
+# cycle --------^^
+# payloadsize -----^^
+# payload ------------^^-^^-^^-^^-^^-^^-^^-^^
+$ cat trice.bin.sample | dd bs=1 skip=24 count=16 > 40.bin
+$ xxd -g1 40.bin
+00000000: 40 73 2d 0c ff ff ff ff fe ff ff ff fd ff ff ff  @s-.............
+# ID -----^^-^^
+# cycle --------^^
+# payloadsize -----^^
+# payload ------------^^-^^-^^-^^-^^-^^-^^-^^-^^-^^-^^-^^
+$ cat trice.bin.sample | dd bs=1 skip=40 count=20 > 41.bin
+$ xxd -g1 41.bin
+00000000: 41 73 2e 10 ff ff ff ff fe ff ff ff fd ff ff ff  As..............
+00000010: fc ff ff ff                                      ....
+
+$ cat trice.bin.sample | dd bs=1 skip=60 count=24 > 42.bin
+$ xxd -g1 42.bin
+00000000: 42 73 2f 14 ff ff ff ff fe ff ff ff fd ff ff ff  Bs/.............
+00000010: fc ff ff ff fb ff ff ff                          ........
+
+$ cat trice.bin.sample | dd bs=1 skip=84 count=28 > 43.bin
+$ xxd -g1 43.bin
+00000000: 43 73 30 18 ff ff ff ff fe ff ff ff fd ff ff ff  Cs0.............
+00000010: fc ff ff ff fb ff ff ff fa ff ff ff              ............
+```
+
+####  5.3. <a id='test-execution'></a>Test Execution
+
+```bash
+$ ti_pack.exe -v -i 3d.bin
+file size 4 changed to 1 (rate 25 percent)
+
+$ ti_pack.exe -v -i 3e.bin
+file size 8 changed to 6 (rate 75 percent)
+
+$ ti_pack.exe -v -i 3f.bin
+file size 12 changed to 8 (rate 66 percent)
+
+$ ti_pack.exe -v -i 40.bin
+file size 16 changed to 9 (rate 56 percent)
+
+$ ti_pack.exe -v -i 41.bin
+file size 20 changed to 10 (rate 50 percent)
+
+$ ti_pack.exe -v -i 42.bin
+file size 24 changed to 11 (rate 45 percent)
+
+$ ti_pack.exe -v -i 43.bin
+file size 28 changed to 12 (rate 42 percent)
+```
+
+####  5.4. <a id='test-results-interpretation'></a>Test Results Interpretation
+
+If the real data are similar to the training data, an average packed size of about 50\% is expected.
+
+##  6. <a id='improvement-ideas'></a>Improvement Ideas
+
+###  6.1. <a id='reserve-some-ids-for-run-length-encoding'></a>Reserve some IDs for Run-Length Encoding
 
 * Example:
 
@@ -357,11 +333,11 @@ bb0000  | 1     | 4/3            | 4000/3 = 1333 | contains 0000
 
 
 * The tiny unpack routine first regards all bytes with MSBit=0 as IDs.
-* The ID `7F` is followed by a count byte and optional other bytes. These are regarded as part of this ID too during tip package interpretation.
+* The ID `7F` is followed by a count byte and optional other bytes. These are regarded as part of this ID too during TiP package interpretation.
   * The count is guarantied not to be zero and also some optional additional bytes.
 
 
-### 3.2. <a id='minimize-worst-case-size'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter.
+###  6.2. <a id='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter.'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter.
 
 * If data are containing no ID table pattern at all, they are getting bigger by the factor 8/7. Thats a result of treating the data in 8 bit units (bytes).
 * If we change that to 16-bit units, by accepting an optional padding byte, we can reduce this increase factor to 16/15.
