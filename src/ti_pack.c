@@ -186,9 +186,8 @@ static loc_t pathPatternSizeSum( unsigned pidx ){
         return 0;
     }
     path_t path = srcMap.path[pidx];
-    loc_t pathIdxCount = path.last + 1;
     loc_t sum = 0;
-    for( int i = 0; i < pathIdxCount; i++ ){
+    for( int i = 0; i <= path.last; i++ ){
         loc_t pti = path.pti[i];
         sum += ptiPatternLength(pti);
     }
@@ -210,11 +209,11 @@ static int pathCompare( unsigned firstPIdx, unsigned secondPIdx ){
     }else if( psum1 > psum2 ){
         return -1;
     }
-    loc_t plen1 = srcMap.path[firstPIdx].last;
-    loc_t plen2 = srcMap.path[secondPIdx].last;
-    if( plen1 > plen2 ){
+    loc_t last1 = srcMap.path[firstPIdx].last;
+    loc_t last2 = srcMap.path[secondPIdx].last;
+    if( last1 > last2 ){
         return 1;
-    } else if( plen1 < plen2 ){
+    } else if( last1 < last2 ){
         return -1;
     }
     return 0;
@@ -236,14 +235,13 @@ static unsigned ShortestTipPath(void){
     }
     // printPath( "first       psiz max ", pidx );
     // Maximum psiz results in smallest tip size only for min path length.
-    loc_t minLen = TIP_SRC_BUFFER_SIZE_MAX;
+    loc_t minLast = TIP_SRC_BUFFER_SIZE_MAX;
     for( unsigned i = 0; i < srcMap.count; i++ ){
         if( maxSum == pathPatternSizeSum(i) ){
-            // printPath( "alternative psiz max ", i );
+            // printPath( "altern", i );
             path_t path = srcMap.path[i];
-            loc_t plen = path.last;
-            if( plen < minLen ){
-                minLen = plen;
+            if( path.last < minLast ){
+                minLast = path.last;
                 pidx = i;
                 // printf( "pidx %u, minlen %u\n", pidx, minLen );
             }
@@ -251,7 +249,7 @@ static unsigned ShortestTipPath(void){
     }
 #if DEBUG
     printf( "%u paths\n", srcMap.count );
-    printPath( "select(", pidx );
+    printPath( "select", pidx );
 #endif
     return pidx;
 }
@@ -320,7 +318,7 @@ void shrinkSrcMap( void ){
     if( srcMap.count <= 1 ){
         return; // nothing to do.
     }
-    // Find maximum limit
+    // Find maximum limit of all paths
     loc_t maxlimit = 0;
     for( unsigned i = 0; i < srcMap.count; i++ ){ // Loop over all so far existing paths.
         loc_t limit = pathLimit(i);
@@ -335,8 +333,8 @@ void shrinkSrcMap( void ){
         }
     }
 
-    //Reduce equal length paths.
-    for( unsigned f = 0; f < srcMap.count; f++ ){ // Loop over all so far existing paths.
+    // Reduce equal length paths.
+    for( unsigned f = 0; f < srcMap.count; f++ ){ // Loop over all still existing paths.
         for( unsigned s = f+1; s < srcMap.count; s++ ){ 
             loc_t firstLimit = pathLimit(f);
             loc_t secondLimit = pathLimit(s);
@@ -344,7 +342,6 @@ void shrinkSrcMap( void ){
                 int result = pathCompare(f, s);
                 if( result <= 0 ){ // FIRST path results in a SHORTER tip package or both paths equal.
                     removePath( s );
-                    // goto start; // TODO: improve code
                 }
             }
         }
@@ -376,8 +373,8 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
             }
             path_t path = srcMap.path[k];                  // path is next path in srcMap.
             //loc_t last = path.last;                      // pcnt is the number od IDPosTable indices in this path.
-            loc_t idx = path.pti[path.last];               // idx is last IDPosTable index in this path.
-            IDPosition_t lastIdPos = IDPosTable.item[idx]; // lastIdPos is the last (referenced) idPos in this path.
+            loc_t ptk = path.pti[path.last];               // ptk is last IDPosTable index in this path.
+            IDPosition_t lastIdPos = IDPosTable.item[ptk]; // lastIdPos is the last (referenced) idPos in this path.
             uint8_t lll_Id = lastIdPos.id;                 // lll_Id is the ID we got from the IDPosTable.
             loc_t lll_start = lastIdPos.start;             // lll_start is the start position of the pattern.
             uint8_t lll_len = IDPatternLength( lll_Id );   // lll_len is the length of the pattern to check.
@@ -407,7 +404,7 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
 //  #if DEBUG    
 //                      printPath("appd: ", k);
 //  #endif    
-                IDPosAppended = 1; // idx is appended to at least one path now.
+                IDPosAppended = 1; // pti is appended to at least one path now.
                 }
                 
                 //! TODO: Is it possible to reduce the paths count already here?
@@ -416,10 +413,10 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
         }
         if( !IDPosAppended ){ // pti did not fit to any path, so lets create a new path for it.
             if( srcMap.count < TIP_MAX_PATH_COUNT ){ // Create no new paths for this src buffer.  
-                unsigned next = srcMap.count;
-                path_t * path = &srcMap.path[next];
+                unsigned nextIdx = srcMap.count;
+                path_t * path = &srcMap.path[nextIdx];
                 path->last = 0;     // One position table index is now in this new path.
-                path->pti[0] = pti; // Write the pti (the first is naturally 0)
+                path->pti[0] = pti; // Write the pti (the first last is naturally 0)
                 srcMap.count++;     // We have one more path now.
 #if DEBUG
                 printPath(" new: ", nextIdx);
@@ -440,13 +437,13 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
 //! It uses idPatTable and the path index pidx in the actual srcMap, which is linked to IDPosTable.
 static size_t selectUnreplacableBytes( uint8_t * dst, unsigned pidx, const uint8_t * src, size_t slen ){
     path_t path = srcMap.path[pidx]; // This is the path we use. 
-    loc_t count = path.last + 1;     // The path contains count IDPosTable indicies pti.
+    // loc_t pti_count = path.last + 1; // The path contains count IDPosTable indicies pti.
     const uint8_t * srcNext = src;   // next position for src buffer read
     uint8_t * dstNext = dst;         // next position for dst buffer write
     //loc_t * tidx = path.pti;         // Here are starting the IDPosTable indices.
     loc_t u8sum = 0;
     printf( "\n\nselectUnreplacableBytes:\n\n");
-    for( int i = 0; i < count; i++ ){
+    for( int i = 0; i <= path.last; i++ ){
         loc_t pti = path.pti[i];
         //if( pti == 258 ){
          //   printf( "%d\n", pti );
@@ -486,14 +483,14 @@ static size_t selectUnreplacableBytes( uint8_t * dst, unsigned pidx, const uint8
 //! It uses idPatTable and the path index pidx in the actual srcMap, which is linked to IDPosTable.
 static size_t createOutput( uint8_t * dst, unsigned pidx, const uint8_t * u7src, size_t u7len, const uint8_t * src ){
     path_t path = srcMap.path[pidx]; // This is the path we use. 
-    loc_t plen = path.last + 1;      // The path contains: count, IDPosTable index, IDPosTable index, ...
+   //loc_t plen = path.last + 1;      // The path contains: count, IDPosTable index, IDPosTable index, ...
     const uint8_t * srcNext = src;   // next position for src buffer read
     uint8_t * dstNext = dst;         // next position for dst buffer write
     //loc_t * tidx = path.posIndex;    // Here are starting the IDPosTable indices.
     const uint8_t * u7Next = u7src;
     // printf( "PATH %d\n", pidx );
     // printPath( "DEBUG:", pidx );
-    for( int i = 0; i < plen; i++ ){
+    for( int i = 0; i <= path.last; i++ ){
         loc_t pti = path.pti[i];
         IDPosition_t idPos = IDPosTable.item[pti];
         uint8_t id = idPos.id;
@@ -613,17 +610,16 @@ static void printPatternAsASCII( uint8_t id ){
 //! @brief printPath is a debug helper.
 static void printPath( char * prefix, unsigned pidx ){
     path_t path = srcMap.path[pidx]; 
-    int plen = path.count;
+    //int plen = path.last + 1;
     loc_t psiz = pathPatternSizeSum(pidx);
-    printf( "%s%6u: psum%3d, pcnt%3d, idx:", prefix, pidx, psiz, plen);
-    for( int k = 0; k < plen; k++ ){
-        loc_t idx = path.posIndex[k];
-        printf( " %2d", idx);
+    printf( "%s%6u: psum%3d, plen%3d, pti:", prefix, pidx, psiz, path.last + 1);
+    for( int k = 0; k <= path.last; k++ ){
+        printf( " %2d", path.pti[k]);
     }
     loc_t last = 0;
     printf( ", pat:" );
-    for( int k = 0; k < plen; k++ ){
-        loc_t idx = path.posIndex[k];
+    for( int k = 0; k <= path.last; k++ ){
+        loc_t idx = path.pti[k];
         IDPosition_t idPos = IDPosTable.item[idx];
         uint8_t id = idPos.id;
         if( last < idPos.start ){
@@ -634,7 +630,6 @@ static void printPath( char * prefix, unsigned pidx ){
         last = idPos.start + IDPatternLength( id );
         printPatternAsASCII(id);
     }
-    
     printf( "\n" );
 }
 
