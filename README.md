@@ -84,8 +84,8 @@ Table of Contents Generation:
 +   The pack code is probably error free and finds the best packaging for a given ID table, but could get improved.
 ```
 
-* Pack & Unpack are working in a first implementation
-* `idTable.c` generation also ok, but the generated table might not be optimal.
+* Pack & Unpack are working in a first implementation.
+* The `idTable.c` generation also ok, but the generated table might not be optimal.
 
 <!-- ABOUT THE PROJECT -->
 
@@ -94,7 +94,7 @@ Table of Contents Generation:
 * Usual compressors cannot succeed on very small buffers, because they add a translation table into the data.
 * **TiP** is an adaptable short-buffer packer, suitable for embedded devices. Like [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) it removes all zeroes from the data, but additionally tries data compression. 
 * The TiP worst-case overhead is 1 byte per each starting 7 bytes (+14%) for uncompressable data, but the expected average packed size is about 60% of the unpacked data. <sub>(For comparism: [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) adds 1 byte overhead per each starting 255 bytes, but does not compress at all.)</sub>
-* Like [TCOBS](https://github.com/rokath//tcobs), TiP can already compress 2 bytes into 1 byte but is expected to do better in a general way.
+* Like [TCOBS](https://github.com/rokath//tcobs), TiP can already compress 2 bytes into 1 byte but is expected to do adaptable better on arbitrary data with more computing effort.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
