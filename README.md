@@ -106,7 +106,7 @@ Table of Contents Generation:
   * `ti_unpack` - **ti**ny **u**npack using the **unpack** C code mainly for tests
 * Tiny C-Code usable on embedded devices inside [src](./src/) folder containing
   * [idTable.c](./src/idTable.c) - a generated data specific translation table
-  * [pack.c](./src/pack.c) and [unpack.c](./src/unpack.c) - separately or together compilable
+  * [ti_pack.c](./src/ti_pack.c) and [ti_unpack.c](./src/ti_unpack.c) - separately or together compilable
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
