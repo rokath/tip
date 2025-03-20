@@ -1,7 +1,7 @@
 #!/bin/bash
-maxPatternSize=8
-#fn="./trice.bin.sample"
-fn="../../docs/TipUserManual.md"
+maxPatternSize=4
+fn="./trice.bin.sample"
+#fn="../../docs/TipUserManual.md"
 #fn="../../LICENSE.md"
 time ( \
 go clean -cache && \

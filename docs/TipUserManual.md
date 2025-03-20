@@ -80,32 +80,149 @@ If there is a buffer of, let's say 20 bytes, we can consider it as a 20-digit nu
 
 ### 1.3. <a id='the-tip-idea'></a>The TiP Idea
 
-#### 1.3.0 Training 
+#### Training 
 
-Find the 127 most common pattern in sample data, similar to the real data expected later, and assign the IDs 1-127 to them. This is done once offline and the generated ID table gets part of the tiny packer code as well as for the tiny unpacker code. For that task a generator tool was build.
+* Find the 127 most common pattern in sample data, similar to the real data expected later, and assign the IDs 1-127 to them. This is done once offline and the generated ID table gets part of the tiny packer code as well as for the tiny unpacker code. For that task a generator tool `ti_generate` was build.
+* Sample data specific result: [./src/idTable.c](../src/idTable.c)
 
-#### 1.3.1. <a id='packing'></a>Packing - Pattern Assignment
+> 🛑 The current ID table generation might not give an optimal result and is matter of further investigation❗
 
-- Make a Sorted IDposition Fitting Table. Example:
+* Training data example (binary [Trice](https://github.com/rokath/trice) output file)
 
-Idx|ID | start| end
--|-|-|-
-0|93|0|1
-1|17|1|4
-2|9|1|2
-3|22|3|5
-4|55|3|4
-5|61|4|5
-6|55|6|7
+```bash
+$ xxd -g 1 trice.bin.sample
+00000000: 3d 73 2a 00 3e 73 2b 04 ff ff ff ff 3f 73 2c 08  =s*.>s+.....?s,.
+00000010: ff ff ff ff fe ff ff ff 40 73 2d 0c ff ff ff ff  ........@s-.....
+00000020: fe ff ff ff fd ff ff ff 41 73 2e 10 ff ff ff ff  ........As......
+00000030: fe ff ff ff fd ff ff ff fc ff ff ff 42 73 2f 14  ............Bs/.
+00000040: ff ff ff ff fe ff ff ff fd ff ff ff fc ff ff ff  ................
+00000050: fb ff ff ff 43 73 30 18 ff ff ff ff fe ff ff ff  ....Cs0.........
+00000060: fd ff ff ff fc ff ff ff fb ff ff ff fa ff ff ff  ................
+...
+
+$ ti_generate.exe -i trice.bin.sample -z 4 -v -o ../../src/idTable.c
+go clean -cache && go install ../../...
+```
+
+#### Test Preparation
+
+In this sample, the messages are starting with `3d`, `3e`, `3f`, `40`, `41`, `42`, `43`, ... 
+
+* Create sample files:
+
+```bash
+cat trice.bin.sample | dd bs=1 skip=0 count=4 > 3d.bin
+$ xxd -g1 3d.bin
+00000000: 3d 73 2a 00                                      =s*.
+
+$ cat trice.bin.sample | dd bs=1 skip=4 count=8 > 3e.bin
+$ xxd -g1 3e.bin
+00000000: 3e 73 2b 04 ff ff ff ff                          >s+.....
+
+$ cat trice.bin.sample | dd bs=1 skip=12 count=12 > 3f.bin
+$ xxd -g1 3f.bin
+00000000: 3f 73 2c 08 ff ff ff ff fe ff ff ff              ?s,.........
+
+$ cat trice.bin.sample | dd bs=1 skip=24 count=16 > 40.bin
+$ xxd -g1 40.bin
+00000000: 40 73 2d 0c ff ff ff ff fe ff ff ff fd ff ff ff  @s-.............
+
+$ cat trice.bin.sample | dd bs=1 skip=40 count=20 > 41.bin
+$ xxd -g1 41.bin
+00000000: 41 73 2e 10 ff ff ff ff fe ff ff ff fd ff ff ff  As..............
+00000010: fc ff ff ff                                      ....
+
+$ cat trice.bin.sample | dd bs=1 skip=60 count=24 > 42.bin
+$ xxd -g1 42.bin
+00000000: 42 73 2f 14 ff ff ff ff fe ff ff ff fd ff ff ff  Bs/.............
+00000010: fc ff ff ff fb ff ff ff                          ........
+
+$ cat trice.bin.sample | dd bs=1 skip=84 count=28 > 43.bin
+$ xxd -g1 43.bin
+00000000: 43 73 30 18 ff ff ff ff fe ff ff ff fd ff ff ff  Cs0.............
+00000010: fc ff ff ff fb ff ff ff fa ff ff ff              ............
+```
+
+#### Test Execution
+
+```bash
+$ ti_pack.exe -v -i 3d.bin
+file size 4 changed to 1 (rate 25 percent)
+
+$ ti_pack.exe -v -i 3e.bin
+file size 8 changed to 6 (rate 75 percent)
+
+$ ti_pack.exe -v -i 3f.bin
+file size 12 changed to 8 (rate 66 percent)
+
+$ ti_pack.exe -v -i 40.bin
+file size 16 changed to 9 (rate 56 percent)
+
+$ ti_pack.exe -v -i 41.bin
+file size 20 changed to 10 (rate 50 percent)
+
+$ ti_pack.exe -v -i 42.bin
+file size 24 changed to 11 (rate 45 percent)
+
+$ ti_pack.exe -v -i 43.bin
+file size 28 changed to 12 (rate 42 percent)
+```
+
+#### Test Results Interpretation
+
+If the real data are similar to the training data, an average packed size of about 50\% ispossible.
+
+#### 1.3.1. <a id='packing'></a>Packing Algorithm
+
+
+
+* Step byte by byte thru the `slen` `src` buffer and check if a pattern from the (into `tip`) compiled [./src/idTable.c](../src/idTable.c) matches and build a sorted ID position table. Its max length is slen-1. Example:
+
+IDPositionTable:
+idx  | id  | pos  | ASCII
+-----|-----|------|-------
+0    | 113 | 0    | '╝{'
+1    | 44  | 4    | '012'
+2    | 84  | 4    | '01'
+3    | 85  | 5    | '12'
+4    | 43  | 7    | ''
+5    | 83  | 7    | ''
+6    | 113 | 8    | '╝{'
+7    | 2   | 12   | '0123'
+8    | 44  | 12   | '012'
+9    | 84  | 12   | '01'
+10   | 45  | 13   | '123'
+11   | 85  | 13   | '12'
+12   | 86  | 14   | '23'
+13   | 113 | 16   | '╝{'
+14   | 2   | 20   | '0123'
+15   | 44  | 20   | '012'
+16   | 84  | 20   | '01'
+17   | 3   | 21   | '1234'
+18   | 45  | 21   | '123'
+...  | ... | ...  | ...
+
+* The pattern in the IDPositionTable:
+  * are a subset of the ID position table pattern 
+  * can occur several times at different positions
+    * Example: ID 44 at pos 4, 12 and 20
+  * can overlap
+     Example: IDs 2, 44, 84, 45, 85 all cover position 13
+
+
+
+
+
+* The implemented packing algorithm results in the best tip packing based on the given ID table.
 
 Its maximum possible size is 63 bytes. 
 
 - Find paths:
 
-idx|idx| idx|sumLen|ulen|dlen
- -|-|-|-|-|-
-0|3|6|7|1|9
-1|6||6|2|9
+idx | idx | idx | sumLen | ulen | dlen
+----|-----|-----|--------|------|-----
+0   | 3   | 6   | 7      | 1    | 9
+1   | 6   |     | 6      | 2    | 9
 2|3|6
 0|4|6
 2|4|6

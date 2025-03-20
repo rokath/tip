@@ -38,8 +38,11 @@ typedef struct {
 
 static size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen); // forward declaration
 
-#if DEBUG
+#if VERBOSE
 static void printIDPositionTable( void );              // forward declaration
+#endif
+
+#if DEBUG
 static void printSrcMap( void );
 static void printPath( char * prefix, unsigned pidx ); // forward declaration
 static void printPatternAsASCII( uint8_t id );
@@ -150,7 +153,7 @@ static void createIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, si
             offset = loc + 1; // "xxxxxPPPxxx" - after finding first PP, we need to find the 2nd PP inside PPP.
         }
     }    
-#if DEBUG
+#if VERBOSE
     printIDPositionTable();
 #endif
 }
@@ -639,8 +642,13 @@ static void printSrcMap( void ){
     printf( "-----------\n\n");
 }
 
-//! @brief IDPattern writes pattern address of id and returns pattern length.. 
-static loc_t IDPattern( const uint8_t ** patternAddress, uint8_t id ){
+
+#endif
+
+#if 1 // VERBOSE
+
+//! @brief IDPatternAddress writes pattern address of id into and returns pattern length.
+static loc_t IDPatternAddress( const uint8_t ** patternAddress, uint8_t id ){
     const uint8_t * next = idPatTable;
     for( int i = 1; i < id; i++ ){
         next += 1 + *next;
@@ -659,7 +667,7 @@ static void printIDPositionTable( void ){
         uint8_t id = IDPosTable.item[idx].id;
         loc_t loc = IDPosTable.item[idx].start;
         const uint8_t * pattern;
-        loc_t length = IDPattern( &pattern, id);
+        loc_t length = IDPatternAddress( &pattern, id);
         uint8_t s[100] = {0};
         memcpy(s, pattern, length);
         printf(" %3d | %3d | %3d | '%s' \n", idx, id, loc, s);
@@ -668,36 +676,3 @@ static void printIDPositionTable( void ){
 }
 
 #endif
-
-/*
-
- @brief IDPattern returns pattern address of id. The max pattern length is 255.
-static uint8_t * IDPatternAddress( uint8_t id ){
-    const uint8_t * next = idPatTable;
-    for( int i = 1; i < id; i++ ){
-        next += 1 + *next;
-    }
-    return next;
-}
-
-//! @brief IDPosLimit returns first offset after ID position idx.
-STATIC loc_t IDPosLimit(uint8_t idx){
-    uint8_t id = IDPosTable.item[idx].id;
-    loc_t len = IDPatternLength( id );
-    loc_t limit = IDPosTable.item[idx].start + len;
-    return limit;
-}
-
-//! @brief IDPosAppendableToPath checks if pathIndex limit is small enough to append IDPos.
-//! \param pathIndex is the path to check.
-//! \param IDPosIdx is the ID position inside IDPosTable.
-static int IDPosAppendableToPath( path_t pathIndex, uint8_t idPos ){
-    path_t pathIdPosCount = srcMap.path[pathIndex][0];
-    uint8_t lastIdPos = srcMap.path[pathIndex][pathIdPosCount];
-    if( IDPosLimit(lastIdPos) <= IDPosTable.item[idPos].start ){
-        return 1;
-    }
-    return 0;
-}
-
-*/
