@@ -80,7 +80,8 @@ Table of Contents Generation:
 ## 1. <a id='project-status'></a>Project Status
 
 ```diff
---> Early experimental state!
+--> Experimental state! 
++   The pack code is probably error free and finds the best packaging for a given ID table, but could get improved.
 ```
 
 * Pack & Unpack are working in a first implementation
@@ -155,7 +156,7 @@ Please refer to the [Tip User Manual](./docs/TipUserManual.md) (work in progress
 - [x] Create `tipTable.h` Generator `ti_generate`.
 - [x] Create `pack.c` and `unpack.c` and test.
 - [ ] Improve `tipTable.h` Generator `ti_generate`.
-- [ ] Write [Tip User Manual](./docs/TipUserManual.md).
+- [x] Write [Tip User Manual](./docs/TipUserManual.md).
 - [ ] Write fuzzy tests.
 - [ ] Remove 65535 bytes limitation.
 - [ ] Improve implementation for less RAM usage.
