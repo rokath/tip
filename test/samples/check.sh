@@ -1,20 +1,16 @@
 #!/bin/bash
-maxPatternSize=4
-fn="./try.txt"
+maxPatternSize=8
 #fn="./trice.bin.sample"
-#fn="../../docs/TipUserManual.md"
-#fn="LICENSE.md"
+fn="../../docs/TipUserManual.md"
+#fn="../../LICENSE.md"
 time ( \
 go clean -cache && \
 go install ../../... && \
-ti_generate -i $fn -z ${1:-$maxPatternSize} && \
-cp idTable.c ../../src && \
+ti_generate -o ../../src/idTable.c -z ${1:-$maxPatternSize} -i $fn && \
 go clean -cache && \
 go install ../../... && \
 ti_pack -v -i $fn && \
 ti_unpack -i $fn.tip &&\
-diff -b $fn $fn.tip.untip \
-# rm $fn.tip $fn.tip.untip \
+diff -b $fn $fn.tip.untip && \
+rm $fn.tip $fn.tip.untip \
 )
-
-# sleep 1000000.000
