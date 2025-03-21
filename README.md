@@ -56,7 +56,6 @@ Table of Contents Generation:
 * 4. [Usage](#usage)
 * 5. [Roadmap](#roadmap)
 * 6. [Contributing](#contributing)
-  * 5.1. [Top contributors](#top-contributors)
 * 7. [License](#license)
 * 8. [Contact](#contact)
 * 8. [Acknowledgments](#acknowledgments)
@@ -88,7 +87,7 @@ Table of Contents Generation:
 * Usual compressors cannot succeed on very small buffers, because they add translation information to the data.
 * **TiP** is an adaptable very-short-buffer packer, suitable for embedded devices. Like [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) it removes all zeroes from the data, but additionally tries data compression. 
 * The TiP worst-case overhead is 1 byte per each starting 7 bytes (+14%) for uncompressable data, but the expected average packed size is about 50% of the unpacked data. <sub>(For comparism: [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) adds 1 byte overhead per each starting 255 bytes, but does not compress at all.)</sub>
-* Like [TCOBS](https://github.com/rokath//tcobs), TiP can already compress 2 bytes into 1 byte but is expected to do adaptable better on arbitrary data with more computing effort.
+* Like [TCOBS](https://github.com/rokath//tcobs), TiP can already compress 2 bytes into 1 byte but is expected to do adaptable better on arbitrary data with a bit more computing effort.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -152,12 +151,13 @@ Don't forget to give the project a star! Thanks again!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-###  6.1. <a id='top-contributors'></a>Top contributors
+<!--
+-###  6.1. <a id='top-contributors'></a>Top contributors
 
 <a href="https://github.com/rokath/tip/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=rokath/tip" alt="contrib.rocks image" />
 </a>
-
+-->
 <!-- LICENSE -->
 ##  7. <a id='license'></a>License
 
@@ -167,6 +167,8 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 <!-- CONTACT -->
 ## 8. <a id='contact'></a>Contact
+
+<img src="https://contrib.rocks/image?repo=rokath/tip" alt="contrib.rocks image" />
 
 Thomas Höhenleitner - th@seerose.net
 
