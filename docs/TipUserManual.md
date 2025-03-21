@@ -80,7 +80,7 @@ There is also [SMAZ](https://github.com/antirez/smaz), but suitable only for tex
 
 [RZCOBS](https://github.com/Dirbaio/rzcobs), assumes many zeroes and tries some compression this way.
 
-An adaptive solution would be nice, meaning, not depending on a specific data structure like English text or many integers.
+An adaptive solution would be nice, meaning, not depending on a specific data structure like English text or many integers. [shoco](https://ed-von-schleck.github.io/shoco/) is a way to go but focusses more on strings.
 
 ##  2. <a id='bytes,-numbers-and-the-tip-idea'></a>Bytes, Numbers and the TiP Idea
 
@@ -363,14 +363,14 @@ For example we limit direct pattern count to 120 (instead of 127) and use their 
 
 * ID 1...120                    -> at least 2-bytes pattern <= 50% compressed
 * ID 121 followed by id 1...255 -> at least 3-bytes pattern <= 67% compressed
-* ID 122 followed by id 1...255 -> at least 4-bytes pattern <= 50% compressed
-* ID 123 followed by id 1...255 -> at least 5-bytes pattern <= 40% compressed
-* ID 124 followed by id 1...255 -> at least 6-bytes pattern <= 33% compressed
-* ID 125 followed by id 1...255 -> at least 7-bytes pattern <= 28% compressed
-* ID 126 followed by id 1...255 -> at least 8-bytes pattern <= 25% compressed
+* ID 122 followed by id 1...255 -> at least 3-bytes pattern <= 67% compressed
+* ID 123 followed by id 1...255 -> at least 3-bytes pattern <= 67% compressed
+* ID 124 followed by id 1...255 -> at least 3-bytes pattern <= 67% compressed
+* ID 125 followed by id 1...255 -> at least 3-bytes pattern <= 67% compressed
+* ID 126 followed by id 1...255 -> at least 3-bytes pattern <= 67% compressed
 * ID 127 reserved
 
-On unpacking
+This allows 120 2-bytes pattern and 1525 longer pattern. On unpacking:
 
 * the MSBit = 1   after ID 1...120 are the unreplacable (bit-shfted) bytes
 * the MSBit = 0|1 after ID 121-126 are the indiret table indexes
