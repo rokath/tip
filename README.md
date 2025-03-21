@@ -127,7 +127,7 @@ Please refer to the [Tip User Manual](./docs/TipUserManual.md)
   - [ ] [shoco](https://ed-von-schleck.github.io/shoco/)
   - [ ] [zip](https://github.com/kuba--/zip).
 - [ ] Improve TiP pack code for speed and less RAM usage.
-- [ ] Improve `tipTable.h` Generator `ti_generate`.
+- [ ] Improve `tipTable.c` Generator `ti_generate`.
 - [ ] Write TiP unpack code in Go.
 - [ ] Improve implementation for
 
