@@ -52,13 +52,13 @@ Table of Contents Generation:
 <!-- vscode-markdown-toc -->
 * 1. [Project Status](#project-status)
 * 2. [About The Project](#about-the-project)
-  * 2.1. [TiP Components](#tip-components)
-* 3. [Usage](#usage)
-* 4. [Roadmap](#roadmap)
-* 5. [Contributing](#contributing)
+* 3. [TiP Components](#tip-components)
+* 4. [Usage](#usage)
+* 5. [Roadmap](#roadmap)
+* 6. [Contributing](#contributing)
   * 5.1. [Top contributors](#top-contributors)
-* 6. [License](#license)
-* 7. [Contact](#contact)
+* 7. [License](#license)
+* 8. [Contact](#contact)
 * 8. [Acknowledgments](#acknowledgments)
 
 <!-- vscode-markdown-toc-config
@@ -85,14 +85,14 @@ Table of Contents Generation:
 
 ##  2. <a id='about-the-project'></a>About The Project
 
-* Usual compressors cannot succeed on very small buffers, because they add a translation table into the data.
+* Usual compressors cannot succeed on very small buffers, because they add translation information to the data.
 * **TiP** is an adaptable very-short-buffer packer, suitable for embedded devices. Like [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) it removes all zeroes from the data, but additionally tries data compression. 
 * The TiP worst-case overhead is 1 byte per each starting 7 bytes (+14%) for uncompressable data, but the expected average packed size is about 50% of the unpacked data. <sub>(For comparism: [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) adds 1 byte overhead per each starting 255 bytes, but does not compress at all.)</sub>
 * Like [TCOBS](https://github.com/rokath//tcobs), TiP can already compress 2 bytes into 1 byte but is expected to do adaptable better on arbitrary data with more computing effort.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-###  2.1. <a id='tip-components'></a>TiP Components
+##  3. <a id='tip-components'></a>TiP Components
 
 * PC apps:
   * `ti_generate` - **ti**ny **g**enerator to create a suitable `idTable.c` file
@@ -107,14 +107,14 @@ Table of Contents Generation:
 <!-- GETTING STARTED -->
 
 <!-- USAGE EXAMPLES -->
-##  3. <a id='usage'></a>Usage
+##  4. <a id='usage'></a>Usage
 
 Please refer to the [Tip User Manual](./docs/TipUserManual.md)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- ROADMAP -->
-##  4. <a id='roadmap'></a>Roadmap
+##  5. <a id='roadmap'></a>Roadmap
 
 - [x] Create `tipTable.h` Generator `ti_generate`.
 - [x] Create `pack.c` and `unpack.c` and test.
@@ -137,7 +137,7 @@ See the [open issues](https://github.com/rokath/tip/issues) for a full list of p
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTRIBUTING -->
-##  5. <a id='contributing'></a>Contributing
+##  6. <a id='contributing'></a>Contributing
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
@@ -152,21 +152,21 @@ Don't forget to give the project a star! Thanks again!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-###  5.1. <a id='top-contributors'></a>Top contributors
+###  6.1. <a id='top-contributors'></a>Top contributors
 
 <a href="https://github.com/rokath/tip/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=rokath/tip" alt="contrib.rocks image" />
 </a>
 
 <!-- LICENSE -->
-##  6. <a id='license'></a>License
+##  7. <a id='license'></a>License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTACT -->
-##  7. <a id='contact'></a>Contact
+## 8. <a id='contact'></a>Contact
 
 Thomas Höhenleitner - th@seerose.net
 
@@ -175,7 +175,7 @@ Project Link: [https://github.com/rokath/tip](https://github.com/rokath/tip)
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- ACKNOWLEDGMENTS -->
-##  8. <a id='acknowledgments'></a>Acknowledgments
+##  9. <a id='acknowledgments'></a>Acknowledgments
 
 * [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing)
 * []() to do
