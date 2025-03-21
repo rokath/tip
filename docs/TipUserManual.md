@@ -1,4 +1,4 @@
-# TiP - Tiny Packer - User Manual
+0# TiP - Tiny Packer - User Manual
 
 (work in progress)
 
@@ -83,7 +83,7 @@ An adaptive solution would be nice, meaning, not depending on a specific data st
 
 If there is a buffer of, let's say 20 bytes, we can consider it as a 20-digit number with 256 ciphers. To free some 8 characters for special usage, we could transform the 20 times 256 cipher number into a 21 or 22 times 248 ciphers number. This transformation is possible, but very computing intensive because of many divisions by 248, or a different base number. So this is no solution for small MCUs. But a division by 128 is cheap! If we transform the 256 base into a 128 base, we only need to perform a shift operation for the conversion. This way we get 128 special characters usable for compressing and framing:
 
-* Byte `00` is not used at all. One aim of TiP is, to get rid of all zeroes in the TiP packets to be able to use `0` as a package delimiter.
+* Byte `00` is not used at all. One aim of TiP is, to get rid of all zeroes in the TiP packets to be able to use `00` as a package delimiter.
 * Bytes `01` to `7f` are used as pattern IDs. These IDs are used as pattern replacements.
 * Before we pack the buffer data, we try to find pattern from the ID table, we can then replace with IDs. See chapter [The TiP Algorithm](#the-tip-algorithm) for the how-to-do.
 * _Unreplacable_ bytes need a transformation in a way, that no bytes in the range 0-127 remain. That is our tranformation to the 128 base. We simply collect them and do a bit shifting in a way, that no most significant bit is used anymore. The MSBits of the reordered unreplacable bytes are all set to 1 and so we have only bytes `80` to `ff` left.
@@ -196,15 +196,15 @@ idx | ID  | pos | ASCII
 
 ###  4.2. <a id='id-position-table-processing'></a>ID Position Table Processing
 
-* To build a TiP packet, many different ID position sequences are possible, maybe interrupted by some _unreplacable_ bytes. The TiP packer starts creating a full `srcMap` containing all possible paths. For that it traverses the (by incrementing position sorted) IDPositionTable and checks, if the current ID position is appenable to any paths. If so, these paths are forked and the ID position is appended to the fork. That fork is needed, because the same path is extendable with different ID positions. If the current ID position did not fit to any path, a new path is created. After processing an ID position, some new paths may exist or some paths have been extended with this ID position. Before going to the next ID position from the IDPositionTable, obsolete `srcMap` paths are deleted. Obsolete are paths, if their limit plus the maximum pattern size is smaller than biggest existing path limit. Obsolete paths are too those path, which have an equal limit but wuld result in a bigger TiP packet. Even if they would result in an equal TiP packet size, it is only one of them needed for futher ID position provessing.
+* To build a TiP packet, many different ID position sequences are possible, maybe interrupted by some _unreplacable_ bytes. The TiP packer starts creating a full `srcMap` containing all possible paths. For that it traverses the (by incrementing position sorted) IDPositionTable and checks, if the current ID position is appenable to any paths. If so, these paths are forked and the ID position is appended to the fork. That fork is needed, because the same path is extendable with different ID positions. If the current ID position did not fit to any path, a new path is created. After processing an ID position, a new path may exist or some paths have been foked and the forked paths are extended with this ID position. Before going to the next ID position from the IDPositionTable, obsolete `srcMap` paths are deleted. Obsolete are paths, if their limit plus the maximum pattern size is smaller than biggest existing path limit. Obsolete paths are too those path, which have an equal limit but wuld result in a bigger TiP packet. Even if they would result in an equal TiP packet size, it is only one of them needed for futher ID position provessing.
 * When the PositionTable was processed completely, a few paths are remaining. A path, which would result in the smallest TiP packet is selected to create the TiP packet.
 
 ###  4.3. <a id='packing---unreplacable-bytes-handling'></a>Packing - Unreplacable Bytes Handling
 
 The selected path covers no, some or all bytes with ID pattern. Bytes not covered, are unreplacable bytes.
-All unreplacable bytes are collected into one separate buffer. N unreplacable bytes occupy N\*8 bits. These bits are distributed onto N\*8/7 7-bit bytes, all getting the MSBit set to avoid zeroes and to distinguish them later from the ID bytes. In fact we do not change these N\*8 bits, we simply reorder them slightly. This bit reordering is de-facto the number transformation to the base 128, mentioned above.
+All unreplacable bytes are collected into one separate buffer. N unreplacable bytes occupy N\*8 bits. These bits are distributed onto N\*8/7 7-bit bytes, all getting the MSBit set to avoid zeroes and to distinguish them later from the ID bytes. In fact we do not change these N\*8 bits, we simply reorder them slightly. This bit reordering is de-facto the number transformation to the base 128, mentioned above. By setting the most significant bits, also is guarantied, that no `00` bytes exist anymore.
 
-After replacing, all found patterns are replaced with their IDs, which all have MSBit=0. The unreplacable bytes are replaced with the bit-reordered unreplacable bytes, having MSBit=1. The bit-reordered unreplacable bytes fill the wholes between the IDs.
+Next all found patterns are replaced with their IDs, which all have MSBit=0. The unreplacable bytes are replaced with the bit-reordered unreplacable bytes, having MSBit=1. The bit-reordered unreplacable bytes fill the wholes between the IDs.
 
 ###  4.4. <a id='unpacking'></a>Unpacking
 
@@ -339,7 +339,7 @@ If the real data are similar to the training data, an average packed size of abo
 
 ###  6.2. <a id='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter.'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter.
 
-* If data are containing no ID table pattern at all, they are getting bigger by the factor 8/7. Thats a result of treating the data in 8 bit units (bytes).
+* If data are containing no ID table pattern at all, they are getting bigger by the factor 8/7 (+14\%). Thats a result of treating the data in 8 bit units (bytes).
 * If we change that to 16-bit units, by accepting an optional padding byte, we can reduce this increase factor to 16/15.
 * We still have IDs 1-127
 * An existing ID 127 just tells if there is a padding byte in the unreplacable data.
