@@ -146,7 +146,7 @@ Table of Contents Generation:
 <!-- USAGE EXAMPLES -->
 ## 4. <a id='usage'></a>Usage
 
-Please refer to the [Tip User Manual](./docs/TipUserManual.md) (work in progress)
+Please refer to the [Tip User Manual](./docs/TipUserManual.md)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
