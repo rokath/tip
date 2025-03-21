@@ -39,7 +39,7 @@ Table of Contents Generation:
     * 5.2. [Test Preparation](#test-preparation)
     * 5.3. [Test Execution](#test-execution)
     * 5.4. [Test Results Interpretation](#test-results-interpretation)
-* 6. [Improvement Ideas](#improvement-ideas)
+* 6. [Improvement Thoughts](#improvement-thoughts)
   * 6.1. [Reserve some IDs for Run-Length Encoding](#reserve-some-ids-for-run-length-encoding)
   * 6.2. [Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter.](#minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter.)
 
@@ -318,7 +318,7 @@ file size 28 changed to 12 (rate 42 percent)
 
 If the real data are similar to the training data, an average packed size of about 50\% is expected.
 
-##  6. <a id='improvement-ideas'></a>Improvement Ideas
+##  6. <a id='improvement-thoughts'></a>Improvement Thoughts
 
 ###  6.1. <a id='reserve-some-ids-for-run-length-encoding'></a>Reserve some IDs for Run-Length Encoding
 
@@ -340,7 +340,7 @@ If the real data are similar to the training data, an average packed size of abo
 ###  6.2. <a id='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter.'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter.
 
 * If data are containing no ID table pattern at all, they are getting bigger by the factor 8/7 (+14\%). Thats a result of treating the data in 8 bit units (bytes).
-* If we change that to 16-bit units, by accepting an optional padding byte, we can reduce this increase factor to 16/15.
+* If we change that to 16-bit units, by accepting an optional padding byte, we can reduce this increase factor to 16/15 (+7\%).
 * We still have IDs 1-127
 * An existing ID 127 just tells if there is a padding byte in the unreplacable data.
 * When unpacking, the first set MSBit tells that this byte and the next are unreplaceable. So we get N 16-bit groups of unreplacable data.
