@@ -1,7 +1,5 @@
 # TiP - Tiny Packer - User Manual
 
-(work in progress)
-
 ```diff
 
 + Compress very small buffers fast and efficient including Zeroes Elemination +
