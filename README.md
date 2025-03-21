@@ -159,7 +159,7 @@ Please refer to the [Tip User Manual](./docs/TipUserManual.md)
 - [ ] Write extensive tests.
 - [ ] Write fuzzy tests.
 - [ ] Remove 65528 bytes limitation.
-- [ ] Compare automatic with [TCOBS](https://github.com/rokath//tcobs), [SMAZ](https://github.com/antirez/smaz) and gzip.
+- [ ] Compare automatic with [tcobs](https://github.com/rokath//tcobs), [smaz](https://github.com/antirez/smaz) and [zip](https://github.com/kuba--/zip).
 - [ ] Improve TiP pack code for speed and less RAM usage.
 - [ ] Improve `tipTable.h` Generator `ti_generate`.
 - [ ] Write TiP unpack code in Go.
