@@ -37,9 +37,16 @@ Table of Contents Generation:
     * 5.2. [Test Preparation](#test-preparation)
     * 5.3. [Test Execution](#test-execution)
     * 5.4. [Test Results Interpretation](#test-results-interpretation)
-* 6. [Improvement Thoughts](#improvement-thoughts)
-  * 6.1. [Reserve ID `7f` for Run-Length Encoding](#reserve-id-7f-for-run-length-encoding)
-  * 6.2. [Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter.](#minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter.)
+* 6. [Getting Started](#getting-started)
+  * 6.1. [Prerequisites](#prerequisites)
+  * 6.2. [Built TipTable Generator `ti_generate`](#built-tiptable-generator-`ti_generate`)
+  * 6.3. [Build `ti_pack` and `ti_unpack`](#build-`ti_pack`-and-`ti_unpack`)
+  * 6.4. [Try `ti_pack` and `ti_unpack`](#try-`ti_pack`-and-`ti_unpack`)
+  * 6.5. [Installation](#installation)
+* 7. [Improvement Thoughts](#improvement-thoughts)
+  * 7.1. [Additional Indirect Dictionary](#additional-indirect-dictionary)
+  * 7.2. [Reserve ID `7f` for Run-Length Encoding](#reserve-id-`7f`-for-run-length-encoding)
+  * 7.3. [Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter.](#minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter.)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -83,7 +90,7 @@ If there is a buffer of, let's say 20 bytes, we can consider it as a 20-digit nu
 
 * Byte `00` is not used at all. One aim of TiP is, to get rid of all zeroes in the TiP packets to be able to use `00` as a package delimiter.
 * Bytes `01` to `7f` are used as pattern IDs. These IDs are used as pattern replacements.
-* Before we pack the buffer data, we try to find pattern from the ID table, we can then replace with IDs. See chapter [The TiP Algorithm](#the-tip-algorithm) for the how-to-do.
+* Before we pack the buffer data, we try to find pattern from the ID table, we can then replace with IDs. See [The TiP Algorithm](./docsTipUserManual.md#the-tip-algorithm) for the how-to-do.
 * _Unreplacable_ bytes need a transformation in a way, that no bytes in the range 0-127 remain. That is our tranformation to the 128 base. We simply collect them and do a bit shifting in a way, that no most significant bit is used anymore. The MSBits of the reordered unreplacable bytes are all set to 1 and so we have only bytes `80` to `ff` left.
 
 The `ti_unpack` then sees bytes `01` to `7f` and knows, that these are IDs, intermixed with bytes `80` to `ff` and knows, that the 7 least significant bits are the unreplacable bytes. The byte places are containing the position informtion for the unreplacable bytes.
@@ -316,9 +323,60 @@ file size 28 changed to 12 (rate 42 percent)
 
 If the real data are similar to the training data, an average packed size of about 50\% is expected.
 
-##  6. <a id='improvement-thoughts'></a>Improvement Thoughts
+##  6. <a id='getting-started'></a>Getting Started
 
-###  6.1. <a id='reserve-id-7f-for-run-length-encoding'></a>Reserve ID `7f` for Run-Length Encoding
+###  6.1. <a id='prerequisites'></a>Prerequisites
+
+* For now install [Go](https://golang.org/) to easily build the executables.
+* You need some files containing typical data you want to pack and unpack.
+  * Just to try out TiP, you can use a folder containing ASCII texts.
+
+###  6.2. <a id='built-tiptable-generator-`ti_generate`'></a>Built TipTable Generator `ti_generate`
+
+* `cd ti_generate && go build -ldflags "-w" ./...`
+* Run `ti_generate` on the data files to get an `idTable.c` file.
+
+###  6.3. <a id='build-`ti_pack`-and-`ti_unpack`'></a>Build `ti_pack` and `ti_unpack`
+
+* Copy the generated `idTable.c` file into the `src` folder.
+* Run `go clean -cache`.
+* Run `go build ./...` or `go install ./...`.
+
+###  6.4. <a id='try-`ti_pack`-and-`ti_unpack`'></a>Try `ti_pack` and `ti_unpack`
+
+* Run `ti_pack -i myFile -v` to get `myFile.tip`.
+* Run `ti_unpack -i myFile.tip -v` to get `myFile.tip.untip`.
+* `myFile` and `myFile.tip.untip` are expected to be equal.
+
+###  6.5. <a id='installation'></a>Installation
+
+* Add `src` folder to your project and compile.
+* `pack.h` and `unpack.h` is the user interface.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+##  7. <a id='improvement-thoughts'></a>Improvement Thoughts
+
+###  7.1. <a id='additional-indirect-dictionary'></a>Additional Indirect Dictionary
+
+For example we limit direct pattern count to 120 (instead of 127) and use their order in such a way:
+
+* ID 1...120                    -> at least 2-bytes pattern <= 50% compressed
+* ID 121 followed by id 1...255 -> at least 3-bytes pattern <= 67% compressed
+* ID 122 followed by id 1...255 -> at least 4-bytes pattern <= 50% compressed
+* ID 123 followed by id 1...255 -> at least 5-bytes pattern <= 40% compressed
+* ID 124 followed by id 1...255 -> at least 6-bytes pattern <= 33% compressed
+* ID 125 followed by id 1...255 -> at least 7-bytes pattern <= 28% compressed
+* ID 126 followed by id 1...255 -> at least 8-bytes pattern <= 25% compressed
+* ID 127 reserved
+
+On unpacking
+
+* the MSBit = 1   after ID 1...120 are the unreplacable (bit-shfted) bytes
+* the MSBit = 0|1 after ID 121-126 are the indiret table indexes
+* the MSBit = 0 not after ID 121-126 are te direct table indexex
+
+###  7.2. <a id='reserve-id-`7f`-for-run-length-encoding'></a>Reserve ID `7f` for Run-Length Encoding
 
 * Example:
 
@@ -334,8 +392,7 @@ If the real data are similar to the training data, an average packed size of abo
 * The ID `7F` is followed by a count byte and optional other bytes. These are regarded as part of this ID too during TiP package interpretation.
   * The count is guarantied not to be zero and also some optional additional bytes.
 
-
-###  6.2. <a id='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter.'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter.
+###  7.3. <a id='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter.'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter.
 
 * If data are containing no ID table pattern at all, they are getting bigger by the factor 8/7 (+14\%). Thats a result of treating the data in 8 bit units (bytes).
 * If we change that to 16-bit units, by accepting an optional padding byte, we can reduce this increase factor to 16/15 (+7\%).
@@ -358,3 +415,5 @@ cd /etc/profile.d # ls -l
 sudo echo export PATH=/opt/gcc-latest/bin/:$PATH > # /etc/profile.d/gccpath.go 
 ```
 -->
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
