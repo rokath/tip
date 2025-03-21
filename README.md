@@ -81,10 +81,10 @@ Table of Contents Generation:
 
 ```diff
 --> Experimental state! 
-+   The pack code is probably error free and finds the best packaging for a given ID table, but could get improved.
 ```
 
 * Pack & Unpack are working in a first implementation.
+* The pack code is probably error free and finds the best packaging for a given ID table, but could get improved.
 * The `idTable.c` generation also ok, but the generated table might not be optimal.
 
 <!-- ABOUT THE PROJECT -->
@@ -92,7 +92,7 @@ Table of Contents Generation:
 ## 2. <a id='about-the-project'></a>About The Project
 
 * Usual compressors cannot succeed on very small buffers, because they add a translation table into the data.
-* **TiP** is an adaptable short-buffer packer, suitable for embedded devices. Like [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) it removes all zeroes from the data, but additionally tries data compression. 
+* **TiP** is an adaptable very-short-buffer packer, suitable for embedded devices. Like [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) it removes all zeroes from the data, but additionally tries data compression. 
 * The TiP worst-case overhead is 1 byte per each starting 7 bytes (+14%) for uncompressable data, but the expected average packed size is about 60% of the unpacked data. <sub>(For comparism: [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) adds 1 byte overhead per each starting 255 bytes, but does not compress at all.)</sub>
 * Like [TCOBS](https://github.com/rokath//tcobs), TiP can already compress 2 bytes into 1 byte but is expected to do adaptable better on arbitrary data with more computing effort.
 
@@ -155,11 +155,15 @@ Please refer to the [Tip User Manual](./docs/TipUserManual.md)
 
 - [x] Create `tipTable.h` Generator `ti_generate`.
 - [x] Create `pack.c` and `unpack.c` and test.
-- [ ] Improve `tipTable.h` Generator `ti_generate`.
 - [x] Write [Tip User Manual](./docs/TipUserManual.md).
+- [ ] Write extensive tests.
 - [ ] Write fuzzy tests.
-- [ ] Remove 65535 bytes limitation.
-- [ ] Improve implementation for less RAM usage.
+- [ ] Remove 65528 bytes limitation.
+- [ ] Compare automatic with [TCOBS](https://github.com/rokath//tcobs), SMAZ and gzip.
+- [ ] Improve TiP pack code for speed and less RAM usage.
+- [ ] Improve `tipTable.h` Generator `ti_generate`.
+- [ ] Write TiP unpack code in Go.
+- [ ] Improve implementation for
 
 See the [open issues](https://github.com/rokath/tip/issues) for a full list of proposed features (and known issues).
 
