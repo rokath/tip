@@ -47,6 +47,7 @@ Table of Contents Generation:
   * 7.1. [Additional Indirect Dictionary](#additional-indirect-dictionary)
   * 7.2. [Reserve ID `7f` for Run-Length Encoding](#reserve-id-`7f`-for-run-length-encoding)
   * 7.3. [Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter.](#minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter.)
+  * 7.4. [Do not remove zeroes in favour of better compression as an option or a separate project.](#do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project.)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -76,7 +77,7 @@ A compression and then [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_
 
 To combine the [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) technique with compression especially for very short buffers, some additional spare characters are needed. That's done with [TCOBS](https://github.com/rokath/tcobs) in a manual coded way, meaning, expected special data properties are reflected in the [TCOBS](https://github.com/rokath/tcobs) code. See the [TCOBS User Manual](https://github.com/rokath/tcobs/blob/master/docs/TCOBSv2Specification.md) for more details.
 
-There is also [SMAZ](https://github.com/antirez/smaz), but suitable only for text buffers mainly in English.
+There is also [smaz](https://github.com/antirez/smaz), but suitable only for text buffers mainly in English.
 
 [RZCOBS](https://github.com/Dirbaio/rzcobs), assumes many zeroes and tries some compression this way.
 
@@ -408,6 +409,28 @@ This allows 120 2-bytes pattern and 1525 longer pattern.
 * An existing ID 127 just tells if there is a padding byte in the unreplacable data.
 * When unpacking, the first set MSBit tells that this byte and the next are unreplaceable. So we get N 16-bit groups of unreplacable data.
 * BUT we need 2 frame delimiter bytes then!
+
+###  7.4. <a id='do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project.'></a>Do not remove zeroes in favour of better compression as an option or a separate project.
+
+[smaz](https://github.com/antirez/smaz):
+
+* IDs 0...253 are coding 254 >= 2-bytes patteren
+* ID 254 -> next byte is unreplacable
+* ID 255 -> next byte is a conding 2...257 unreplacable bytes
+
+Modificate [smaz](https://github.com/antirez/smaz) and add indirect indices:
+
+* IDs 0...239 are coding 240 >= 2-bytes patteren
+* ID 240 -> next byte is one of 256 indicies in indirect table 0
+* ID 249 -> next byte is one of 256 indicies in indirect table 9
+* ID 250 -> reserved for run-length code
+* ID 251 -> next byte is unreplacable
+* ID 252 -> next 2 bytes are unreplacable
+* ID 253 -> next 3 bytes are unreplacable
+* ID 254 -> next 4 bytes are unreplacable
+* ID 255 -> next byte is coding 2...257 unreplacable bytes
+
+This allows 2560 additional pattern for the price 14 less 2-bytes pattern and the need for 2 bytes for the 2560 additional patterns.
 
 <!--
 

@@ -74,20 +74,30 @@ Table of Contents Generation:
 
 ```diff
 --> Experimental state! 
++   You can try it out!
 ```
 
 * Pack & Unpack are working in a first implementation.
 * The pack code is probably error free and finds the best packaging for a given ID table, but could get improved.
-* The `idTable.c` generation also ok, but the generated table might not be optimal.
+  * A TiP extension is planned to support longer pattern lists and run-length encoding.
+* The `idTable.c` generation is ok, but the generated table might not be optimal.
 
 <!-- ABOUT THE PROJECT -->
 
 ##  2. <a id='about-the-project'></a>About The Project
 
-* Usual compressors cannot succeed on very small buffers, because they add translation information to the data.
+* Usual compressors cannot succeed on very small buffers (2...100 bytes), because they add translation information to the data.
+  ```bash
+  echo "try this" | gzip -c | wc -c
+      29
+  echo "Compress this normal line with 42 letters." | gzip -c | wc -c
+      63
+  echo "Compress this text and see how long it is afterwards. Today is a beautiful day. This example consists of 117 letters." | gzip -c | wc -c
+     117
+  ```
 * **TiP** is an adaptable very-short-buffer packer, suitable for embedded devices. Like [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) it removes all zeroes from the data, but additionally tries data compression. 
-* The TiP worst-case overhead is 1 byte per each starting 7 bytes (+14%) for uncompressable data, but the expected average packed size is about 50% of the unpacked data. <sub>(For comparism: [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) adds 1 byte overhead per each starting 255 bytes, but does not compress at all.)</sub>
-* Like [TCOBS](https://github.com/rokath//tcobs), TiP can already compress 2 bytes into 1 byte but is expected to do adaptable better on arbitrary data with a bit more computing effort.
+* The TiP worst-case overhead is 1 byte per each starting 7 bytes (+14%) for uncompressable data, but the expected average packed size is about 50% or less of the unpacked data. <sub>(For comparism: [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) adds 1 byte overhead per each starting 255 bytes, but does not compress at all.)</sub>
+* Like [TCOBS](https://github.com/rokath//tcobs), TiP can already compress 2 bytes into 1 byte but is expected to do better on arbitrary (similar to sample data) with a bit more computing effort.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -118,6 +128,9 @@ Please refer to the [Tip User Manual](./docs/TipUserManual.md)
 - [x] Create `tipTable.h` Generator `ti_generate`.
 - [x] Create `pack.c` and `unpack.c` and test.
 - [x] Write [Tip User Manual](./docs/TipUserManual.md).
+- [ ] Extend `ti_generate` to create longer ID tables.
+- [ ] Extend `ti_generate` to limit 2-byte patterns until ID=n...127.
+- [ ] Add `pack.c` and `unpack.c` compiler switch for max indirect indiicies tables 0...127.
 - [ ] Write extensive tests.
 - [ ] Write fuzzy tests.
 - [ ] Remove 65528 bytes limitation.
@@ -127,7 +140,7 @@ Please refer to the [Tip User Manual](./docs/TipUserManual.md)
   - [ ] [shoco](https://ed-von-schleck.github.io/shoco/)
   - [ ] [zip](https://github.com/kuba--/zip).
 - [ ] Improve TiP pack code for speed and less RAM usage.
-- [ ] Improve `tipTable.c` Generator `ti_generate`.
+- [ ] Improve `tipTable.c` Generator to optimize pattern selection.
 - [ ] Write TiP unpack code in Go.
 - [ ] Improve implementation for
 
