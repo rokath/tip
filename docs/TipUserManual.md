@@ -1,4 +1,4 @@
-# TiP - Tiny Packer - User Manual
+*# TiP - Tiny Packer - User Manual
 
 ```diff
 
@@ -370,11 +370,19 @@ For example we limit direct pattern count to 120 (instead of 127) and use their 
 * ID 126 followed by id 1...255 -> at least 3-bytes pattern <= 67% compressed
 * ID 127 reserved
 
-This allows 120 2-bytes pattern and 1525 longer pattern. On unpacking:
+This allows 120 2-bytes pattern and 1525 longer pattern.
 
 * the MSBit = 1   after ID 1...120 are the unreplacable (bit-shfted) bytes
-* the MSBit = 0|1 after ID 121-126 are the indiret table indexes
-* the MSBit = 0 not after ID 121-126 are te direct table indexex
+* the MSBit = 0|1 after ID 121-126 are the indiret table indices
+* the MSBit = 0 not after ID 121-126 are te direct table indices
+
+ On unpacking:
+
+* START 
+  * Next bytes with MSBit=1 are unreplaceables.
+  * Next byte=1...120 is direct 2-byte pattern ID, goto START
+  * Next byte=121...126 is followed by indirect pattern ID, goto START
+  * Next byte=127 is followed by runlength code, goto START 
 
 ###  7.2. <a id='reserve-id-`7f`-for-run-length-encoding'></a>Reserve ID `7f` for Run-Length Encoding
 
