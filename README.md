@@ -86,7 +86,8 @@ Table of Contents Generation:
 
 ##  2. <a id='about-the-project'></a>About The Project
 
-* Usual compressors cannot succeed on very small buffers (2...100 bytes), because they add translation information to the data.
+* Usual compressors cannot succeed on very small buffers (2...100 bytes), because they add translation information to the data:
+
   ```bash
   echo "try this" | gzip -c | wc -c
       29
@@ -95,19 +96,20 @@ Table of Contents Generation:
   echo "Compress this text and see how long it is afterwards. Today is a beautiful day. This example consists of 117 letters." | gzip -c | wc -c
      117
   ```
-* **TiP** is an adaptable very-short-buffer packer, suitable for embedded devices. Like [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) it removes all zeroes from the data, but additionally tries data compression. 
+
+* **TiP** is an adaptable very-short-buffer packer, suitable for embedded devices. Like [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) it removes all zeroes from the data, but additionally tries data compression.
 * The TiP worst-case overhead is 1 byte per each starting 7 bytes (+14%) for uncompressable data, but the expected average packed size is about 50% or less of the unpacked data. <sub>(For comparism: [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) adds 1 byte overhead per each starting 255 bytes, but does not compress at all.)</sub>
-* Like [TCOBS](https://github.com/rokath//tcobs), TiP can already compress 2 bytes into 1 byte but is expected to do better on arbitrary (similar to sample data) with a bit more computing effort.
+* Like [TCOBS](https://github.com/rokath//tcobs), TiP can already compress 2 bytes into 1 byte but is expected to do better on arbitrary data (similar to samples) with a bit more computing effort.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ##  3. <a id='tip-components'></a>TiP Components
 
 * PC apps:
-  * `ti_generate` - **ti**ny **g**enerator to create a suitable `idTable.c` file
-  * `ti_pack` - **ti**ny **p**ack using the **pack** C code mainly for tests
-  * `ti_unpack` - **ti**ny **u**npack using the **unpack** C code mainly for tests
-* Tiny C-Code usable on embedded devices inside [src](./src/) folder containing
+  * `ti_generate` - **ti**ny **generator** to create a suitable `idTable.c` file
+  * `ti_pack` - **ti**ny **pack** using the **pack** C code mainly for tests
+  * `ti_unpack` - **ti**ny **unpack** using the **unpack** C code mainly for tests
+* C-Code usable on embedded devices inside [src](./src/) folder containing:
   * [idTable.c](./src/idTable.c) - a generated data specific translation table
   * [ti_pack.c](./src/ti_pack.c) and [ti_unpack.c](./src/ti_unpack.c) - separately or together compilable
 
@@ -118,31 +120,29 @@ Table of Contents Generation:
 <!-- USAGE EXAMPLES -->
 ##  4. <a id='usage'></a>Usage
 
-Please refer to the [Tip User Manual](./docs/TipUserManual.md)
+See the [Tip User Manual](./docs/TipUserManual.md).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- ROADMAP -->
 ##  5. <a id='roadmap'></a>Roadmap
 
-- [x] Create `tipTable.h` Generator `ti_generate`.
-- [x] Create `pack.c` and `unpack.c` and test.
-- [x] Write [Tip User Manual](./docs/TipUserManual.md).
-- [ ] Extend `ti_generate` to create longer ID tables.
-- [ ] Extend `ti_generate` to limit 2-byte patterns until ID=n...127.
-- [ ] Add `pack.c` and `unpack.c` compiler switch for max indirect indiicies tables 0...127.
-- [ ] Write extensive tests.
-- [ ] Write fuzzy tests.
-- [ ] Remove 65528 bytes limitation.
-- Compare automatic with:
-  - [ ] [tcobs](https://github.com/rokath//tcobs)
-  - [ ] [smaz](https://github.com/antirez/smaz)
-  - [ ] [shoco](https://ed-von-schleck.github.io/shoco/)
-  - [ ] [zip](https://github.com/kuba--/zip).
-- [ ] Improve TiP pack code for speed and less RAM usage.
-- [ ] Improve `tipTable.c` Generator to optimize pattern selection.
-- [ ] Write TiP unpack code in Go.
-- [ ] Improve implementation for
+* [x] Create `tipTable.h` Generator `ti_generate`.
+* [x] Create `pack.c` and `unpack.c` and test.
+* [x] Write [Tip User Manual](./docs/TipUserManual.md).
+* [ ] Extend `ti_generate` with a CLI switch to create longer ID tables.
+* [ ] Add `pack.c` and `unpack.c` compiler switch for max indirect indicies tables 0...127.
+* [ ] Write extensive tests.
+* [ ] Write fuzzy tests.
+* [ ] Remove 65528 bytes limitation.
+* Compare automatic with:
+  * [ ] [tcobs](https://github.com/rokath//tcobs)
+  * [ ] [smaz](https://github.com/antirez/smaz)
+  * [ ] [shoco](https://ed-von-schleck.github.io/shoco/)
+  * [ ] [zip](https://github.com/kuba--/zip)
+* [ ] Improve TiP pack code for speed and less RAM usage.
+* [ ] Improve `tipTable.c` Generator to optimize pattern selection.
+* [ ] Write TiP unpack code in Go.
 
 See the [open issues](https://github.com/rokath/tip/issues) for a full list of proposed features (and known issues).
 
@@ -192,10 +192,8 @@ Project Link: [https://github.com/rokath/tip](https://github.com/rokath/tip)
 <!-- ACKNOWLEDGMENTS -->
 ##  9. <a id='acknowledgments'></a>Acknowledgments
 
-* [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing)
-* []() to do
-* []() todo
-* to do
+* [Consistent Overhead Byte Stuffing](http://www.stuartcheshire.org/papers/COBSforToN.pdf)
+* [Smaz](https://en.wikibooks.org/wiki/Data_Compression/Dictionary_compression#Smaz)
 
 <!--
 

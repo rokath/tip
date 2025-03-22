@@ -32,17 +32,17 @@ Table of Contents Generation:
   * 4.2. [ID Position Table Processing](#id-position-table-processing)
   * 4.3. [Packing - Unreplacable Bytes Handling](#packing---unreplacable-bytes-handling)
   * 4.4. [Unpacking](#unpacking)
-* 5. [ TiP in Action](#-tip-in-action)
-    * 5.1. [Training](#training)
-    * 5.2. [Test Preparation](#test-preparation)
-    * 5.3. [Test Execution](#test-execution)
-    * 5.4. [Test Results Interpretation](#test-results-interpretation)
-* 6. [Getting Started](#getting-started)
-  * 6.1. [Prerequisites](#prerequisites)
-  * 6.2. [Built TipTable Generator `ti_generate`](#built-tiptable-generator-`ti_generate`)
-  * 6.3. [Build `ti_pack` and `ti_unpack`](#build-`ti_pack`-and-`ti_unpack`)
-  * 6.4. [Try `ti_pack` and `ti_unpack`](#try-`ti_pack`-and-`ti_unpack`)
-  * 6.5. [Installation](#installation)
+* 5. [Getting Started](#getting-started)
+  * 5.1. [Prerequisites](#prerequisites)
+  * 5.2. [Built TipTable Generator `ti_generate`](#built-tiptable-generator-`ti_generate`)
+  * 5.3. [Build `ti_pack` and `ti_unpack`](#build-`ti_pack`-and-`ti_unpack`)
+  * 5.4. [Try `ti_pack` and `ti_unpack`](#try-`ti_pack`-and-`ti_unpack`)
+  * 5.5. [Installation](#installation)
+* 6. [ TiP in Action](#-tip-in-action)
+    * 6.1. [Training](#training)
+    * 6.2. [Test Preparation](#test-preparation)
+    * 6.3. [Test Execution](#test-execution)
+    * 6.4. [Test Results Interpretation](#test-results-interpretation)
 * 7. [Improvement Thoughts](#improvement-thoughts)
   * 7.1. [Additional Indirect Dictionary](#additional-indirect-dictionary)
   * 7.2. [Reserve ID `7f` for Run-Length Encoding](#reserve-id-`7f`-for-run-length-encoding)
@@ -95,7 +95,6 @@ If there is a buffer of, let's say 20 bytes, we can consider it as a 20-digit nu
 * _Unreplacable_ bytes need a transformation in a way, that no bytes in the range 0-127 remain. That is our tranformation to the 128 base. We simply collect them and do a bit shifting in a way, that no most significant bit is used anymore. The MSBits of the reordered unreplacable bytes are all set to 1 and so we have only bytes `80` to `ff` left.
 
 The `ti_unpack` then sees bytes `01` to `7f` and knows, that these are IDs, intermixed with bytes `80` to `ff` and knows, that the 7 least significant bits are the unreplacable bytes. The byte places are containing the position informtion for the unreplacable bytes.
-
 
 ##  3. <a id='id-table-generation'></a>ID Table Generation
 
@@ -216,11 +215,43 @@ Next all found patterns are replaced with their IDs, which all have MSBit=0. The
 
 On the receiver side all bytes with MSBit=0 are identified as IDs and are replaced with the patterns they stay for. All bytes with MSBit=1 are carying the unreplacable bytes bits. These are ordered back to restore the unreplacable bytes which fill the wholes between the patterens then.
 
-##  5. <a id='-tip-in-action'></a> TiP in Action
+##  5. <a id='getting-started'></a>Getting Started
+
+###  5.1. <a id='prerequisites'></a>Prerequisites
+
+* For now install [Go](https://golang.org/) to easily build the executables.
+* You need some files containing typical data you want to pack and unpack.
+  * Just to try out TiP, you can use a folder containing ASCII texts.
+
+###  5.2. <a id='built-tiptable-generator-`ti_generate`'></a>Built TipTable Generator `ti_generate`
+
+* `cd ti_generate && go build -ldflags "-w" ./...`
+* Run `ti_generate` on the data files to get an `idTable.c` file.
+
+###  5.3. <a id='build-`ti_pack`-and-`ti_unpack`'></a>Build `ti_pack` and `ti_unpack`
+
+* Copy the generated `idTable.c` file into the `src` folder.
+* Run `go clean -cache`.
+* Run `go build ./...` or `go install ./...`.
+
+###  5.4. <a id='try-`ti_pack`-and-`ti_unpack`'></a>Try `ti_pack` and `ti_unpack`
+
+* Run `ti_pack -i myFile -v` to get `myFile.tip`.
+* Run `ti_unpack -i myFile.tip -v` to get `myFile.tip.untip`.
+* `myFile` and `myFile.tip.untip` are expected to be equal.
+
+###  5.5. <a id='installation'></a>Installation
+
+* Add `src` folder to your project and compile.
+* `pack.h` and `unpack.h` is the user interface.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+##  6. <a id='-tip-in-action'></a> TiP in Action
 
 > **Follow these steps with your own data, to see quickly if it makes sense for your project.**
 
-####  5.1. <a id='training'></a>Training 
+####  6.1. <a id='training'></a>Training 
 
 * Find the 127 most common pattern in some sample data, similar to the real data expected later, and assign the IDs 1-127 to them. This is done once offline and the generated ID table gets part of the tiny packer code as well as for the tiny unpacker code. For that task a generator tool `ti_generate` was build.
 * Sample data specific result: [./src/idTable.c](../src/idTable.c)
@@ -246,7 +277,7 @@ go clean -cache && go install ../../...
 
 * The maximum allowed pattern size `-z 4` has influence on the TiP pack results and the best value depends on the data. 
 
-####  5.2. <a id='test-preparation'></a>Test Preparation
+####  6.2. <a id='test-preparation'></a>Test Preparation
 
 * Create some sample files: In this example, the messages are starting with `3d`, `3e`, `3f`, `40`, `41`, `42`, `43`, ... (see [TriceUserManual # Package Format](https://github.com/rokath/trice/blob/master/docs/TriceUserManual.md#package-format)). So we cut out a few single binary Trice messages. 
 
@@ -295,7 +326,7 @@ $ xxd -g1 43.bin
 00000010: fc ff ff ff fb ff ff ff fa ff ff ff              ............
 ```
 
-####  5.3. <a id='test-execution'></a>Test Execution
+####  6.3. <a id='test-execution'></a>Test Execution
 
 ```bash
 $ ti_pack.exe -v -i 3d.bin
@@ -320,47 +351,15 @@ $ ti_pack.exe -v -i 43.bin
 file size 28 changed to 12 (rate 42 percent)
 ```
 
-####  5.4. <a id='test-results-interpretation'></a>Test Results Interpretation
+####  6.4. <a id='test-results-interpretation'></a>Test Results Interpretation
 
 If the real data are similar to the training data, an average packed size of about 50\% is expected.
-
-##  6. <a id='getting-started'></a>Getting Started
-
-###  6.1. <a id='prerequisites'></a>Prerequisites
-
-* For now install [Go](https://golang.org/) to easily build the executables.
-* You need some files containing typical data you want to pack and unpack.
-  * Just to try out TiP, you can use a folder containing ASCII texts.
-
-###  6.2. <a id='built-tiptable-generator-`ti_generate`'></a>Built TipTable Generator `ti_generate`
-
-* `cd ti_generate && go build -ldflags "-w" ./...`
-* Run `ti_generate` on the data files to get an `idTable.c` file.
-
-###  6.3. <a id='build-`ti_pack`-and-`ti_unpack`'></a>Build `ti_pack` and `ti_unpack`
-
-* Copy the generated `idTable.c` file into the `src` folder.
-* Run `go clean -cache`.
-* Run `go build ./...` or `go install ./...`.
-
-###  6.4. <a id='try-`ti_pack`-and-`ti_unpack`'></a>Try `ti_pack` and `ti_unpack`
-
-* Run `ti_pack -i myFile -v` to get `myFile.tip`.
-* Run `ti_unpack -i myFile.tip -v` to get `myFile.tip.untip`.
-* `myFile` and `myFile.tip.untip` are expected to be equal.
-
-###  6.5. <a id='installation'></a>Installation
-
-* Add `src` folder to your project and compile.
-* `pack.h` and `unpack.h` is the user interface.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ##  7. <a id='improvement-thoughts'></a>Improvement Thoughts
 
 ###  7.1. <a id='additional-indirect-dictionary'></a>Additional Indirect Dictionary
 
-For example we limit direct pattern count to 120 (instead of 127) and use their order in such a way:
+For example we can limit direct pattern count to 120 (instead of 127) and use their order in such a way:
 
 * ID 1...120                    -> at least 2-bytes pattern <= 50% compressed
 * ID 121 followed by id 1...255 -> at least 3-bytes pattern <= 67% compressed
@@ -371,7 +370,7 @@ For example we limit direct pattern count to 120 (instead of 127) and use their 
 * ID 126 followed by id 1...255 -> at least 3-bytes pattern <= 67% compressed
 * ID 127 reserved
 
-This allows 120 2-bytes pattern and 1525 longer pattern.
+This allows 120 at least 2-bytes pattern and 1525 longer pattern.
 
 * the MSBit = 1   after ID 1...120 are the unreplacable (bit-shfted) bytes
 * the MSBit = 0|1 after ID 121-126 are the indiret table indices
@@ -383,7 +382,19 @@ This allows 120 2-bytes pattern and 1525 longer pattern.
   * Next bytes with MSBit=1 are unreplaceables.
   * Next byte=1...120 is direct 2-byte pattern ID, goto START
   * Next byte=121...126 is followed by indirect pattern ID, goto START
-  * Next byte=127 is followed by runlength code, goto START 
+  * Next byte=127 is followed by runlength code, goto START
+
+To implement add to [tipConfig.h](../src.config/tipConfig.h):
+
+```C
+//! INDIRECT_DICTIONARY_COUNT adds a number of indirect dictionaries.
+//! An indirect dictionary needs a 2-byte reference and therefore only pattern with at least 3 bytes make sense there. Each indirect dictionary adds 255 by 2-bytes to reference pattern and reduces the direct pattern space by one.
+//! The max possible value is 127, but that would not allow any direct references at all.
+// Values making sense are probably in the range 0...10. The optimum depend on the kind of data.
+#define INDIRECT_DICTIONARY_COUNT 0 
+```
+
+> **Consideration:** Promizing
 
 ###  7.2. <a id='reserve-id-`7f`-for-run-length-encoding'></a>Reserve ID `7f` for Run-Length Encoding
 
@@ -396,32 +407,43 @@ This allows 120 2-bytes pattern and 1525 longer pattern.
 | ID `7F` + count `25...63` + byte `XX`!=0 | 4 to 42 `XX`s, `XX` is any non-zero byte, all `XX` are equal |
 | ID `7F` + `64...255` + `?`               | reserved                                                     |
 
-
 * The tiny unpack routine first regards all bytes with MSBit=0 as IDs.
 * The ID `7F` is followed by a count byte and optional other bytes. These are regarded as part of this ID too during TiP package interpretation.
   * The count is guarantied not to be zero and also some optional additional bytes.
 
-###  7.3. <a id='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter.'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter.
+To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
-* If data are containing no ID table pattern at all, they are getting bigger by the factor 8/7 (+14\%). Thats a result of treating the data in 8 bit units (bytes).
+```C
+#define RUN_LENGTH_ID 127
+//! TODO: define ranges here
+```
+
+> **Consideration:** Possible, but currenly no aim.
+
+###  7.3. <a id='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter.'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter
+
+* If data are containing no ID table pattern at all, they are getting bigger by the factor 8/7 (+14\%). That is a result of treating the data in 8 bit units (bytes).
 * If we change that to 16-bit units, by accepting an optional padding byte, we can reduce this increase factor to 16/15 (+7\%).
 * We still have IDs 1-127
 * An existing ID 127 just tells if there is a padding byte in the unreplacable data.
 * When unpacking, the first set MSBit tells that this byte and the next are unreplaceable. So we get N 16-bit groups of unreplacable data.
 * BUT we need 2 frame delimiter bytes then!
 
-###  7.4. <a id='do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project.'></a>Do not remove zeroes in favour of better compression as an option or a separate project.
+> **Consideration:** Not a good idea, because we get other overhead.
+
+###  7.4. <a id='do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project.'></a>Do not remove zeroes in favour of better compression as an option or a separate project
 
 [smaz](https://github.com/antirez/smaz):
 
 * IDs 0...253 are coding 254 >= 2-bytes patteren
 * ID 254 -> next byte is unreplacable
-* ID 255 -> next byte is a conding 2...257 unreplacable bytes
+* ID 255 -> next byte is a count of following 2...257 unreplacable bytes
 
 Modificate [smaz](https://github.com/antirez/smaz) and add indirect indices:
 
 * IDs 0...239 are coding 240 >= 2-bytes patteren
 * ID 240 -> next byte is one of 256 indicies in indirect table 0
+* ...
 * ID 249 -> next byte is one of 256 indicies in indirect table 9
 * ID 250 -> reserved for run-length code
 * ID 251 -> next byte is unreplacable
@@ -430,7 +452,9 @@ Modificate [smaz](https://github.com/antirez/smaz) and add indirect indices:
 * ID 254 -> next 4 bytes are unreplacable
 * ID 255 -> next byte is coding 2...257 unreplacable bytes
 
-This allows 2560 additional pattern for the price 14 less 2-bytes pattern and the need for 2 bytes for the 2560 additional patterns.
+This allows 2560 additional pattern for the price 14 less 2-bytes pattern and the need for 2 bytes for the 2560 additional patterns. The details could be configurable.
+
+> **Consideration:** Interesting extension but we want elemminate zeroes in one shot to keep the overall overhead small. This could make sense to improve SMAZ in an universal way, by providing a pattern table generator, which could be practically the same. The pattern table generator could get an option to use some internet data for the table generation.
 
 <!--
 
