@@ -130,6 +130,7 @@ See the [Tip User Manual](./docs/TipUserManual.md).
 * [x] Create `tipTable.h` Generator `ti_generate`.
 * [x] Create `pack.c` and `unpack.c` and test.
 * [x] Write [Tip User Manual](./docs/TipUserManual.md).
+* [ ] Improve `ti_generate` to optimize pattern selection.
 * [ ] Extend `ti_generate` with a CLI switch to create longer ID tables.
 * [ ] Add `pack.c` and `unpack.c` compiler switch for max indirect indicies tables 0...127.
 * [ ] Write extensive tests.
@@ -141,7 +142,6 @@ See the [Tip User Manual](./docs/TipUserManual.md).
   * [ ] [shoco](https://ed-von-schleck.github.io/shoco/)
   * [ ] [zip](https://github.com/kuba--/zip)
 * [ ] Improve TiP pack code for speed and less RAM usage.
-* [ ] Improve `tipTable.c` Generator to optimize pattern selection.
 * [ ] Write TiP unpack code in Go.
 
 See the [open issues](https://github.com/rokath/tip/issues) for a full list of proposed features (and known issues).

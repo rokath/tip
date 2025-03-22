@@ -110,12 +110,14 @@ The `ti_unpack` then sees bytes `01` to `7f` and knows, that these are IDs, inte
 * We take the first N bytes of some sample data and move that window in 1-byte steps over the sample data and build a histogram over all found pattern and their occurances count.
 * The same is done with all smaller pattern sizes, ergo N, ..., 3, 2. Not interesting are 1-byte patterns, because their replacement by an ID gives no compression effect.
 * The 127 most often occuring pattern are sorted by descending size and are used to create the file `idTable.c`.
+  * TODO: Sorting is not needed anymore, but `INDIRECT_DICTIONARY_COUNT > 0` needs adapted treatment: No 2-bytes pattern into indirect diectionaries.
 
 ###  3.2. <a id='id-table-generation-questions'></a>ID Table Generation Questions
 
 * It is not clear, if the this way created ID table is optimal. Especially, when pattern are sub-pattern of other patterns. That is easily the case with sample data containing the same bytes in longer rows.
 * Also it could make sense to use the length of a pattern as weigth. If, for example a 5-bytes long pattern occurs 100 times and a 2-bytes long pattern exists 200 times in the sample data - which should get preceedence to get into the ID table? My guess is, to multiply the pattern length with its occureances count gives a good approximation.
 * We could also just determine all pattern from 2 to N bytes length and then go byte by byte through the sample data and increment for each byte the pattern counter for the pattern containing this byte on the right place.
+  * Already with N==4 we get > 4 billion possible patterns - no good idea.
 * It could make sense, to build several ID tables and then measure how good the packing is with the different tables.
 
 <!--
