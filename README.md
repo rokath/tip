@@ -132,6 +132,7 @@ See the [Tip User Manual](./docs/TipUserManual.md).
 * [x] Write [Tip User Manual](./docs/TipUserManual.md).
 * [ ] Extend `ti_generate` with a CLI switch to create longer ID tables.
 * [ ] Add `pack.c` and `unpack.c` compiler switch for max indirect indicies tables 0...127.
+* [ ] Build `tip` executable, which accepts stdin and writes to stdout.
 * [ ] Write extensive tests.
 * [ ] Write fuzzy tests.
 * [ ] Remove 65528 bytes limitation.
