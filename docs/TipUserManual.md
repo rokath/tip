@@ -390,7 +390,8 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 ```C
 //! INDIRECT_DICTIONARY_COUNT adds a number of indirect dictionaries.
-//! An indirect dictionary needs a 2-byte reference and therefore only pattern with at least 3 bytes make sense there. Each indirect dictionary adds 255 by 2-bytes to reference pattern and reduces the direct pattern space by one.
+//! An indirect dictionary needs a 2-byte reference and therefore only pattern with at least 3 bytes make sense there.
+//! Each indirect dictionary adds 255 >= 2-bytes reference pattern and reduces the direct pattern space by one.
 //! The max possible value is 127, but that would not allow any direct references at all.
 // Values making sense are probably in the range 0...10. The optimum depend on the kind of data.
 #define INDIRECT_DICTIONARY_COUNT 0 
