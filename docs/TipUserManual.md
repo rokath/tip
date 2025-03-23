@@ -467,9 +467,17 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 + one additional byte for each 7 unreplacable bytes
 ```
 
-* ID X for a single unreplacable
-* When each unreplacable gets: `1000uuuu 1000uuuu` = 16 IDs for Single unreplacable
-  * `1001000` to `11111111` = 255-128-16=111 IDs remain
+* If there is a single unreplacable byteand it is >127, we simply copy it.
+* When each unreplacable gets:
+  `1111111u 1111111u` =  2 IDs for unreplacable bytes + 8/1 8
+* `111111uu 111111uu` =  4 IDs for unreplacable bytes + 8/2 4
+* `11111uuu 11111uuu` =  8 IDs for unreplacable bytes + 8/3 2.7
+* `1111uuuu 1111uuuu` = 16 IDs for unreplacable bytes + 8/4 2.0
+* `111uuuuu 111uuuuu` = 32 IDs for unreplacable bytes + 8/5 1.6
+* `11uuuuuu 11uuuuuu` = 64 IDs for unreplacable bytes + 8/6 1.33
+* `1uuuuuuu 1uuuuuuu` =128 IDs for unreplacable bytes + 8/7 1.14
+
+Promizing is to use 4 to 7 bits as payload and to have more IDs free. For example 64 more IDs for direct pattern. 
 
 #### 7.5.2 Option: Use Prefix Byte as marker
 
@@ -486,6 +494,7 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 
 * Both variants could run parallel and we use the minimum result.
 * But how to inform the decoder?
+* The answer: Let a lot of real data train the generator and it will create an optimal configuration plus pattern tables.
 
 
 <!--
