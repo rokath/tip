@@ -426,7 +426,7 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 ###  7.3. <a id='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter.'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter
 
 * If data are containing no ID table pattern at all, they are getting bigger by the factor 8/7 (+14\%). That is a result of treating the data in 8 bit units (bytes).
-* If we change that to 16-bit units, by accepting an optional padding byte, we can reduce this increase factor to 16/15 (+7\%).
+* If we change that to 16-bit units, by accepting an optional padding byte, we can reduce this increasing factor to 16/15 (+7\%).
 * We still have IDs 1-127
 * An existing ID 127 just tells if there is a padding byte in the unreplacable data.
 * When unpacking, the first set MSBit tells that this byte and the next are unreplaceable. So we get N 16-bit groups of unreplacable data.
@@ -453,7 +453,7 @@ Modificate [smaz](https://github.com/antirez/smaz) and add indirect indices:
 * ID 252 -> next 2 bytes are unreplacable
 * ID 253 -> next 3 bytes are unreplacable
 * ID 254 -> next 4 bytes are unreplacable
-* ID 255 -> next byte is coding 2...257 unreplacable bytes
+* ID 255 -> next byte is count of 5...231 unreplacable bytes
 
 This allows 2560 additional pattern for the price 14 less 2-bytes pattern and the need for 2 bytes for the 2560 additional patterns. The details could be configurable.
 
