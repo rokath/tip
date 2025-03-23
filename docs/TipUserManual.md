@@ -467,12 +467,26 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 + one additional byte for each 7 unreplacable bytes
 ```
 
+* ID X for a single unreplacable
+* When each unreplacable gets: `1000uuuu 1000uuuu` = 16 IDs for Single unreplacable
+  * `1001000` to `11111111` = 255-128-16=111 IDs remain
+
 #### 7.5.2 Option: Use Prefix Byte as marker
 
 ```diff
 + ID 1-254 usable
 - each unreplacable single byte or byte sequence needs 1 or 2 marker bytes
 ```
+
+* 1 unreplacable sequence: ok +1
+* 2 unreplacable sequence: not that good +2...4
+* 3 unreplacable sequence: worth +3...6
+
+### 7.5.3 Option: Decide later
+
+* Both variants could run parallel and we use the minimum result.
+* But how to inform the decoder?
+
 
 <!--
 
