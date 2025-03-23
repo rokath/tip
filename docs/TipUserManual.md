@@ -1,4 +1,4 @@
-*# TiP - Tiny Packer - User Manual
+7*# TiP - Tiny Packer - User Manual
 
 ```diff
 
@@ -457,6 +457,22 @@ Modificate [smaz](https://github.com/antirez/smaz) and add indirect indices:
 This allows 2560 additional pattern for the price 14 less 2-bytes pattern and the need for 2 bytes for the 2560 additional patterns. The details could be configurable.
 
 > **Consideration:** Interesting extension but we want elemminate zeroes in one shot to keep the overall overhead small. This could make sense to improve SMAZ in an universal way, by providing a pattern table generator, which could be practically the same. The pattern table generator could get an option to use some internet data for the table generation.
+
+### 7.5 Optimal Unreplacable Bytes Handling 
+
+#### 7.5.1 Option: Use MsBit=1 as marker
+
+```diff
+- ID 1-127 usable
++ one additional byte for each 7 unreplacable bytes
+```
+
+#### 7.5.2 Option: Use Prefix Byte as marker
+
+```diff
++ ID 1-254 usable
+- each unreplacable single byte or byte sequence needs 1 or 2 marker bytes
+```
 
 <!--
 
