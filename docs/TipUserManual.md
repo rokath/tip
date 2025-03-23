@@ -372,9 +372,11 @@ For example we can limit direct pattern count to 120 (instead of 127) and use th
 
 This allows 120 at least 2-bytes pattern and 1525 longer pattern.
 
+<!--
+* the MSBit = 0|1 after a first ID 121-126 are the indiret table indices
 * the MSBit = 1   after ID 1...120 are the unreplacable (bit-shfted) bytes
-* the MSBit = 0|1 after ID 121-126 are the indiret table indices
-* the MSBit = 0 not after ID 121-126 are te direct table indices
+* the MSBit = 0 not after ID 121-126 are the direct table indices
+-->
 
  On unpacking:
 
