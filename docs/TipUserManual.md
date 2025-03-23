@@ -381,7 +381,7 @@ This allows 120 at least 2-bytes pattern and 1525 longer pattern.
  On unpacking:
 
 * START 
-  * Next bytes with MSBit=1 are unreplaceables.
+  * Next byte with MSBit=1 is unreplaceable, goto START
   * Next byte=1...120 is direct 2-byte pattern ID, goto START
   * Next byte=121...126 is followed by indirect pattern ID, goto START
   * Next byte=127 is followed by runlength code, goto START
