@@ -177,7 +177,7 @@ bb0000  | 1     | 4/3            | 4000/3 = 1333 | contains 0000
 
 ###  4.1. <a id='id-position-table-generation'></a>ID Position Table Generation
 
-* Step byte by byte thru the `slen` `src` buffer and check if a pattern from the (into `ti_pack` and `ti_unpack`) compiled [./src/idTable.c](../src/idTable.c) matches and build a sorted ID position table. Its max length is slen-1. Example for file 43.bin:
+* Step byte by byte thru the `slen` `src` buffer and check if a pattern from the (into `ti_pack` and `ti_unpack`) compiled [./src/idTable.c](../src/idTable.c) matches and build a sorted ID position table. Its max length is slen-1. Example for file 43.bin (see below):
 
 IDPositionTable:
 idx | ID  | pos | ASCII
