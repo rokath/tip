@@ -79,7 +79,9 @@ Table of Contents Generation:
 
 * Pack & Unpack are working in a first implementation.
 * The pack code is probably error free and finds the best packaging for a given ID table, but could get improved.
-  * A TiP extension is planned to support longer pattern lists and run-length encoding.
+  * A TiP extension is planned to support longer pattern lists.
+  * A TiP variant is planned to use 6-bit for unreplaceable bytes.
+  * A TiP optimization is planned to reduce the needed space for unreplaceable bytes in some cases.
 * The `idTable.c` generation is ok, but the generated table might not be optimal.
 
 <!-- ABOUT THE PROJECT -->
