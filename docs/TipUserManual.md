@@ -1,4 +1,7 @@
-67*# TiP - Tiny Packer - User Manual
+<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+<a id="tip-um-top"></a>
+
+# TiP - Tiny Packer - User Manual
 
 ```diff
 
@@ -89,6 +92,8 @@ There is also [smaz](https://github.com/antirez/smaz), but suitable only for tex
 
 An adaptive solution would be nice, meaning, not depending on a specific data structure like English text or many integers. [shoco](https://ed-von-schleck.github.io/shoco/) is a way to go but focusses more on strings.
 
+<p align="right">(<a href="#tip-um-top">back to top</a>)</p>
+
 ##  2. <a name='bytes,-numbers-and-the-tip-idea'></a>Bytes, Numbers and the TiP Idea
 
 [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) and [TCOBS](https://github.com/rokath/tcobs) are starting or ending with some control characters and these are linked togeter to distinguish them from data bytes. But there is also an other option.
@@ -101,6 +106,8 @@ If there is a buffer of, let's say 20 bytes, we can consider it as a 20-digit nu
 * _Unreplacable_ bytes need a transformation in a way, that no bytes in the range 0-127 remain. That is our tranformation to the 128 base. We simply collect them and do a bit shifting in a way, that no most significant bit is used anymore. The MSBits of the reordered unreplacable bytes are all set to 1 and so we have only bytes `80` to `ff` left.
 
 The `ti_unpack` then sees bytes `01` to `7f` and knows, that these are IDs, intermixed with bytes `80` to `ff` and knows, that the 7 least significant bits are the unreplacable bytes. The byte places are containing the position informtion for the unreplacable bytes.
+
+<p align="right">(<a href="#tip-um-top">back to top</a>)</p>
 
 ##  3. <a name='id-table-generation'></a>ID Table Generation
 
@@ -181,6 +188,8 @@ bb0000  | 1     | 4/3            | 4000/3 = 1333 | contains 0000
 0000cc  | 1     | 4/3            | 4000/3 = 1333 | contains 0000
 -->
 
+<p align="right">(<a href="#tip-um-top">back to top</a>)</p>
+
 ##  4. <a name='the-tip-algorithm'></a>The TiP Algorithm
 
 ###  4.1. <a name='id-position-table-generation'></a>ID Position Table Generation
@@ -223,6 +232,8 @@ Next all found patterns are replaced with their IDs, which all have MSBit=0. The
 
 On the receiver side all bytes with MSBit=0 are identified as IDs and are replaced with the patterns they stay for. All bytes with MSBit=1 are carying the unreplacable bytes bits. These are ordered back to restore the unreplacable bytes which fill the wholes between the patterens then.
 
+<p align="right">(<a href="#tip-um-top">back to top</a>)</p>
+
 ##  5. <a name='getting-started'></a>Getting Started
 
 ###  5.1. <a name='prerequisites'></a>Prerequisites
@@ -253,7 +264,7 @@ On the receiver side all bytes with MSBit=0 are identified as IDs and are replac
 * Add `src` folder to your project and compile.
 * `pack.h` and `unpack.h` is the user interface.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#tip-um-top">back to top</a>)</p>
 
 ##  6. <a name='-tip-in-action'></a> TiP in Action
 
@@ -362,6 +373,8 @@ file size 28 changed to 12 (rate 42 percent)
 ####  6.4. <a name='test-results-interpretation'></a>Test Results Interpretation
 
 If the real data are similar to the training data, an average packed size of about 50\% is expected.
+
+<p align="right">(<a href="#tip-um-top">back to top</a>)</p>
 
 ##  7. <a name='improvement-thoughts'></a>Improvement Thoughts
 
@@ -560,4 +573,4 @@ sudo echo export PATH=/opt/gcc-latest/bin/:$PATH > # /etc/profile.d/gccpath.go
 ```
 -->
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#tip-um-top">back to top</a>)</p>
