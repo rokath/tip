@@ -1,15 +1,12 @@
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a id="tip-um-top"></a>
 
-# TiP - Tiny Packer - User Manual
+# TiP Tiny Packer ~~`00`~~ User Manual
 
 ```diff
-
-+ Compress very small buffers fast and efficient including Zeroes Elemination +
---> Works with several-KByte buffers too but will not compress like established zip tools ❗
-
++ Compress very small buffers including Zeroes Elemination in a single step +
+! Works with several-KByte buffers too but will not compress like zip tools❗
 ```
-
 ---
 <h2>Table of Contents</h2>
 <details><summary>(click to expand)</summary><ol><!-- TABLE OF CONTENTS START -->
@@ -82,15 +79,15 @@ For low level buffer storage or MCU transfers some kind of framing is needed for
 
 ###  1.2. <a name='-very-small-buffer-data-compession'></a> Very Small Buffer Data Compession
 
-A compression and then [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) framing would do perfectly. But when it comes to very short buffers, like 4 or 20 bytes, **normal zip code fails** to reduce the buffer size.
+A compression and then [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) framing would do perfectly. But when it comes to very short buffers, like 4 or 20 bytes, **normal zip code fails** to reduce the buffer size and [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) adds a byte too.
 
 To combine the [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) technique with compression especially for very short buffers, some additional spare characters are needed. That's done with [TCOBS](https://github.com/rokath/tcobs) in a manual coded way, meaning, expected special data properties are reflected in the [TCOBS](https://github.com/rokath/tcobs) code. See the [TCOBS User Manual](https://github.com/rokath/tcobs/blob/master/docs/TCOBSv2Specification.md) for more details.
 
-There is also [smaz](https://github.com/antirez/smaz), but suitable only for text buffers mainly in English.
+There is also [smaz](https://github.com/antirez/smaz), but suitable only for text buffers mainly in English - or you need to adapt the codebook manually. Also zeroes would need a special treatment.
 
 [RZCOBS](https://github.com/Dirbaio/rzcobs), assumes many zeroes and tries some compression this way.
 
-An adaptive solution would be nice, meaning, not depending on a specific data structure like English text or many integers. [shoco](https://ed-von-schleck.github.io/shoco/) is a way to go but focusses more on strings.
+An adaptive solution would be nice, meaning, not depending on a specific data structure like English text or many integers. [shoco](https://ed-von-schleck.github.io/shoco/) could be a way to go but focusses more on strings.
 
 <p align="right">(<a href="#tip-um-top">back to top</a>)</p>
 
@@ -98,7 +95,7 @@ An adaptive solution would be nice, meaning, not depending on a specific data st
 
 [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) and [TCOBS](https://github.com/rokath/tcobs) are starting or ending with some control characters and these are linked togeter to distinguish them from data bytes. But there is also an other option.
 
-If there is a buffer of, let's say 20 bytes, we can consider it as a 20-digit number with 256 ciphers. To free some 8 characters for special usage, we could transform the 20 times 256 cipher number into a 21 or 22 times 248 ciphers number. This transformation is possible, but very computing intensive because of many divisions by 248, or a different base number. So this is no solution for small MCUs. But a division by 128 is cheap! If we transform the 256 base into a 128 base, we only need to perform a shift operation for the conversion. This way we get 128 special characters usable for compressing and framing:
+If there is a buffer of, let's say 20 bytes, we can consider it as a (big) 20-digit number with 256 ciphers. To free some 8 characters for special usage, we could transform the 20 times 256 cipher number into a 21 or 22 times 248 ciphers number. This transformation is possible, but very computing intensive because of many divisions by 248, or a different base number. So this is no solution for small MCUs. But a division by 128 is cheap! If we transform the 256 base into a 128 base, we only need to perform a shift operation for the conversion. This way we get 128 special characters usable for compressing and framing:
 
 * Byte `00` is not used at all. One aim of TiP is, to get rid of all zeroes in the TiP packets to be able to use `00` as a package delimiter.
 * Bytes `01` to `7f` are used as pattern IDs. These IDs are used as pattern replacements.
@@ -240,7 +237,7 @@ On the receiver side all bytes with MSBit=0 are identified as IDs and are replac
 
 * For now install [Go](https://golang.org/) to easily build the executables.
 * You need some files containing typical data you want to pack and unpack.
-  * Just to try out TiP, you can use a folder containing ASCII texts.
+  * Just to try out TiP, you can use a folder containing any texts or binary data.
 
 ###  5.2. <a name='built-tiptable-generator-`ti_generate`'></a>Built TipTable Generator `ti_generate`
 
