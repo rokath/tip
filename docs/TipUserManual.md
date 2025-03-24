@@ -365,7 +365,7 @@ If the real data are similar to the training data, an average packed size of abo
 
 ##  7. <a id='improvement-thoughts'></a>Improvement Thoughts
 
-###  7.1. <a id='additional-indirect-dictionary'></a>Additional Indirect Dictionary
+###  7.1. <a id='additional-indirect-dictionary'></a>Additional Indirect Dictionaries (planned)
 
 For example we can limit direct pattern count to 120 (instead of 127) and use their order in such a way:
 
@@ -407,7 +407,7 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 > **Consideration:** Promizing
 
-###  7.2. <a id='reserve-id-`7f`-for-run-length-encoding'></a>Reserve ID `7f` for Run-Length Encoding
+###  7.2. <a id='reserve-id-`7f`-for-run-length-encoding'></a>Reserve an ID (for example`7f`) for embedded Run-Length Encoding (possible)
 
 * Example:
 
@@ -431,7 +431,7 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 > **Consideration:** Possible, but currenly no aim.
 
-###  7.3. <a id='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter
+###  7.3. <a id='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter (refused)
 
 * If data are containing no ID table pattern at all, they are getting bigger by the factor 8/7 (+14\%). That is a result of treating the data in 8 bit units (bytes).
 * If we change that to 16-bit units, by accepting an optional padding byte, we can reduce this increasing factor to 16/15 (+7\%).
@@ -465,29 +465,16 @@ Modificate [smaz](https://github.com/antirez/smaz) and add indirect indices:
 
 This allows 2560 additional pattern for the price 14 less 2-bytes pattern and the need for 2 bytes for the 2560 additional patterns. The details could be configurable.
 
-> **Consideration:** Interesting extension but we want elemminate zeroes in one shot to keep the overall overhead small. This could make sense to improve SMAZ in an universal way, by providing a pattern table generator, which could be practically the same. The pattern table generator could get an option to use some internet data for the table generation.
+> **Consideration:** Interesting extension but we want eliminate zeroes in one shot to keep the overall overhead small. This could make sense to improve SMAZ in an universal way, by providing a pattern table generator, which could be practically the same. The pattern table generator could get an option to use some internet data for the table generation. COBS could run only afterwards and would add a byte.
 
 ###  7.5. <a id='optimal-unreplacable-bytes-handling'></a>Optimal Unreplacable Bytes Handling 
 
-
-```diff
-- text in red
--- text in red
-+ text in green
-++ text in green
-! text in orange
-!! text in orange
-# text in gray
-## text in gray
-@ text in purple
-@@ text in purple
-```
-
+> **Consideration:** Only MsBit=1 or MSBits=11 are worth further investigations and could get selected inside `tipConfig.h`.
 ####  7.5.1. <a id='use-msbit=1-as-marker'></a>Use MsBit=1 as marker (implemented)
 
 * `1uuuuuuu` = 128 IDs for unreplacable bytes
 * max dlen = slen * 8/7 = slen * 1.14
-* Additional Special Cases Handling:
+* Additional Special Cases Handling (_not yet implemented_):
   * If there is a single unreplacable byte and it is >127, we simply copy it.
   * If there are several unreplacable bytes and all >127 and src ends with a pattern, we simply copy them.
 
@@ -507,7 +494,7 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 
 ```diff
 + 191 pattern IDs usable (75 % OF 255)
-@ one additional byte for each 3 unreplacable bytes
+! one additional byte for each 3 unreplacable bytes
 ```
 
 ####  7.5.3. <a id='use-3-to-7-msbits-as-marker'></a>Use 3 to 7 MSBits as marker
@@ -519,7 +506,7 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 * `111uuuuu 111uuuuu` = 32 IDs for unreplacable bytes + 8/5 1.6
 
 ```diff
-These variants could result in too big dlen.
+- These variants could result in too big dlen and do not add so many direct IDs (max 32).
 ```
 
 ####  7.5.4. <a id='option:-use-prefix-byte-as-marker'></a>Option: Use Prefix Byte as marker
@@ -535,12 +522,30 @@ These variants could result in too big dlen.
 
 ###  7.6. <a id='option:-decide-later'></a>Option: Decide later
 
-* Both variants could run parallel and we use the minimum result.
+* Variants could run parallel and we use the minimum result.
 * But how to inform the decoder?
 * The answer: Let a lot of real data train the generator and it will create an optimal configuration plus pattern tables.
 
+```diff
+! The usage shoud be simple!
+```
+
 
 <!--
+
+
+```diff
+- text in red
+-- text in red
++ text in green
+++ text in green
+! text in orange
+!! text in orange
+# text in gray
+## text in gray
+@ text in purple
+@@ text in purple
+```
 
 https://jwakely.github.io/pkg-gcc-latest/
 
