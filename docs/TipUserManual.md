@@ -466,7 +466,7 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 * max dlen = slen * 8/7 = slen * 1.14
 * Additional Special Cases Handling:
   * If there is a single unreplacable byte and it is >127, we simply copy it.
-  * If there are several unreplacable bytes and all >127, src ends with a pattern, we simply copy them.
+  * If there are several unreplacable bytes and all >127 and src ends with a pattern, we simply copy them.
 
 ```diff
 - 127 pattern IDs usable (50 % of 256)
@@ -480,7 +480,7 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 * one additional byte for each 3 unreplacable bytes
 * Additional Special Cases Handling:
   * If there is a single unreplacable byte and it is >191, we simply copy it.
-  * If there are several unreplacable bytes and all >191, src ends with a pattern, we simply copy them.
+  * If there are several unreplacable bytes and all >191 and src ends with a pattern, we simply copy them.
 
 ```diff
 - 191 pattern IDs usable (75 % OF 255)
