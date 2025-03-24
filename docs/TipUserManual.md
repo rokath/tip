@@ -1,4 +1,4 @@
-7*# TiP - Tiny Packer - User Manual
+67*# TiP - Tiny Packer - User Manual
 
 ```diff
 
@@ -460,26 +460,44 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 
 ### 7.5 Optimal Unreplacable Bytes Handling 
 
-#### 7.5.1 Option: Use MsBit=1 as marker
+#### 7.5.1 Use MsBit=1 as marker
+
+* `1uuuuuuu` = 128 IDs for unreplacable bytes
+* max dlen = slen * 8/7 = slen * 1.14
+* Additional Special Cases Handling:
+ * If there is a single unreplacable byte and it is >127, we simply copy it.
+ * If there are several unreplacable bytes and all >127, src ends with a pattern, we simply copy them.
 
 ```diff
-- ID 1-127 usable
+- 127 pattern IDs usable (50 % of 256)
 + one additional byte for each 7 unreplacable bytes
 ```
 
-* If there is a single unreplacable byteand it is >127, we simply copy it.
-* When each unreplacable gets:
-  `1111111u 1111111u` =  2 IDs for unreplacable bytes + 8/1 8
+#### 7.5.2 Use MsBits=11 as marker
+
+* `11uuuuuu` = 64 IDs for unreplacable bytes
+* max dlen = slen * 8/6 = slen * 1.333 -> +33 %
+* one additional byte for each 3 unreplacable bytes
+* Additional Special Cases Handling:
+ * If there is a single unreplacable byte and it is >191, we simply copy it.
+ * If there are several unreplacable bytes and all >191, src ends with a pattern, we simply copy them.
+
+```diff
+- 191 pattern IDs usable (75 % OF 255)
+@ one additional byte for each 3 unreplacable bytes
+```
+
+#### 7.5.3 Use 3 to 7 MSBits as marker
+
+* `1111111u 1111111u` =  2 IDs for unreplacable bytes + 8/1 8
 * `111111uu 111111uu` =  4 IDs for unreplacable bytes + 8/2 4
 * `11111uuu 11111uuu` =  8 IDs for unreplacable bytes + 8/3 2.7
 * `1111uuuu 1111uuuu` = 16 IDs for unreplacable bytes + 8/4 2.0
 * `111uuuuu 111uuuuu` = 32 IDs for unreplacable bytes + 8/5 1.6
-* `11uuuuuu 11uuuuuu` = 64 IDs for unreplacable bytes + 8/6 1.33
-* `1uuuuuuu 1uuuuuuu` =128 IDs for unreplacable bytes + 8/7 1.14
 
-Promizing is to use 4 to 7 bits as payload and to have more IDs free. For example 64 more IDs for direct pattern. 
+These variants could result in too big dlen.
 
-#### 7.5.2 Option: Use Prefix Byte as marker
+#### 7.5.4 Option: Use Prefix Byte as marker
 
 ```diff
 + ID 1-254 usable
@@ -490,7 +508,7 @@ Promizing is to use 4 to 7 bits as payload and to have more IDs free. For exampl
 * 2 unreplacable sequence: not that good +2...4
 * 3 unreplacable sequence: worth +3...6
 
-### 7.5.3 Option: Decide later
+### 7.5.5 Option: Decide later
 
 * Both variants could run parallel and we use the minimum result.
 * But how to inform the decoder?
