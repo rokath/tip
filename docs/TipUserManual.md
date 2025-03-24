@@ -48,15 +48,13 @@ Table of Contents Generation:
     * 6.4. [Test Results Interpretation](#test-results-interpretation)
 * 7. [Improvement Thoughts](#improvement-thoughts)
   * 7.1. [Additional Indirect Dictionaries (planned)](#additional-indirect-dictionaries-(planned))
-  * 7.2. [Reserve an ID (for example`7f`) for embedded Run-Length Encoding (possible)](#reserve-an-id-(for-example`7f`)-for-embedded-run-length-encoding-(possible))
-  * 7.3. [Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter (refused)](#minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter-(refused))
-  * 7.4. [Do not remove zeroes in favour of better compression as an option or a separate project](#do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project)
-  * 7.5. [Optimal Unreplacable Bytes Handling](#optimal-unreplacable-bytes-handling)
-    * 7.5.1. [Use MsBit=1 as marker (implemented)](#use-msbit=1-as-marker-(implemented))
-    * 7.5.2. [Use MsBits=11 as marker (option worth checking)](#use-msbits=11-as-marker-(option-worth-checking))
-    * 7.5.3. [Use 3 to 7 MSBits as marker](#use-3-to-7-msbits-as-marker)
-    * 7.5.4. [Option: Use Prefix Byte as marker](#option:-use-prefix-byte-as-marker)
-  * 7.6. [Option: Decide later](#option:-decide-later)
+  * 7.2. [Reserve an ID (for example`7f`) for embedded Run-Length Encoding](#reserve-an-id-(for-example`7f`)-for-embedded-run-length-encoding)
+  * 7.3. [Optimal Unreplacable Bytes Handling](#optimal-unreplacable-bytes-handling)
+    * 7.3.1. [Use MsBit=1 as marker (implemented)](#use-msbit=1-as-marker-(implemented))
+    * 7.3.2. [Use MsBits=11 as marker (option worth checking)](#use-msbits=11-as-marker-(option-worth-checking))
+    * 7.3.3. [Use 3 to 7 MSBits as marker](#use-3-to-7-msbits-as-marker)
+    * 7.3.4. [Option: Use Prefix Byte as marker](#option:-use-prefix-byte-as-marker)
+  * 7.4. [Option: Decide later](#option:-decide-later)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -380,7 +378,7 @@ If the real data are similar to the training data, an average packed size of abo
 
 ###  7.1. <a name='additional-indirect-dictionaries-(planned)'></a>Additional Indirect Dictionaries (planned)
 
-For example we can limit direct pattern count to 120 (instead of 127) and use their order in such a way:
+For example we can limit the direct pattern count to 120 (instead of 127) and use their order in such a way:
 
 * ID 1...120                    -> at least 2-bytes pattern <= 50% compressed
 * ID 121 followed by id 1...255 -> at least 3-bytes pattern <= 67% compressed
@@ -418,9 +416,9 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 #define INDIRECT_DICTIONARY_COUNT 0 
 ```
 
-> **Consideration:** Promizing
+> **Consideration:** Promizing for data with many repetaing longer pattern.
 
-###  7.2. <a name='reserve-an-id-(for-example`7f`)-for-embedded-run-length-encoding-(possible)'></a>Reserve an ID (for example`7f`) for embedded Run-Length Encoding (possible)
+###  7.2. <a name='reserve-an-id-(for-example`7f`)-for-embedded-run-length-encoding'></a>Reserve an ID (for example`7f`) for embedded Run-Length Encoding
 
 * Example:
 
@@ -442,9 +440,9 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 //! TODO: define ranges here
 ```
 
-> **Consideration:** Possible, but currenly no aim.
+> **Consideration:** Possible, but currenly no aim. The plausibility depends on the kind of data.
 
-###  7.3. <a name='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter-(refused)'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter (refused)
+<!--###  7.3. <a name='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter-(refused)'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter (refused)
 
 * If data are containing no ID table pattern at all, they are getting bigger by the factor 8/7 (+14\%). That is a result of treating the data in 8 bit units (bytes).
 * If we change that to 16-bit units, by accepting an optional padding byte, we can reduce this increasing factor to 16/15 (+7\%).
@@ -454,8 +452,8 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 * BUT we need 2 frame delimiter bytes then!
 
 > **Consideration:** Not a good idea, because we get other overhead.
-
-###  7.4. <a name='do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project'></a>Do not remove zeroes in favour of better compression as an option or a separate project
+-->
+<!--###  7.4. <a name='do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project'></a>Do not remove zeroes in favour of better compression as an option or a separate project
 
 [smaz](https://github.com/antirez/smaz):
 
@@ -479,11 +477,12 @@ Modificate [smaz](https://github.com/antirez/smaz) and add indirect indices:
 This allows 2560 additional pattern for the price 14 less 2-bytes pattern and the need for 2 bytes for the 2560 additional patterns. The details could be configurable.
 
 > **Consideration:** Interesting extension but we want eliminate zeroes in one shot to keep the overall overhead small. This could make sense to improve SMAZ in an universal way, by providing a pattern table generator, which could be practically the same. The pattern table generator could get an option to use some internet data for the table generation. COBS could run only afterwards and would add a byte.
+-->
 
-###  7.5. <a name='optimal-unreplacable-bytes-handling'></a>Optimal Unreplacable Bytes Handling 
+###  7.3. <a name='optimal-unreplacable-bytes-handling'></a>Optimal Unreplacable Bytes Handling 
 
 > **Consideration:** Only MsBit=1 or MSBits=11 are worth further investigations and could get selected inside `tipConfig.h`.
-####  7.5.1. <a name='use-msbit=1-as-marker-(implemented)'></a>Use MsBit=1 as marker (implemented)
+####  7.3.1. <a name='use-msbit=1-as-marker-(implemented)'></a>Use MsBit=1 as marker (implemented)
 
 * `1uuuuuuu` = 128 IDs for unreplacable bytes
 * max dlen = slen * 8/7 = slen * 1.14
@@ -496,7 +495,7 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 + Only one additional byte for each 7 unreplacable bytes.
 ```
 
-####  7.5.2. <a name='use-msbits=11-as-marker-(option-worth-checking)'></a>Use MsBits=11 as marker (option worth checking)
+####  7.3.2. <a name='use-msbits=11-as-marker-(option-worth-checking)'></a>Use MsBits=11 as marker (option worth checking)
 
 * `11uuuuuu` = 64 IDs for unreplacable bytes
 * max dlen = slen * 8/6 = slen * 1.333 -> +33 %
@@ -510,7 +509,7 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 ! one additional byte for each 3 unreplacable bytes
 ```
 
-####  7.5.3. <a name='use-3-to-7-msbits-as-marker'></a>Use 3 to 7 MSBits as marker
+####  7.3.3. <a name='use-3-to-7-msbits-as-marker'></a>Use 3 to 7 MSBits as marker
 
 * `1111111u 1111111u` =  2 IDs for unreplacable bytes + 8/1 8
 * `111111uu 111111uu` =  4 IDs for unreplacable bytes + 8/2 4
@@ -522,7 +521,7 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 - These variants could result in too big dlen and do not add so many direct IDs (max 32).
 ```
 
-####  7.5.4. <a name='option:-use-prefix-byte-as-marker'></a>Option: Use Prefix Byte as marker
+####  7.3.4. <a name='option:-use-prefix-byte-as-marker'></a>Option: Use Prefix Byte as marker
 
 ```diff
 + ID 1-254 usable
@@ -533,14 +532,14 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 * 2 unreplacable sequence: not that good +2...4
 * 3 unreplacable sequence: worth +3...6
 
-###  7.6. <a name='option:-decide-later'></a>Option: Decide later
+###  7.4. <a name='option:-decide-later'></a>Option: Decide later
 
 * Variants could run parallel and we use the minimum result.
 * But how to inform the decoder?
 * The answer: Let a lot of real data train the generator and it will create an optimal configuration plus pattern tables.
 
 ```diff
-! The usage shoud be simple!
+! The usage should be simple!
 ```
 
 
