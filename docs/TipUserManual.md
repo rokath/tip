@@ -398,7 +398,7 @@ If the real data are similar to the training data, an average packed size of abo
 
 ###  7.2. <a name='use-msbits=11-as-marker-for-unreplacable-bytes'></a>Use MsBits=11 as marker for Unreplacable Bytes
 
-* `11uuuuuu` = 64 IDs for unreplacable bytes
+* `11uuuuuu` = 64 "ID"s for unreplacable bytes
 * Max TiP package length = srcLen * 8/6 = srcLen * 1.33 -> data can get 33% larger in the worst case.
 
 ```diff
