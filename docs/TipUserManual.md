@@ -444,8 +444,6 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 > **Consideration:** Possible, but currenly no aim. The plausibility depends on the kind of data.
 
-> **Consideration:** Only MsBit=1 or MSBits=11 are worth further investigations and could get selected inside `tipConfig.h`.
-
 ###  7.3. <a name='use-msbit=1-as-marker-for-unreplacable-bytes'></a>Use MsBit=1 as marker for Unreplacable Bytes
 
 * `1uuuuuuu` = 128 "ID"s for unreplacable bytes
