@@ -44,13 +44,13 @@ Table of Contents Generation:
     * 6.3. [Test Execution](#test-execution)
     * 6.4. [Test Results Interpretation](#test-results-interpretation)
 * 7. [Improvement Thoughts](#improvement-thoughts)
-  * 7.1. [Additional Indirect Dictionary](#additional-indirect-dictionary)
-  * 7.2. [Reserve ID `7f` for Run-Length Encoding](#reserve-id-`7f`-for-run-length-encoding)
-  * 7.3. [Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter](#minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter)
+  * 7.1. [Additional Indirect Dictionaries (planned)](#additional-indirect-dictionaries-(planned))
+  * 7.2. [Reserve an ID (for example`7f`) for embedded Run-Length Encoding (possible)](#reserve-an-id-(for-example`7f`)-for-embedded-run-length-encoding-(possible))
+  * 7.3. [Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter (refused)](#minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter-(refused))
   * 7.4. [Do not remove zeroes in favour of better compression as an option or a separate project](#do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project)
   * 7.5. [Optimal Unreplacable Bytes Handling](#optimal-unreplacable-bytes-handling)
-    * 7.5.1. [Use MsBit=1 as marker](#use-msbit=1-as-marker)
-    * 7.5.2. [Use MsBits=11 as marker](#use-msbits=11-as-marker)
+    * 7.5.1. [Use MsBit=1 as marker (implemented)](#use-msbit=1-as-marker-(implemented))
+    * 7.5.2. [Use MsBits=11 as marker (option worth checking)](#use-msbits=11-as-marker-(option-worth-checking))
     * 7.5.3. [Use 3 to 7 MSBits as marker](#use-3-to-7-msbits-as-marker)
     * 7.5.4. [Option: Use Prefix Byte as marker](#option:-use-prefix-byte-as-marker)
   * 7.6. [Option: Decide later](#option:-decide-later)
@@ -69,15 +69,15 @@ Table of Contents Generation:
 
 ---
 
-##  1. <a id='tip---why-and-how?-initial-situation'></a>TiP - Why and How? Initial Situation
+##  1. <a name='tip---why-and-how?-initial-situation'></a>TiP - Why and How? Initial Situation
 
-###  1.1. <a id='framing'></a>Framing
+###  1.1. <a name='framing'></a>Framing
 
 For low level buffer storage or MCU transfers some kind of framing is needed for resynchronization after failure. An old variant is to declare a special character as escape sign and to start each package with it. And if the escape sign is part of the buffer data, add an escape sign there too. Even the as escape sign selected character occurs seldom in the buffer data, a careful design should consider the possibility of a buffer containing only such characters.
 
 [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) is a newer and much better approach, to achieve framing. It transformes the buffer data containing 256 different characters into a sequence of 255 only characters. That allows to use the spare character as frame delimiter. Usually `0` is used for that.
 
-###  1.2. <a id='-very-small-buffer-data-compession'></a> Very Small Buffer Data Compession
+###  1.2. <a name='-very-small-buffer-data-compession'></a> Very Small Buffer Data Compession
 
 A compression and then [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) framing would do perfectly. But when it comes to very short buffers, like 4 or 20 bytes, **normal zip code fails** to reduce the buffer size.
 
@@ -89,7 +89,7 @@ There is also [smaz](https://github.com/antirez/smaz), but suitable only for tex
 
 An adaptive solution would be nice, meaning, not depending on a specific data structure like English text or many integers. [shoco](https://ed-von-schleck.github.io/shoco/) is a way to go but focusses more on strings.
 
-##  2. <a id='bytes,-numbers-and-the-tip-idea'></a>Bytes, Numbers and the TiP Idea
+##  2. <a name='bytes,-numbers-and-the-tip-idea'></a>Bytes, Numbers and the TiP Idea
 
 [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) and [TCOBS](https://github.com/rokath/tcobs) are starting or ending with some control characters and these are linked togeter to distinguish them from data bytes. But there is also an other option.
 
@@ -102,9 +102,9 @@ If there is a buffer of, let's say 20 bytes, we can consider it as a 20-digit nu
 
 The `ti_unpack` then sees bytes `01` to `7f` and knows, that these are IDs, intermixed with bytes `80` to `ff` and knows, that the 7 least significant bits are the unreplacable bytes. The byte places are containing the position informtion for the unreplacable bytes.
 
-##  3. <a id='id-table-generation'></a>ID Table Generation
+##  3. <a name='id-table-generation'></a>ID Table Generation
 
-###  3.1. <a id='id-table-generation-algorithm'></a>ID Table Generation Algorithm
+###  3.1. <a name='id-table-generation-algorithm'></a>ID Table Generation Algorithm
 
 * We create a bunch of test files with data similar to those we want to pack in the future.
   * `ti_generate` takes a single file and treats it as a separate sample buffer.
@@ -118,7 +118,7 @@ The `ti_unpack` then sees bytes `01` to `7f` and knows, that these are IDs, inte
 * The 127 most often occuring pattern are sorted by descending size and are used to create the file `idTable.c`.
   * TODO: Sorting is not needed anymore, but `INDIRECT_DICTIONARY_COUNT > 0` needs adapted treatment: No 2-bytes pattern into indirect diectionaries.
 
-###  3.2. <a id='id-table-generation-questions'></a>ID Table Generation Questions
+###  3.2. <a name='id-table-generation-questions'></a>ID Table Generation Questions
 
 * It is not clear, if the this way created ID table is optimal. Especially, when pattern are sub-pattern of other patterns. That is easily the case with sample data containing the same bytes in longer rows.
 * Also it could make sense to use the length of a pattern as weigth. If, for example a 5-bytes long pattern occurs 100 times and a 2-bytes long pattern exists 200 times in the sample data - which should get preceedence to get into the ID table? My guess is, to multiply the pattern length with its occureances count gives a good approximation.
@@ -181,9 +181,9 @@ bb0000  | 1     | 4/3            | 4000/3 = 1333 | contains 0000
 0000cc  | 1     | 4/3            | 4000/3 = 1333 | contains 0000
 -->
 
-##  4. <a id='the-tip-algorithm'></a>The TiP Algorithm
+##  4. <a name='the-tip-algorithm'></a>The TiP Algorithm
 
-###  4.1. <a id='id-position-table-generation'></a>ID Position Table Generation
+###  4.1. <a name='id-position-table-generation'></a>ID Position Table Generation
 
 * Step byte by byte thru the `slen` `src` buffer and check if a pattern from the (into `ti_pack` and `ti_unpack`) compiled [./src/idTable.c](../src/idTable.c) matches and build a sorted ID position table. Its max length is slen-1. Example for file 43.bin (see below):
 
@@ -207,59 +207,59 @@ idx | ID  | pos | ASCII
   * can occur several times at different positions, example: ID 127 at pos 4, 5 and 6
   * can overlap, example: IDs 52, 95, 127, 51, 55 all cover position 5
 
-###  4.2. <a id='id-position-table-processing'></a>ID Position Table Processing
+###  4.2. <a name='id-position-table-processing'></a>ID Position Table Processing
 
 * To build a TiP packet, many different ID position sequences are possible, maybe interrupted by some _unreplacable_ bytes. The TiP packer starts creating a full `srcMap` containing all possible paths. For that it traverses the (by incrementing position sorted) IDPositionTable and checks, if the current ID position is appenable to any paths. If so, these paths are forked and the ID position is appended to the fork. That fork is needed, because the same path is extendable with different ID positions. If the current ID position did not fit to any path, a new path is created. After processing an ID position, a new path may exist or some paths have been foked and the forked paths are extended with this ID position. Before going to the next ID position from the IDPositionTable, obsolete `srcMap` paths are deleted. Obsolete are paths, if their limit plus the maximum pattern size is smaller than biggest existing path limit. Obsolete paths are too those path, which have an equal limit but wuld result in a bigger (partial) TiP packet. Even if they would result in an equal TiP packet size, it is only one of them needed for futher ID position provessing.
 * When the PositionTable was processed completely, a few paths are remaining. A path, which would result in the smallest TiP packet is selected to create the TiP packet.
 
-###  4.3. <a id='packing---unreplacable-bytes-handling'></a>Packing - Unreplacable Bytes Handling
+###  4.3. <a name='packing---unreplacable-bytes-handling'></a>Packing - Unreplacable Bytes Handling
 
 The selected path covers no, some or all bytes with ID pattern. Bytes not covered, are unreplacable bytes.
 All unreplacable bytes are collected into one separate buffer. N unreplacable bytes occupy N\*8 bits. These bits are distributed onto N\*8/7 7-bit bytes, all getting the MSBit set to avoid zeroes and to distinguish them later from the ID bytes. In fact we do not change these N\*8 bits, we simply reorder them slightly. This bit reordering is de-facto the number transformation to the base 128, mentioned above. By setting the most significant bits, also is guarantied, that no `00` bytes exist anymore.
 
 Next all found patterns are replaced with their IDs, which all have MSBit=0. The unreplacable bytes are replaced with the bit-reordered unreplacable bytes, having MSBit=1. The bit-reordered unreplacable bytes fill the wholes between the IDs.
 
-###  4.4. <a id='unpacking'></a>Unpacking
+###  4.4. <a name='unpacking'></a>Unpacking
 
 On the receiver side all bytes with MSBit=0 are identified as IDs and are replaced with the patterns they stay for. All bytes with MSBit=1 are carying the unreplacable bytes bits. These are ordered back to restore the unreplacable bytes which fill the wholes between the patterens then.
 
-##  5. <a id='getting-started'></a>Getting Started
+##  5. <a name='getting-started'></a>Getting Started
 
-###  5.1. <a id='prerequisites'></a>Prerequisites
+###  5.1. <a name='prerequisites'></a>Prerequisites
 
 * For now install [Go](https://golang.org/) to easily build the executables.
 * You need some files containing typical data you want to pack and unpack.
   * Just to try out TiP, you can use a folder containing ASCII texts.
 
-###  5.2. <a id='built-tiptable-generator-`ti_generate`'></a>Built TipTable Generator `ti_generate`
+###  5.2. <a name='built-tiptable-generator-`ti_generate`'></a>Built TipTable Generator `ti_generate`
 
 * `cd ti_generate && go build -ldflags "-w" ./...`
 * Run `ti_generate` on the data files to get an `idTable.c` file.
 
-###  5.3. <a id='build-`ti_pack`-and-`ti_unpack`'></a>Build `ti_pack` and `ti_unpack`
+###  5.3. <a name='build-`ti_pack`-and-`ti_unpack`'></a>Build `ti_pack` and `ti_unpack`
 
 * Copy the generated `idTable.c` file into the `src` folder.
 * Run `go clean -cache`.
 * Run `go build ./...` or `go install ./...`.
 
-###  5.4. <a id='try-`ti_pack`-and-`ti_unpack`'></a>Try `ti_pack` and `ti_unpack`
+###  5.4. <a name='try-`ti_pack`-and-`ti_unpack`'></a>Try `ti_pack` and `ti_unpack`
 
 * Run `ti_pack -i myFile -v` to get `myFile.tip`.
 * Run `ti_unpack -i myFile.tip -v` to get `myFile.tip.untip`.
 * `myFile` and `myFile.tip.untip` are expected to be equal.
 
-###  5.5. <a id='installation'></a>Installation
+###  5.5. <a name='installation'></a>Installation
 
 * Add `src` folder to your project and compile.
 * `pack.h` and `unpack.h` is the user interface.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-##  6. <a id='-tip-in-action'></a> TiP in Action
+##  6. <a name='-tip-in-action'></a> TiP in Action
 
 > **Follow these steps with your own data, to see quickly if it makes sense for your project.**
 
-####  6.1. <a id='training'></a>Training 
+####  6.1. <a name='training'></a>Training 
 
 * Find the 127 most common pattern in some sample data, similar to the real data expected later, and assign the IDs 1-127 to them. This is done once offline and the generated ID table gets part of the tiny packer code as well as for the tiny unpacker code. For that task a generator tool `ti_generate` was build.
 * Sample data specific result: [./src/idTable.c](../src/idTable.c)
@@ -285,7 +285,7 @@ go clean -cache && go install ../../...
 
 * The maximum allowed pattern size `-z 4` has influence on the TiP pack results and the best value depends on the data. 
 
-####  6.2. <a id='test-preparation'></a>Test Preparation
+####  6.2. <a name='test-preparation'></a>Test Preparation
 
 * Create some sample files: In this example, the messages are starting with `3d`, `3e`, `3f`, `40`, `41`, `42`, `43`, ... (see [TriceUserManual # Package Format](https://github.com/rokath/trice/blob/master/docs/TriceUserManual.md#package-format)). So we cut out a few single binary Trice messages. 
 
@@ -334,7 +334,7 @@ $ xxd -g1 43.bin
 00000010: fc ff ff ff fb ff ff ff fa ff ff ff              ............
 ```
 
-####  6.3. <a id='test-execution'></a>Test Execution
+####  6.3. <a name='test-execution'></a>Test Execution
 
 ```bash
 $ ti_pack.exe -v -i 3d.bin
@@ -359,13 +359,13 @@ $ ti_pack.exe -v -i 43.bin
 file size 28 changed to 12 (rate 42 percent)
 ```
 
-####  6.4. <a id='test-results-interpretation'></a>Test Results Interpretation
+####  6.4. <a name='test-results-interpretation'></a>Test Results Interpretation
 
 If the real data are similar to the training data, an average packed size of about 50\% is expected.
 
-##  7. <a id='improvement-thoughts'></a>Improvement Thoughts
+##  7. <a name='improvement-thoughts'></a>Improvement Thoughts
 
-###  7.1. <a id='additional-indirect-dictionary'></a>Additional Indirect Dictionaries (planned)
+###  7.1. <a name='additional-indirect-dictionaries-(planned)'></a>Additional Indirect Dictionaries (planned)
 
 For example we can limit direct pattern count to 120 (instead of 127) and use their order in such a way:
 
@@ -407,7 +407,7 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 > **Consideration:** Promizing
 
-###  7.2. <a id='reserve-id-`7f`-for-run-length-encoding'></a>Reserve an ID (for example`7f`) for embedded Run-Length Encoding (possible)
+###  7.2. <a name='reserve-an-id-(for-example`7f`)-for-embedded-run-length-encoding-(possible)'></a>Reserve an ID (for example`7f`) for embedded Run-Length Encoding (possible)
 
 * Example:
 
@@ -431,7 +431,7 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 > **Consideration:** Possible, but currenly no aim.
 
-###  7.3. <a id='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter (refused)
+###  7.3. <a name='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter-(refused)'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter (refused)
 
 * If data are containing no ID table pattern at all, they are getting bigger by the factor 8/7 (+14\%). That is a result of treating the data in 8 bit units (bytes).
 * If we change that to 16-bit units, by accepting an optional padding byte, we can reduce this increasing factor to 16/15 (+7\%).
@@ -442,7 +442,7 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 > **Consideration:** Not a good idea, because we get other overhead.
 
-###  7.4. <a id='do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project'></a>Do not remove zeroes in favour of better compression as an option or a separate project
+###  7.4. <a name='do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project'></a>Do not remove zeroes in favour of better compression as an option or a separate project
 
 [smaz](https://github.com/antirez/smaz):
 
@@ -467,10 +467,10 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 
 > **Consideration:** Interesting extension but we want eliminate zeroes in one shot to keep the overall overhead small. This could make sense to improve SMAZ in an universal way, by providing a pattern table generator, which could be practically the same. The pattern table generator could get an option to use some internet data for the table generation. COBS could run only afterwards and would add a byte.
 
-###  7.5. <a id='optimal-unreplacable-bytes-handling'></a>Optimal Unreplacable Bytes Handling 
+###  7.5. <a name='optimal-unreplacable-bytes-handling'></a>Optimal Unreplacable Bytes Handling 
 
 > **Consideration:** Only MsBit=1 or MSBits=11 are worth further investigations and could get selected inside `tipConfig.h`.
-####  7.5.1. <a id='use-msbit=1-as-marker'></a>Use MsBit=1 as marker (implemented)
+####  7.5.1. <a name='use-msbit=1-as-marker-(implemented)'></a>Use MsBit=1 as marker (implemented)
 
 * `1uuuuuuu` = 128 IDs for unreplacable bytes
 * max dlen = slen * 8/7 = slen * 1.14
@@ -483,7 +483,7 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 + Only one additional byte for each 7 unreplacable bytes.
 ```
 
-####  7.5.2. <a id='use-msbits=11-as-marker'></a>Use MsBits=11 as marker (option worth checking)
+####  7.5.2. <a name='use-msbits=11-as-marker-(option-worth-checking)'></a>Use MsBits=11 as marker (option worth checking)
 
 * `11uuuuuu` = 64 IDs for unreplacable bytes
 * max dlen = slen * 8/6 = slen * 1.333 -> +33 %
@@ -497,7 +497,7 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 ! one additional byte for each 3 unreplacable bytes
 ```
 
-####  7.5.3. <a id='use-3-to-7-msbits-as-marker'></a>Use 3 to 7 MSBits as marker
+####  7.5.3. <a name='use-3-to-7-msbits-as-marker'></a>Use 3 to 7 MSBits as marker
 
 * `1111111u 1111111u` =  2 IDs for unreplacable bytes + 8/1 8
 * `111111uu 111111uu` =  4 IDs for unreplacable bytes + 8/2 4
@@ -509,7 +509,7 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 - These variants could result in too big dlen and do not add so many direct IDs (max 32).
 ```
 
-####  7.5.4. <a id='option:-use-prefix-byte-as-marker'></a>Option: Use Prefix Byte as marker
+####  7.5.4. <a name='option:-use-prefix-byte-as-marker'></a>Option: Use Prefix Byte as marker
 
 ```diff
 + ID 1-254 usable
@@ -520,7 +520,7 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 * 2 unreplacable sequence: not that good +2...4
 * 3 unreplacable sequence: worth +3...6
 
-###  7.6. <a id='option:-decide-later'></a>Option: Decide later
+###  7.6. <a name='option:-decide-later'></a>Option: Decide later
 
 * Variants could run parallel and we use the minimum result.
 * But how to inform the decoder?
