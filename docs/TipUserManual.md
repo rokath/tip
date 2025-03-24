@@ -47,10 +47,10 @@ Table of Contents Generation:
     * 6.3. [Test Execution](#test-execution)
     * 6.4. [Test Results Interpretation](#test-results-interpretation)
 * 7. [Possible Improvements/Variations](#possible-improvements/variations)
-  * 7.1. [Additional Indirect Dictionaries (planned)](#additional-indirect-dictionaries-(planned))
-  * 7.2. [Reserve an ID (for example`7f`) for embedded Run-Length Encoding](#reserve-an-id-(for-example`7f`)-for-embedded-run-length-encoding)
-  * 7.3. [Use MsBit=1 as marker for Unreplacable Bytes](#use-msbit=1-as-marker-for-unreplacable-bytes)
-  * 7.4. [Use MsBits=11 as marker for Unreplacable Bytes](#use-msbits=11-as-marker-for-unreplacable-bytes)
+  * 7.1. [Use MsBit=1 as marker for Unreplacable Bytes](#use-msbit=1-as-marker-for-unreplacable-bytes)
+  * 7.2. [Use MsBits=11 as marker for Unreplacable Bytes](#use-msbits=11-as-marker-for-unreplacable-bytes)
+  * 7.3. [Reserve an ID (for example`7f`) for embedded Run-Length Encoding](#reserve-an-id-(for-example`7f`)-for-embedded-run-length-encoding)
+  * 7.4. [Additional Indirect Dictionaries (planned)](#additional-indirect-dictionaries-(planned))
   * 7.5. [Let Generator propose packing Variant](#let-generator-propose-packing-variant)
 * 8. [Refused Variations for unreplacable Bytes](#refused-variations-for-unreplacable-bytes)
   * 8.1. [Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter (refused)](#minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter-(refused))
@@ -378,7 +378,67 @@ If the real data are similar to the training data, an average packed size of abo
 
 ##  7. <a name='possible-improvements/variations'></a>Possible Improvements/Variations
 
-###  7.1. <a name='additional-indirect-dictionaries-(planned)'></a>Additional Indirect Dictionaries (planned)
+###  7.1. <a name='use-msbit=1-as-marker-for-unreplacable-bytes'></a>Use MsBit=1 as marker for Unreplacable Bytes
+
+* `1uuuuuuu` = 128 "ID"s for unreplacable bytes
+* Max TiP package length = srcLen * 8/7 = srcLen * 1.14 -> data can get 14% larger in the worst case.
+
+```diff
+- Only 127 direct pattern IDs usable (50 % of 256).
++ Only one additional byte for each 7 unreplacable bytes.
+```
+
+> **Consideration**: Implemented and working primary idea
+
+* Additional Special Cases Handling (_not yet implemented_):
+  * If there is a single unreplacable byte only and it is >127, we simply copy it.
+  * If there are several unreplacable bytes and all >127 and src ends with a pattern, we simply copy them.
+
+> **Consideration**: Easy to implement as part of the unreplacable bytes handler functions. A significant effect is expected.
+
+###  7.2. <a name='use-msbits=11-as-marker-for-unreplacable-bytes'></a>Use MsBits=11 as marker for Unreplacable Bytes
+
+* `11uuuuuu` = 64 IDs for unreplacable bytes
+* Max TiP package length = srcLen * 8/6 = srcLen * 1.33 -> data can get 33% larger in the worst case.
+
+```diff
++ 191 pattern IDs usable (75 % OF 255)
+! one additional byte for each 3 unreplacable bytes
+```
+
+> **Consideration**: Easy implementable as config option for further investigation.
+
+* Additional Special Cases Handling:
+  * If there is a single unreplacable byte and it is >191, we simply copy it.
+  * If there are several unreplacable bytes and all >191 and src ends with a pattern, we simply copy them.
+
+> **Consideration**: Easy to implement as part of the unreplacable bytes handler functions. A small effect is expected.
+
+###  7.3. <a name='reserve-an-id-(for-example`7f`)-for-embedded-run-length-encoding'></a>Reserve an ID (for example`7f`) for embedded Run-Length Encoding
+
+* Example:
+
+| ID sequence                              | Meaning                                                      |
+|------------------------------------------|--------------------------------------------------------------|
+| ID `7F` + count `1...15`                 | 3 to 17 zeroes                                               |
+| ID `7F` + count `16...24`                | 3 to 11 FFs                                                  |
+| ID `7F` + count `25...63` + byte `XX`!=0 | 4 to 42 `XX`s, `XX` is any non-zero byte, all `XX` are equal |
+| ID `7F` + `64...255` + `?`               | reserved                                                     |
+
+* The tiny unpack routine first regards all bytes with MSBit=0 as IDs.
+* The ID `7F` is followed by a count byte and optional other bytes. These are regarded as part of this ID too during TiP package interpretation.
+  * The count is guarantied not to be zero and also some optional additional bytes are forbidden to be zero..
+
+To implement add to [tipConfig.h](../src.config/tipConfig.h):
+
+```C
+#define RUN_LENGTH_ID 127
+//! TODO: define ranges here
+```
+
+> **Consideration:** Possible, but currenly no aim. The plausibility depends on the kind of data.
+
+###  7.4. <a name='additional-indirect-dictionaries-(planned)'></a>Additional Indirect Dictionaries (planned)
 
 For example we can limit the direct pattern count to 120 (instead of 127) and use their order in such a way:
 
@@ -419,67 +479,6 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 ```
 
 > **Consideration:** Promizing for data with many repeating longer pattern.
-
-###  7.2. <a name='reserve-an-id-(for-example`7f`)-for-embedded-run-length-encoding'></a>Reserve an ID (for example`7f`) for embedded Run-Length Encoding
-
-* Example:
-
-| ID sequence                              | Meaning                                                      |
-|------------------------------------------|--------------------------------------------------------------|
-| ID `7F` + count `1...15`                 | 3 to 17 zeroes                                               |
-| ID `7F` + count `16...24`                | 3 to 11 FFs                                                  |
-| ID `7F` + count `25...63` + byte `XX`!=0 | 4 to 42 `XX`s, `XX` is any non-zero byte, all `XX` are equal |
-| ID `7F` + `64...255` + `?`               | reserved                                                     |
-
-* The tiny unpack routine first regards all bytes with MSBit=0 as IDs.
-* The ID `7F` is followed by a count byte and optional other bytes. These are regarded as part of this ID too during TiP package interpretation.
-  * The count is guarantied not to be zero and also some optional additional bytes are forbidden to be zero..
-
-To implement add to [tipConfig.h](../src.config/tipConfig.h):
-
-```C
-#define RUN_LENGTH_ID 127
-//! TODO: define ranges here
-```
-
-> **Consideration:** Possible, but currenly no aim. The plausibility depends on the kind of data.
-
-###  7.3. <a name='use-msbit=1-as-marker-for-unreplacable-bytes'></a>Use MsBit=1 as marker for Unreplacable Bytes
-
-* `1uuuuuuu` = 128 "ID"s for unreplacable bytes
-* max dlen = slen * 8/7 = slen * 1.14 -> TiP data can get 14% larger in the worst case.
-
-```diff
-- Only 127 direct pattern IDs usable (50 % of 256).
-+ Only one additional byte for each 7 unreplacable bytes.
-```
-
-> **Consideration**: Implemented and working primary idea
-
-* Additional Special Cases Handling (_not yet implemented_):
-  * If there is a single unreplacable byte and it is >127, we simply copy it.
-  * If there are several unreplacable bytes and all >127 and src ends with a pattern, we simply copy them.
-
-> **Consideration**: Easy to implement as part of the unreplacable bytes handler functions. A significant effect is expected.
-
-###  7.4. <a name='use-msbits=11-as-marker-for-unreplacable-bytes'></a>Use MsBits=11 as marker for Unreplacable Bytes
-
-* `11uuuuuu` = 64 IDs for unreplacable bytes
-* max dlen = slen * 8/6 = slen * 1.333 -> TiP data can get 33% larger in the worst case.
-* one additional byte for each 3 unreplacable bytes
-
-```diff
-+ 191 pattern IDs usable (75 % OF 255)
-! one additional byte for each 3 unreplacable bytes
-```
-
-> **Consideration**: Easy implementable as config option. 
-
-* Additional Special Cases Handling:
-  * If there is a single unreplacable byte and it is >191, we simply copy it.
-  * If there are several unreplacable bytes and all >191 and src ends with a pattern, we simply copy them.
-
-> **Consideration**: Easy to implement as part of the unreplacable bytes handler functions. A small effect is expected.
 
 ###  7.5. <a name='let-generator-propose-packing-variant'></a>Let Generator propose packing Variant 
 
