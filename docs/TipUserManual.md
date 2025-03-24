@@ -46,9 +46,9 @@ Table of Contents Generation:
     * 6.2. [Test Preparation](#test-preparation)
     * 6.3. [Test Execution](#test-execution)
     * 6.4. [Test Results Interpretation](#test-results-interpretation)
-* 7. [Possible Improvements/Variations](#possible-improvements/variations)
-  * 7.1. [Use MsBit=1 as marker for Unreplacable Bytes](#use-msbit=1-as-marker-for-unreplacable-bytes)
-  * 7.2. [Use MsBits=11 as marker for Unreplacable Bytes](#use-msbits=11-as-marker-for-unreplacable-bytes)
+* 7. [Possible Improvements / Variations](#possible-improvements-/-variations)
+  * 7.1. [Use MsBit=1 as Bit marker for unreplacable Bytes](#use-msbit=1-as-bit-marker-for-unreplacable-bytes)
+  * 7.2. [Use MsBits=11 as Bit marker for unreplacable Bytes](#use-msbits=11-as-bit-marker-for-unreplacable-bytes)
   * 7.3. [Additional Indirect Dictionaries (planned)](#additional-indirect-dictionaries-(planned))
   * 7.4. [Let Generator propose packing Variant](#let-generator-propose-packing-variant)
 * 8. [Refused Variations for unreplacable Bytes](#refused-variations-for-unreplacable-bytes)
@@ -376,29 +376,29 @@ If the real data are similar to the training data, an average packed size of abo
 
 <p align="right">(<a href="#tip-um-top">back to top</a>)</p>
 
-##  7. <a name='possible-improvements/variations'></a>Possible Improvements/Variations
+##  7. <a name='possible-improvements-/-variations'></a>Possible Improvements / Variations
 
-###  7.1. <a name='use-msbit=1-as-marker-for-unreplacable-bytes'></a>Use MsBit=1 as marker for Unreplacable Bytes
+###  7.1. <a name='use-msbit=1-as-bit-marker-for-unreplacable-bytes'></a>Use MsBit=`1` as Bit marker for unreplacable Bytes
 
-* `1uuuuuuu` = 128 "ID"s for unreplacable bytes
+* `1uuuuuuu` = 128 "ID"s for unreplacables
 * Max TiP package length = srcLen * 8/7 = srcLen * 1.14 -> data can get 14% larger in the worst case.
 
 ```diff
 - Only 127 direct pattern IDs usable (50 % of 256).
-+ Only one additional byte for each 7 unreplacable bytes.
++ Only one additional byte for each 7 unreplacable bytes needed.
 ```
 
 > **Consideration**: Implemented and working primary idea
 
-* Additional Special Cases Handling (_not yet implemented_):
-  * If there is a single unreplacable byte only and it is >127, we simply copy it.
-  * If there are several unreplacable bytes and all >127 and src ends with a pattern, we simply copy them.
+* Additional Special Cases Optimizing (_not yet implemented_):
+  * If there is a single unreplacable byte only, and it is >127, we simply copy it.
+  * If there are several unreplacable bytes and all >127 **and** src ends with a pattern, we simply copy them.
 
 > **Consideration**: Easy to implement as part of the unreplacable bytes handler functions. A significant effect is expected.
 
-###  7.2. <a name='use-msbits=11-as-marker-for-unreplacable-bytes'></a>Use MsBits=11 as marker for Unreplacable Bytes
+###  7.2. <a name='use-msbits=11-as-bit-marker-for-unreplacable-bytes'></a>Use MsBits=`11` as Bit marker for unreplacable Bytes
 
-* `11uuuuuu` = 64 "ID"s for unreplacable bytes
+* `11uuuuuu` = 64 "ID"s for unreplacables
 * Max TiP package length = srcLen * 8/6 = srcLen * 1.33 -> data can get 33% larger in the worst case.
 
 ```diff
@@ -408,9 +408,9 @@ If the real data are similar to the training data, an average packed size of abo
 
 > **Consideration**: Easy implementable as config option for further investigation.
 
-* Additional Special Cases Handling:
+* Additional Special Cases Optimizing:
   * If there is a single unreplacable byte and it is >191, we simply copy it.
-  * If there are several unreplacable bytes and all >191 and src ends with a pattern, we simply copy them.
+  * If there are several unreplacable bytes and all >191 **and** src ends with a pattern, we simply copy them.
 
 > **Consideration**: Easy to implement as part of the unreplacable bytes handler functions. A small effect is expected.
 
