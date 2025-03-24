@@ -47,16 +47,16 @@ Table of Contents Generation:
     * 6.3. [Test Execution](#test-execution)
     * 6.4. [Test Results Interpretation](#test-results-interpretation)
 * 7. [Possible Improvements / Variations](#possible-improvements-/-variations)
-  * 7.1. [Use MsBit=1 as Bit marker for unreplacable Bytes](#use-msbit=1-as-bit-marker-for-unreplacable-bytes)
-  * 7.2. [Use MsBits=11 as Bit marker for unreplacable Bytes](#use-msbits=11-as-bit-marker-for-unreplacable-bytes)
+  * 7.1. [Use MsBit=`1` as Bit marker for unreplacable Bytes](#use-msbit=`1`-as-bit-marker-for-unreplacable-bytes)
+  * 7.2. [Use MsBits=`11` as Bit marker for unreplacable Bytes](#use-msbits=`11`-as-bit-marker-for-unreplacable-bytes)
   * 7.3. [Additional Indirect Dictionaries (planned)](#additional-indirect-dictionaries-(planned))
-  * 7.4. [Let Generator propose packing Variant](#let-generator-propose-packing-variant)
+  * 7.4. [Let Generator propose TiP packing Variant](#let-generator-propose-tip-packing-variant)
 * 8. [Refused Variations for unreplacable Bytes](#refused-variations-for-unreplacable-bytes)
   * 8.1. [Reserve an ID (for example`7f`) for embedded Run-Length Encoding](#reserve-an-id-(for-example`7f`)-for-embedded-run-length-encoding)
   * 8.2. [Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter (refused)](#minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter-(refused))
   * 8.3. [Do not remove zeroes in favour of better compression as an option or a separate project](#do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project)
   * 8.4. [Use 3 to 7 MSBits as marker](#use-3-to-7-msbits-as-marker)
-  * 8.5. [Use Prefix Byte as marker](#use-prefix-byte-as-marker)
+  * 8.5. [Use Prefix Byte as marker for unreplacable bytes (like smaz)](#use-prefix-byte-as-marker-for-unreplacable-bytes-(like-smaz))
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -378,7 +378,7 @@ If the real data are similar to the training data, an average packed size of abo
 
 ##  7. <a name='possible-improvements-/-variations'></a>Possible Improvements / Variations
 
-###  7.1. <a name='use-msbit=1-as-bit-marker-for-unreplacable-bytes'></a>Use MsBit=`1` as Bit marker for unreplacable Bytes
+###  7.1. <a name='use-msbit=`1`-as-bit-marker-for-unreplacable-bytes'></a>Use MsBit=`1` as Bit marker for unreplacable Bytes
 
 * `1uuuuuuu` = 128 "ID"s for unreplacables
 * Max TiP package length = srcLen * 8/7 = srcLen * 1.14 -> data can get 14% larger in the worst case.
@@ -396,7 +396,7 @@ If the real data are similar to the training data, an average packed size of abo
 
 > **Consideration**: Easy to implement as part of the unreplacable bytes handler functions. A significant effect is expected.
 
-###  7.2. <a name='use-msbits=11-as-bit-marker-for-unreplacable-bytes'></a>Use MsBits=`11` as Bit marker for unreplacable Bytes
+###  7.2. <a name='use-msbits=`11`-as-bit-marker-for-unreplacable-bytes'></a>Use MsBits=`11` as Bit marker for unreplacable Bytes
 
 * `11uuuuuu` = 64 "ID"s for unreplacables
 * Max TiP package length = srcLen * 8/6 = srcLen * 1.33 -> data can get 33% larger in the worst case.
@@ -439,16 +439,16 @@ This allows 120 at least 2-bytes pattern and 1780 longer pattern.
 
 * START 
   * Next byte with MSBit=1 is unreplaceable, goto START
-  * Next byte=1...120 is direct 2-byte pattern ID, goto START
-  * Next byte=121...126 is followed by indirect pattern ID, goto START
+  * Next byte=1...120 is direct at least 2-bytes pattern ID, goto START
+  * Next byte=121...126 is followed by indirect at least 3.bytes pattern ID, goto START
   * Next byte=127 is followed by runlength code, goto START
 
 To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 ```C
 //! INDIRECT_DICTIONARY_COUNT adds a number of indirect dictionaries.
-//! An indirect dictionary needs a 2-byte reference and therefore only pattern with at least 3 bytes make sense there.
-//! Each indirect dictionary adds 255 >= 2-bytes reference pattern and reduces the direct pattern space by one.
+//! An indirect dictionary needs a 2-bytes reference and therefore only pattern with at least 3 bytes make sense there.
+//! Each indirect dictionary adds 255 >= 3-bytes reference pattern and reduces the direct pattern space by one.
 //! The max possible value is 127, but that would not allow any direct references at all.
 //! Values making sense are probably in the range 0...10. The optimum depends on the kind of data.
 #define INDIRECT_DICTIONARY_COUNT 0 
@@ -456,7 +456,7 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 > **Consideration:** Promizing for data with many repeating longer pattern.
 
-###  7.4. <a name='let-generator-propose-packing-variant'></a>Let Generator propose packing Variant 
+###  7.4. <a name='let-generator-propose-tip-packing-variant'></a>Let Generator propose TiP packing Variant 
 
 * Variants could run parallel and we use the minimum result.
 * But how to inform the decoder?
@@ -509,7 +509,7 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 [smaz](https://github.com/antirez/smaz):
 
-* IDs 0...253 are coding 254 >= 2-bytes patteren
+* IDs 0...253 are coding 254 >= 2-bytes patterns
 * ID 254 -> next byte is unreplacable
 * ID 255 -> next byte is a count of following 2...257 unreplacable bytes
 
@@ -526,24 +526,22 @@ Modificate [smaz](https://github.com/antirez/smaz) and add indirect indices:
 * ID 254 -> next 4 bytes are unreplacable
 * ID 255 -> next byte is count of 5...231 unreplacable bytes
 
-This allows 2560 additional pattern for the price 14 less 2-bytes pattern and the need for 2 bytes for the 2560 additional patterns. The details could be configurable.
+This example allows 2560 additional pattern for the price 14 less 2-bytes pattern and the need for 2 bytes for the 2560 additional patterns. The details could be configurable.
 
-> **Consideration:** Interesting extension but we want eliminate zeroes in one shot to keep the overall overhead small. This could make sense to improve SMAZ in an universal way, by providing a pattern table generator, which could be practically the same. The pattern table generator could get an option to use some internet data for the table generation. COBS could run only afterwards and would add a byte.
--->
-
+> **Consideration:** Interesting extension but we want eliminate zeroes in one shot to keep the overall overhead small. This could make sense to improve SMAZ in an universal way, by providing a pattern table generator, which could be practically the TiP generator. The pattern table generator could get an option to use some internet data for the table generation. COBS could run only afterwards and would add a byte.
 
 ###  8.4. <a name='use-3-to-7-msbits-as-marker'></a>Use 3 to 7 MSBits as marker
 
-* `1111111u 1111111u ...` =  2 IDs for unreplacable bytes + 8/1 8
-* `111111uu 111111uu ...` =  4 IDs for unreplacable bytes + 8/2 4
-* `11111uuu 11111uuu ...` =  8 IDs for unreplacable bytes + 8/3 2.7
-* `1111uuuu 1111uuuu ...` = 16 IDs for unreplacable bytes + 8/4 2.0
-* `111uuuuu 111uuuuu ...` = 32 IDs for unreplacable bytes + 8/5 1.6
+* `1111111u 1111111u ...` =  2 "ID"s for unreplacable bytes results in mac data extension factor of 8/1 = 8   ^= 800 %
+* `111111uu 111111uu ...` =  4 "ID"s for unreplacable bytes results in mac data extension factor of 8/2 = 4   ^= 400 %
+* `11111uuu 11111uuu ...` =  8 "ID"s for unreplacable bytes results in mac data extension factor of 8/3 = 2.7 ^= 270 %
+* `1111uuuu 1111uuuu ...` = 16 "ID"s for unreplacable bytes results in mac data extension factor of 8/4 = 2.0 ^= 200 %
+* `111uuuuu 111uuuuu ...` = 32 "ID"s for unreplacable bytes results in mac data extension factor of 8/5 = 1.6 ^= 160 %
 
-> **Considereation:** These variants could result in a too big TiP buffer for many unreplacable bytes and do not add so many direct IDs (max 32).
+> **Considereation:** These variants could result in a too big TiP buffer for many unreplacable bytes and do not add so many direct IDs ( max 32 or less).
 
 
-###  8.5. <a name='use-prefix-byte-as-marker'></a>Use Prefix Byte as marker
+###  8.5. <a name='use-prefix-byte-as-marker-for-unreplacable-bytes-(like-smaz)'></a>Use Prefix Byte as marker for unreplacable bytes (like smaz)
 
 ```diff
 + ID 1-254 usable
@@ -556,8 +554,6 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 > **Considereation:** Data with many unreplacable short byte groups will double their size easily.
 
 <!--
-
-
 ```diff
 - text in red
 -- text in red
