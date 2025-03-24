@@ -105,13 +105,13 @@ Table of Contents Generation:
 
 ##  3. <a id='tip-components'></a>TiP Components
 
+* C-Code usable on embedded devices inside [src](./src/) folder containing:
+  * [idTable.c](./src/idTable.c) - a generated data specific translation table
+  * [ti_pack.c](./src/ti_pack.c) and [ti_unpack.c](./src/ti_unpack.c) - separately or together compilable
 * PC apps:
   * `ti_generate` - **ti**ny **generator** to create a suitable `idTable.c` file
   * `ti_pack` - **ti**ny **pack** using the **pack** C code mainly for tests
   * `ti_unpack` - **ti**ny **unpack** using the **unpack** C code mainly for tests
-* C-Code usable on embedded devices inside [src](./src/) folder containing:
-  * [idTable.c](./src/idTable.c) - a generated data specific translation table
-  * [ti_pack.c](./src/ti_pack.c) and [ti_unpack.c](./src/ti_unpack.c) - separately or together compilable
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -133,6 +133,7 @@ See the [Tip User Manual](./docs/TipUserManual.md).
 * [ ] Improve `ti_generate` to optimize pattern selection.
 * [ ] Extend `ti_generate` with a CLI switch to create longer ID tables.
 * [ ] Add `pack.c` and `unpack.c` compiler switch for max indirect indicies tables 0...127.
+* [ ] Build `tip` executable, which accepts stdin and writes to stdout.
 * [ ] Write extensive tests.
 * [ ] Write fuzzy tests.
 * [ ] Remove 65528 bytes limitation.

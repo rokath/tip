@@ -179,7 +179,7 @@ bb0000  | 1     | 4/3            | 4000/3 = 1333 | contains 0000
 
 ###  4.1. <a id='id-position-table-generation'></a>ID Position Table Generation
 
-* Step byte by byte thru the `slen` `src` buffer and check if a pattern from the (into `ti_pack` and `ti_unpack`) compiled [./src/idTable.c](../src/idTable.c) matches and build a sorted ID position table. Its max length is slen-1. Example for file 43.bin:
+* Step byte by byte thru the `slen` `src` buffer and check if a pattern from the (into `ti_pack` and `ti_unpack`) compiled [./src/idTable.c](../src/idTable.c) matches and build a sorted ID position table. Its max length is slen-1. Example for file 43.bin (see below):
 
 IDPositionTable:
 idx | ID  | pos | ASCII
@@ -203,7 +203,7 @@ idx | ID  | pos | ASCII
 
 ###  4.2. <a id='id-position-table-processing'></a>ID Position Table Processing
 
-* To build a TiP packet, many different ID position sequences are possible, maybe interrupted by some _unreplacable_ bytes. The TiP packer starts creating a full `srcMap` containing all possible paths. For that it traverses the (by incrementing position sorted) IDPositionTable and checks, if the current ID position is appenable to any paths. If so, these paths are forked and the ID position is appended to the fork. That fork is needed, because the same path is extendable with different ID positions. If the current ID position did not fit to any path, a new path is created. After processing an ID position, a new path may exist or some paths have been foked and the forked paths are extended with this ID position. Before going to the next ID position from the IDPositionTable, obsolete `srcMap` paths are deleted. Obsolete are paths, if their limit plus the maximum pattern size is smaller than biggest existing path limit. Obsolete paths are too those path, which have an equal limit but wuld result in a bigger TiP packet. Even if they would result in an equal TiP packet size, it is only one of them needed for futher ID position provessing.
+* To build a TiP packet, many different ID position sequences are possible, maybe interrupted by some _unreplacable_ bytes. The TiP packer starts creating a full `srcMap` containing all possible paths. For that it traverses the (by incrementing position sorted) IDPositionTable and checks, if the current ID position is appenable to any paths. If so, these paths are forked and the ID position is appended to the fork. That fork is needed, because the same path is extendable with different ID positions. If the current ID position did not fit to any path, a new path is created. After processing an ID position, a new path may exist or some paths have been foked and the forked paths are extended with this ID position. Before going to the next ID position from the IDPositionTable, obsolete `srcMap` paths are deleted. Obsolete are paths, if their limit plus the maximum pattern size is smaller than biggest existing path limit. Obsolete paths are too those path, which have an equal limit but wuld result in a bigger (partial) TiP packet. Even if they would result in an equal TiP packet size, it is only one of them needed for futher ID position provessing.
 * When the PositionTable was processed completely, a few paths are remaining. A path, which would result in the smallest TiP packet is selected to create the TiP packet.
 
 ###  4.3. <a id='packing---unreplacable-bytes-handling'></a>Packing - Unreplacable Bytes Handling
@@ -374,14 +374,16 @@ For example we can limit direct pattern count to 120 (instead of 127) and use th
 
 This allows 120 at least 2-bytes pattern and 1525 longer pattern.
 
+<!--
+* the MSBit = 0|1 after a first ID 121-126 are the indiret table indices
 * the MSBit = 1   after ID 1...120 are the unreplacable (bit-shfted) bytes
-* the MSBit = 0|1 after ID 121-126 are the indiret table indices
-* the MSBit = 0 not after ID 121-126 are te direct table indices
+* the MSBit = 0 not after ID 121-126 are the direct table indices
+-->
 
  On unpacking:
 
 * START 
-  * Next bytes with MSBit=1 are unreplaceables.
+  * Next byte with MSBit=1 is unreplaceable, goto START
   * Next byte=1...120 is direct 2-byte pattern ID, goto START
   * Next byte=121...126 is followed by indirect pattern ID, goto START
   * Next byte=127 is followed by runlength code, goto START
@@ -390,7 +392,8 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 ```C
 //! INDIRECT_DICTIONARY_COUNT adds a number of indirect dictionaries.
-//! An indirect dictionary needs a 2-byte reference and therefore only pattern with at least 3 bytes make sense there. Each indirect dictionary adds 255 by 2-bytes to reference pattern and reduces the direct pattern space by one.
+//! An indirect dictionary needs a 2-byte reference and therefore only pattern with at least 3 bytes make sense there.
+//! Each indirect dictionary adds 255 >= 2-bytes reference pattern and reduces the direct pattern space by one.
 //! The max possible value is 127, but that would not allow any direct references at all.
 // Values making sense are probably in the range 0...10. The optimum depend on the kind of data.
 #define INDIRECT_DICTIONARY_COUNT 0 
@@ -425,7 +428,7 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 ###  7.3. <a id='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter.'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter
 
 * If data are containing no ID table pattern at all, they are getting bigger by the factor 8/7 (+14\%). That is a result of treating the data in 8 bit units (bytes).
-* If we change that to 16-bit units, by accepting an optional padding byte, we can reduce this increase factor to 16/15 (+7\%).
+* If we change that to 16-bit units, by accepting an optional padding byte, we can reduce this increasing factor to 16/15 (+7\%).
 * We still have IDs 1-127
 * An existing ID 127 just tells if there is a padding byte in the unreplacable data.
 * When unpacking, the first set MSBit tells that this byte and the next are unreplaceable. So we get N 16-bit groups of unreplacable data.
@@ -452,7 +455,7 @@ Modificate [smaz](https://github.com/antirez/smaz) and add indirect indices:
 * ID 252 -> next 2 bytes are unreplacable
 * ID 253 -> next 3 bytes are unreplacable
 * ID 254 -> next 4 bytes are unreplacable
-* ID 255 -> next byte is coding 2...257 unreplacable bytes
+* ID 255 -> next byte is count of 5...231 unreplacable bytes
 
 This allows 2560 additional pattern for the price 14 less 2-bytes pattern and the need for 2 bytes for the 2560 additional patterns. The details could be configurable.
 
