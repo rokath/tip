@@ -436,7 +436,7 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 //! TODO: define ranges here
 ```
 
-> **Consideration:** Possible, but currenly no aim. The plausibility depends on the kind of data.
+> **Consideration:** Possible, but currenly no aim. The plausibility depends on the kind of data. Many short sequences of equal bytes could get covered by indirect pattern entries.
 
 ###  7.4. <a name='additional-indirect-dictionaries-(planned)'></a>Additional Indirect Dictionaries (planned)
 
