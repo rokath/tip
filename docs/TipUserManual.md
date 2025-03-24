@@ -495,7 +495,9 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 * `1111uuuu 1111uuuu` = 16 IDs for unreplacable bytes + 8/4 2.0
 * `111uuuuu 111uuuuu` = 32 IDs for unreplacable bytes + 8/5 1.6
 
+```diff
 These variants could result in too big dlen.
+```
 
 #### 7.5.4 Option: Use Prefix Byte as marker
 
