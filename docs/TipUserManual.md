@@ -414,7 +414,7 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 //! An indirect dictionary needs a 2-byte reference and therefore only pattern with at least 3 bytes make sense there.
 //! Each indirect dictionary adds 255 >= 2-bytes reference pattern and reduces the direct pattern space by one.
 //! The max possible value is 127, but that would not allow any direct references at all.
-// Values making sense are probably in the range 0...10. The optimum depend on the kind of data.
+//! Values making sense are probably in the range 0...10. The optimum depends on the kind of data.
 #define INDIRECT_DICTIONARY_COUNT 0 
 ```
 
@@ -433,7 +433,7 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 * The tiny unpack routine first regards all bytes with MSBit=0 as IDs.
 * The ID `7F` is followed by a count byte and optional other bytes. These are regarded as part of this ID too during TiP package interpretation.
-  * The count is guarantied not to be zero and also some optional additional bytes.
+  * The count is guarantied not to be zero and also some optional additional bytes are forbidden to be zero..
 
 To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
