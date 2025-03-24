@@ -53,11 +53,11 @@ Table of Contents Generation:
     * 7.3.1. [Use MsBit=1 as marker (_implemented_)](#use-msbit=1-as-marker-(_implemented_))
     * 7.3.2. [Use MsBits=11 as marker (_worth checking_)](#use-msbits=11-as-marker-(_worth-checking_))
   * 7.4. [Let Generator propose packing Variant](#let-generator-propose-packing-variant)
-* 8. [Refused Variations](#refused-variations)
+* 8. [Refused Variations for unreplacable Bytes](#refused-variations-for-unreplacable-bytes)
   * 8.1. [Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter (refused)](#minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter-(refused))
   * 8.2. [Do not remove zeroes in favour of better compression as an option or a separate project](#do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project)
-    * 8.2.1. [Use 3 to 7 MSBits as marker](#use-3-to-7-msbits-as-marker)
-    * 8.2.2. [Use Prefix Byte as marker](#use-prefix-byte-as-marker)
+  * 8.3. [Use 3 to 7 MSBits as marker](#use-3-to-7-msbits-as-marker)
+  * 8.4. [Use Prefix Byte as marker](#use-prefix-byte-as-marker)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -487,7 +487,7 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 ---
 
-##  8. <a name='refused-variations'></a>Refused Variations
+##  8. <a name='refused-variations-for-unreplacable-bytes'></a>Refused Variations for unreplacable Bytes
 
 ###  8.1. <a name='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter-(refused)'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter (refused)
 
@@ -527,7 +527,7 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 -->
 
 
-####  8.2.1. <a name='use-3-to-7-msbits-as-marker'></a>Use 3 to 7 MSBits as marker
+###  8.3. <a name='use-3-to-7-msbits-as-marker'></a>Use 3 to 7 MSBits as marker
 
 * `1111111u 1111111u ...` =  2 IDs for unreplacable bytes + 8/1 8
 * `111111uu 111111uu ...` =  4 IDs for unreplacable bytes + 8/2 4
@@ -538,7 +538,7 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 > **Considereation:** These variants could result in a too big TiP buffer for many unreplacable bytes and do not add so many direct IDs (max 32).
 
 
-####  8.2.2. <a name='use-prefix-byte-as-marker'></a>Use Prefix Byte as marker
+###  8.4. <a name='use-prefix-byte-as-marker'></a>Use Prefix Byte as marker
 
 ```diff
 + ID 1-254 usable
