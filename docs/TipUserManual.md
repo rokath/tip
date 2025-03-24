@@ -49,14 +49,14 @@ Table of Contents Generation:
 * 7. [Possible Improvements/Variations](#possible-improvements/variations)
   * 7.1. [Use MsBit=1 as marker for Unreplacable Bytes](#use-msbit=1-as-marker-for-unreplacable-bytes)
   * 7.2. [Use MsBits=11 as marker for Unreplacable Bytes](#use-msbits=11-as-marker-for-unreplacable-bytes)
-  * 7.3. [Reserve an ID (for example`7f`) for embedded Run-Length Encoding](#reserve-an-id-(for-example`7f`)-for-embedded-run-length-encoding)
-  * 7.4. [Additional Indirect Dictionaries (planned)](#additional-indirect-dictionaries-(planned))
-  * 7.5. [Let Generator propose packing Variant](#let-generator-propose-packing-variant)
+  * 7.3. [Additional Indirect Dictionaries (planned)](#additional-indirect-dictionaries-(planned))
+  * 7.4. [Let Generator propose packing Variant](#let-generator-propose-packing-variant)
 * 8. [Refused Variations for unreplacable Bytes](#refused-variations-for-unreplacable-bytes)
-  * 8.1. [Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter (refused)](#minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter-(refused))
-  * 8.2. [Do not remove zeroes in favour of better compression as an option or a separate project](#do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project)
-  * 8.3. [Use 3 to 7 MSBits as marker](#use-3-to-7-msbits-as-marker)
-  * 8.4. [Use Prefix Byte as marker](#use-prefix-byte-as-marker)
+  * 8.1. [Reserve an ID (for example`7f`) for embedded Run-Length Encoding](#reserve-an-id-(for-example`7f`)-for-embedded-run-length-encoding)
+  * 8.2. [Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter (refused)](#minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter-(refused))
+  * 8.3. [Do not remove zeroes in favour of better compression as an option or a separate project](#do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project)
+  * 8.4. [Use 3 to 7 MSBits as marker](#use-3-to-7-msbits-as-marker)
+  * 8.5. [Use Prefix Byte as marker](#use-prefix-byte-as-marker)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -414,31 +414,7 @@ If the real data are similar to the training data, an average packed size of abo
 
 > **Consideration**: Easy to implement as part of the unreplacable bytes handler functions. A small effect is expected.
 
-###  7.3. <a name='reserve-an-id-(for-example`7f`)-for-embedded-run-length-encoding'></a>Reserve an ID (for example`7f`) for embedded Run-Length Encoding
-
-* Example:
-
-| ID sequence                              | Meaning                                                      |
-|------------------------------------------|--------------------------------------------------------------|
-| ID `7F` + count `1...15`                 | 3 to 17 zeroes                                               |
-| ID `7F` + count `16...24`                | 3 to 11 FFs                                                  |
-| ID `7F` + count `25...63` + byte `XX`!=0 | 4 to 42 `XX`s, `XX` is any non-zero byte, all `XX` are equal |
-| ID `7F` + `64...255` + `?`               | reserved                                                     |
-
-* The tiny unpack routine first regards all bytes with MSBit=0 as IDs.
-* The ID `7F` is followed by a count byte and optional other bytes. These are regarded as part of this ID too during TiP package interpretation.
-  * The count is guarantied not to be zero and also some optional additional bytes are forbidden to be zero..
-
-To implement add to [tipConfig.h](../src.config/tipConfig.h):
-
-```C
-#define RUN_LENGTH_ID 127
-//! TODO: define ranges here
-```
-
-> **Consideration:** Possible, but currenly no aim. The plausibility depends on the kind of data. Many short sequences of equal bytes could get covered by indirect pattern entries.
-
-###  7.4. <a name='additional-indirect-dictionaries-(planned)'></a>Additional Indirect Dictionaries (planned)
+###  7.3. <a name='additional-indirect-dictionaries-(planned)'></a>Additional Indirect Dictionaries (planned)
 
 For example we can limit the direct pattern count to 120 (instead of 127) and use their order in such a way:
 
@@ -449,9 +425,9 @@ For example we can limit the direct pattern count to 120 (instead of 127) and us
 * ID 124 followed by id 1...255 -> at least 3-bytes pattern <= 67% compressed
 * ID 125 followed by id 1...255 -> at least 3-bytes pattern <= 67% compressed
 * ID 126 followed by id 1...255 -> at least 3-bytes pattern <= 67% compressed
-* ID 127 reserved
+* ID 127 followed by id 1...255 -> at least 3-bytes pattern <= 67% compressed
 
-This allows 120 at least 2-bytes pattern and 1525 longer pattern.
+This allows 120 at least 2-bytes pattern and 1780 longer pattern.
 
 <!--
 * the MSBit = 0|1 after a first ID 121-126 are the indiret table indices
@@ -480,7 +456,7 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 > **Consideration:** Promizing for data with many repeating longer pattern.
 
-###  7.5. <a name='let-generator-propose-packing-variant'></a>Let Generator propose packing Variant 
+###  7.4. <a name='let-generator-propose-packing-variant'></a>Let Generator propose packing Variant 
 
 * Variants could run parallel and we use the minimum result.
 * But how to inform the decoder?
@@ -494,7 +470,31 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 ##  8. <a name='refused-variations-for-unreplacable-bytes'></a>Refused Variations for unreplacable Bytes
 
-###  8.1. <a name='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter-(refused)'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter (refused)
+###  8.1. <a name='reserve-an-id-(for-example`7f`)-for-embedded-run-length-encoding'></a>Reserve an ID (for example`7f`) for embedded Run-Length Encoding
+
+* Example:
+
+| ID sequence                              | Meaning                                                      |
+|------------------------------------------|--------------------------------------------------------------|
+| ID `7F` + count `1...15`                 | 3 to 17 zeroes                                               |
+| ID `7F` + count `16...24`                | 3 to 11 FFs                                                  |
+| ID `7F` + count `25...63` + byte `XX`!=0 | 4 to 42 `XX`s, `XX` is any non-zero byte, all `XX` are equal |
+| ID `7F` + `64...255` + `?`               | reserved                                                     |
+
+* The tiny unpack routine first regards all bytes with MSBit=0 as IDs.
+* The ID `7F` is followed by a count byte and optional other bytes. These are regarded as part of this ID too during TiP package interpretation.
+  * The count is guarantied not to be zero and also some optional additional bytes are forbidden to be zero..
+
+To implement add to [tipConfig.h](../src.config/tipConfig.h):
+
+```C
+#define RUN_LENGTH_ID 127
+//! TODO: define ranges here
+```
+
+> **Consideration:** Possible, but currenly no aim. The plausibility depends on the kind of data. Many short sequences of equal bytes could get covered by indirect pattern entries.
+
+###  8.2. <a name='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter-(refused)'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter (refused)
 
 * If data are containing no ID table pattern at all, they are getting bigger by the factor 8/7 (+14\%). That is a result of treating the data in 8 bit units (bytes).
 * If we change that to 16-bit units, by accepting an optional padding byte, we can reduce this increasing factor to 16/15 (+7\%).
@@ -505,7 +505,7 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 > **Consideration:** Not a good idea, because we get other overhead.
 
-###  8.2. <a name='do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project'></a>Do not remove zeroes in favour of better compression as an option or a separate project
+###  8.3. <a name='do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project'></a>Do not remove zeroes in favour of better compression as an option or a separate project
 
 [smaz](https://github.com/antirez/smaz):
 
@@ -532,7 +532,7 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 -->
 
 
-###  8.3. <a name='use-3-to-7-msbits-as-marker'></a>Use 3 to 7 MSBits as marker
+###  8.4. <a name='use-3-to-7-msbits-as-marker'></a>Use 3 to 7 MSBits as marker
 
 * `1111111u 1111111u ...` =  2 IDs for unreplacable bytes + 8/1 8
 * `111111uu 111111uu ...` =  4 IDs for unreplacable bytes + 8/2 4
@@ -543,7 +543,7 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 > **Considereation:** These variants could result in a too big TiP buffer for many unreplacable bytes and do not add so many direct IDs (max 32).
 
 
-###  8.4. <a name='use-prefix-byte-as-marker'></a>Use Prefix Byte as marker
+###  8.5. <a name='use-prefix-byte-as-marker'></a>Use Prefix Byte as marker
 
 ```diff
 + ID 1-254 usable
