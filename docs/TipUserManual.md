@@ -46,8 +46,14 @@ Table of Contents Generation:
 * 7. [Improvement Thoughts](#improvement-thoughts)
   * 7.1. [Additional Indirect Dictionary](#additional-indirect-dictionary)
   * 7.2. [Reserve ID `7f` for Run-Length Encoding](#reserve-id-`7f`-for-run-length-encoding)
-  * 7.3. [Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter.](#minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter.)
-  * 7.4. [Do not remove zeroes in favour of better compression as an option or a separate project.](#do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project.)
+  * 7.3. [Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter](#minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter)
+  * 7.4. [Do not remove zeroes in favour of better compression as an option or a separate project](#do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project)
+  * 7.5. [Optimal Unreplacable Bytes Handling](#optimal-unreplacable-bytes-handling)
+    * 7.5.1. [Use MsBit=1 as marker](#use-msbit=1-as-marker)
+    * 7.5.2. [Use MsBits=11 as marker](#use-msbits=11-as-marker)
+    * 7.5.3. [Use 3 to 7 MSBits as marker](#use-3-to-7-msbits-as-marker)
+    * 7.5.4. [Option: Use Prefix Byte as marker](#option:-use-prefix-byte-as-marker)
+  * 7.6. [Option: Decide later](#option:-decide-later)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -425,7 +431,7 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 > **Consideration:** Possible, but currenly no aim.
 
-###  7.3. <a id='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter.'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter
+###  7.3. <a id='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter
 
 * If data are containing no ID table pattern at all, they are getting bigger by the factor 8/7 (+14\%). That is a result of treating the data in 8 bit units (bytes).
 * If we change that to 16-bit units, by accepting an optional padding byte, we can reduce this increasing factor to 16/15 (+7\%).
@@ -436,7 +442,7 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 > **Consideration:** Not a good idea, because we get other overhead.
 
-###  7.4. <a id='do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project.'></a>Do not remove zeroes in favour of better compression as an option or a separate project
+###  7.4. <a id='do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project'></a>Do not remove zeroes in favour of better compression as an option or a separate project
 
 [smaz](https://github.com/antirez/smaz):
 
@@ -461,9 +467,23 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 
 > **Consideration:** Interesting extension but we want elemminate zeroes in one shot to keep the overall overhead small. This could make sense to improve SMAZ in an universal way, by providing a pattern table generator, which could be practically the same. The pattern table generator could get an option to use some internet data for the table generation.
 
-### 7.5 Optimal Unreplacable Bytes Handling 
+###  7.5. <a id='optimal-unreplacable-bytes-handling'></a>Optimal Unreplacable Bytes Handling 
 
-#### 7.5.1 Use MsBit=1 as marker
+
+```diff
+- text in red
+-- text in red
++ text in green
+++ text in green
+! text in orange
+!! text in orange
+# text in gray
+## text in gray
+@ text in purple
+@@ text in purple
+```
+
+####  7.5.1. <a id='use-msbit=1-as-marker'></a>Use MsBit=1 as marker (implemented)
 
 * `1uuuuuuu` = 128 IDs for unreplacable bytes
 * max dlen = slen * 8/7 = slen * 1.14
@@ -472,11 +492,11 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
   * If there are several unreplacable bytes and all >127 and src ends with a pattern, we simply copy them.
 
 ```diff
-- 127 pattern IDs usable (50 % of 256)
-+ one additional byte for each 7 unreplacable bytes
+- Only 127 direct pattern IDs usable (50 % of 256).
++ Only one additional byte for each 7 unreplacable bytes.
 ```
 
-#### 7.5.2 Use MsBits=11 as marker
+####  7.5.2. <a id='use-msbits=11-as-marker'></a>Use MsBits=11 as marker (option worth checking)
 
 * `11uuuuuu` = 64 IDs for unreplacable bytes
 * max dlen = slen * 8/6 = slen * 1.333 -> +33 %
@@ -490,7 +510,7 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 @ one additional byte for each 3 unreplacable bytes
 ```
 
-#### 7.5.3 Use 3 to 7 MSBits as marker
+####  7.5.3. <a id='use-3-to-7-msbits-as-marker'></a>Use 3 to 7 MSBits as marker
 
 * `1111111u 1111111u` =  2 IDs for unreplacable bytes + 8/1 8
 * `111111uu 111111uu` =  4 IDs for unreplacable bytes + 8/2 4
@@ -502,7 +522,7 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
 These variants could result in too big dlen.
 ```
 
-#### 7.5.4 Option: Use Prefix Byte as marker
+####  7.5.4. <a id='option:-use-prefix-byte-as-marker'></a>Option: Use Prefix Byte as marker
 
 ```diff
 + ID 1-254 usable
@@ -513,7 +533,7 @@ These variants could result in too big dlen.
 * 2 unreplacable sequence: not that good +2...4
 * 3 unreplacable sequence: worth +3...6
 
-### 7.5.5 Option: Decide later
+###  7.6. <a id='option:-decide-later'></a>Option: Decide later
 
 * Both variants could run parallel and we use the minimum result.
 * But how to inform the decoder?
