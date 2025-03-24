@@ -49,10 +49,9 @@ Table of Contents Generation:
 * 7. [Possible Improvements/Variations](#possible-improvements/variations)
   * 7.1. [Additional Indirect Dictionaries (planned)](#additional-indirect-dictionaries-(planned))
   * 7.2. [Reserve an ID (for example`7f`) for embedded Run-Length Encoding](#reserve-an-id-(for-example`7f`)-for-embedded-run-length-encoding)
-  * 7.3. [Optimal Unreplacable Bytes Handling](#optimal-unreplacable-bytes-handling)
-    * 7.3.1. [Use MsBit=1 as marker (_implemented_)](#use-msbit=1-as-marker-(_implemented_))
-    * 7.3.2. [Use MsBits=11 as marker (_worth checking_)](#use-msbits=11-as-marker-(_worth-checking_))
-  * 7.4. [Let Generator propose packing Variant](#let-generator-propose-packing-variant)
+  * 7.3. [Use MsBit=1 as marker for Unreplacable Bytes](#use-msbit=1-as-marker-for-unreplacable-bytes)
+  * 7.4. [Use MsBits=11 as marker for Unreplacable Bytes](#use-msbits=11-as-marker-for-unreplacable-bytes)
+  * 7.5. [Let Generator propose packing Variant](#let-generator-propose-packing-variant)
 * 8. [Refused Variations for unreplacable Bytes](#refused-variations-for-unreplacable-bytes)
   * 8.1. [Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter (refused)](#minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter-(refused))
   * 8.2. [Do not remove zeroes in favour of better compression as an option or a separate project](#do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project)
@@ -445,37 +444,46 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 > **Consideration:** Possible, but currenly no aim. The plausibility depends on the kind of data.
 
-###  7.3. <a name='optimal-unreplacable-bytes-handling'></a>Optimal Unreplacable Bytes Handling 
-
 > **Consideration:** Only MsBit=1 or MSBits=11 are worth further investigations and could get selected inside `tipConfig.h`.
-####  7.3.1. <a name='use-msbit=1-as-marker-(_implemented_)'></a>Use MsBit=1 as marker (_implemented_)
+
+###  7.3. <a name='use-msbit=1-as-marker-for-unreplacable-bytes'></a>Use MsBit=1 as marker for Unreplacable Bytes
 
 * `1uuuuuuu` = 128 "ID"s for unreplacable bytes
 * max dlen = slen * 8/7 = slen * 1.14 -> TiP data can get 14% larger in the worst case.
-* Additional Special Cases Handling (_not yet implemented_):
-  * If there is a single unreplacable byte and it is >127, we simply copy it.
-  * If there are several unreplacable bytes and all >127 and src ends with a pattern, we simply copy them.
 
 ```diff
 - Only 127 direct pattern IDs usable (50 % of 256).
 + Only one additional byte for each 7 unreplacable bytes.
 ```
 
-####  7.3.2. <a name='use-msbits=11-as-marker-(_worth-checking_)'></a>Use MsBits=11 as marker (_worth checking_)
+> **Consideration**: Implemented and working primary idea
+
+* Additional Special Cases Handling (_not yet implemented_):
+  * If there is a single unreplacable byte and it is >127, we simply copy it.
+  * If there are several unreplacable bytes and all >127 and src ends with a pattern, we simply copy them.
+
+> **Consideration**: Easy to implement as part of the unreplacable bytes handler functions. A significant effect is expected.
+
+###  7.4. <a name='use-msbits=11-as-marker-for-unreplacable-bytes'></a>Use MsBits=11 as marker for Unreplacable Bytes
 
 * `11uuuuuu` = 64 IDs for unreplacable bytes
 * max dlen = slen * 8/6 = slen * 1.333 -> TiP data can get 33% larger in the worst case.
 * one additional byte for each 3 unreplacable bytes
-* Additional Special Cases Handling:
-  * If there is a single unreplacable byte and it is >191, we simply copy it.
-  * If there are several unreplacable bytes and all >191 and src ends with a pattern, we simply copy them.
 
 ```diff
 + 191 pattern IDs usable (75 % OF 255)
 ! one additional byte for each 3 unreplacable bytes
 ```
 
-###  7.4. <a name='let-generator-propose-packing-variant'></a>Let Generator propose packing Variant 
+> **Consideration**: Easy implementable as config option. 
+
+* Additional Special Cases Handling:
+  * If there is a single unreplacable byte and it is >191, we simply copy it.
+  * If there are several unreplacable bytes and all >191 and src ends with a pattern, we simply copy them.
+
+> **Consideration**: Easy to implement as part of the unreplacable bytes handler functions. A small effect is expected.
+
+###  7.5. <a name='let-generator-propose-packing-variant'></a>Let Generator propose packing Variant 
 
 * Variants could run parallel and we use the minimum result.
 * But how to inform the decoder?
