@@ -100,7 +100,7 @@ Table of Contents Generation:
   ```
 
 * **TiP** is an adaptable very-short-buffer packer, suitable for embedded devices. Like [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) it removes all zeroes from the data, but additionally tries data compression.
-* The TiP worst-case overhead is 1 byte per each starting 7 bytes (+14%) for uncompressable data, but the expected average packed size is about 50% or less of the unpacked data. <sub>(For comparism: [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) adds 1 byte overhead per each starting 255 bytes, but does not compress at all.)</sub>
+* The TiP worst-case overhead is 1 byte per each starting 7 bytes (+14%) or 1 byte for 3 uncompressable data bytes (+33%), but the expected average packed size is about 50% or less of the unpacked data. <sub>(For comparism: [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) adds 1 byte overhead per each starting 255 bytes, but does not compress at all.)</sub>
 * Like [TCOBS](https://github.com/rokath//tcobs), TiP can already compress 2 bytes into 1 byte but is expected to do better on arbitrary data (similar to samples) with a bit more computing effort.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
