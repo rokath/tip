@@ -483,7 +483,7 @@ This allows 2560 additional pattern for the price 14 less 2-bytes pattern and th
   * If there are several unreplacable bytes and all >191 and src ends with a pattern, we simply copy them.
 
 ```diff
-- 191 pattern IDs usable (75 % OF 255)
++ 191 pattern IDs usable (75 % OF 255)
 @ one additional byte for each 3 unreplacable bytes
 ```
 
