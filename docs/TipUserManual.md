@@ -1,4 +1,4 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+8<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a id="tip-um-top"></a>
 
 # TiP Tiny Packer ~~`00`~~ User Manual
@@ -493,8 +493,8 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 ###  8.2. <a name='minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter-(refused)'></a>Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter (refused)
 
-* If data are containing no ID table pattern at all, they are getting bigger by the factor 8/7 (+14\%). That is a result of treating the data in 8 bit units (bytes).
-* If we change that to 16-bit units, by accepting an optional padding byte, we can reduce this increasing factor to 16/15 (+7\%).
+* If data are containing no ID table pattern at all, they are getting bigger by the factor 8/7 (+14\%) or 8/6 (+33%). That is a result of treating the data in 8 bit units (bytes).
+* If we change that to 16-bit units, by accepting an optional padding byte, we can reduce this increasing factor to 16/15 (+7\%) or 16/14 (+14%).
 * We still have IDs 1-127
 * An existing ID 127 just tells if there is a padding byte in the unreplacable data.
 * When unpacking, the first set MSBit tells that this byte and the next are unreplaceable. So we get N 16-bit groups of unreplacable data.
