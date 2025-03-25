@@ -259,7 +259,7 @@ On the receiver side all bytes with MSBit=0 are identified as IDs and are replac
 ###  5.5. <a name='installation'></a>Installation
 
 * Add `src` folder to your project and compile.
-* `pack.h` and `unpack.h` is the user interface.
+* `ti_pack.h` and `ri_unpack.h` is the user interface.
 
 <p align="right">(<a href="#tip-um-top">back to top</a>)</p>
 
