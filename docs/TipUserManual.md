@@ -453,6 +453,14 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 > **Consideration:** Promizing for data with many repeating longer pattern.
 
+### Optimize Unreplacable Packing 
+
+When there is a single unreplacable byte only and its MSBit is set, we can simply copy it.
+
+When there are several unreplacable bytes and their MSBit is set, we can simply copy them, if the TiP package ends with an ID.
+
+The TiP unpack routine can discover such cases.
+
 ###  7.4. <a name='let-generator-propose-tip-packing-variant'></a>Let Generator propose TiP packing Variant 
 
 * Variants could run parallel and we use the minimum result.
