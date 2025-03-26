@@ -10,7 +10,7 @@ import (
 )
 
 var table = []byte{3, 0xaa, 0xaa, 0xaa, 0}
-
+/*
 var tipTestTable = []struct {
 	unpacked []byte
 	packed   []byte
@@ -25,6 +25,24 @@ var tipTestTable = []struct {
 	{[]byte{0xaa, 0xaa, 0xaa}, []byte{0x01}},                                           // Just 1 pattern
 	{[]byte{0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa}, []byte{0x01, 0x01}},                   // just 2 pattern
 	{[]byte{0xd1, 0xaa, 0xaa, 0xaa, 0xd2, 0xaa, 0xaa, 0xaa, 0xd3}, []byte{0xf0, 0x01, 0xd1, 0x01, 0xd2, 0xd3}}, // 2 pattern with distributed unreplacable bytes
+}
+*/
+type []struct {
+	unpacked []byte
+	packed   []byte
+} tipTestTable
+
+func testtable() tipTestTable {
+	var ttto tipTestTable
+	ttto = {
+	{[]byte{0xaa, 0xbb}, []byte{0xe0, 0xaa, 0xbb}}, // only unreplacable bytes
+	}
+        if optimizeUnreplacables() {
+		return ttto
+	}
+	return tipTestTable {
+	{[]byte{0xaa, 0xbb}, []byte{0xe0, 0xaa, 0xbb}}, // only unreplacable bytes
+	}
 }
 
 func TestTIPack(t *testing.T) {
