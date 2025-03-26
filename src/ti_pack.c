@@ -365,7 +365,7 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
     createIDPosTable(table, src, slen); // Get all ID positions in src ordered by increasing offset.
     memset(&srcMap, 0, sizeof(srcMap)); // Start with no path (PathCount=0).
 #if DEBUG
-    printf( "\npti:" );
+    printf( "SrcMap:\npti\n" );
 #endif
     for( unsigned pti = 0; pti < IDPosTable.count; pti++ ){ // Loop over IDPosition table.
 #if DEBUG
@@ -405,7 +405,7 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
             // 8 patt:       NNNnn      - new pattern overlaps end and starts equal | possible | cannot append to this path
             // 9 patt:         Nnn      - new pattern overlaps only end             | possible | cannot append to this path
             //10 patt:          nnnn    - new pattern lays complete after           | possible | fork path k and append pattern to forked 
-            if( lll_limit <= nnn_start && nnn_limit < slen ){ // case 10
+            if( lll_limit <= nnn_start && nnn_limit <= slen ){ // case 10
                 if( srcMap.count < TIP_MAX_PATH_COUNT ){
                     unsigned n = forkPath(k);
                     appendPosTableIndexToPath(n, pti);
@@ -452,13 +452,18 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
 //! If afterwards optimization is possible, the returned count i <= 0.
 //! It uses idPatTable and the path index pidx in the actual srcMap, which is linked to IDPosTable.
 static int selectUnreplacableBytes( uint8_t * dst, unsigned pidx, const uint8_t * src, size_t slen ){
-    path_t path = srcMap.path[pidx]; // This is the path we use. 
-    const uint8_t * srcNext = src;   // next position for src buffer read
-    uint8_t * dstNext = dst;         // next position for dst buffer write
-    loc_t u8sum = 0;
 #if DEBUG
     printf( "\n\nselectUnreplacableBytes:\n\n");
 #endif
+    const uint8_t * srcNext = src;   // next position for src buffer read
+    uint8_t * dstNext = dst;         // next position for dst buffer write
+    loc_t u8sum = 0;
+    size_t rest;
+    if (srcMap.count == 0){
+        rest = slen;
+        goto onlyUnreplacables;
+    }
+    path_t path = srcMap.path[pidx]; // This is the path we use. 
     for( int i = 0; i <= path.last; i++ ){
         loc_t pti = path.pti[i];
         IDPosition_t idPos = IDPosTable.item[pti];
@@ -485,11 +490,12 @@ static int selectUnreplacableBytes( uint8_t * dst, unsigned pidx, const uint8_t 
         u8sum += u8len;
     }
     //! TODO: verify alternative rest computation
-    size_t rest = slen - (srcNext - src); // total - pattern sum
+    rest = slen - (srcNext - src); // total - pattern sum
+onlyUnreplacables:
     memcpy( dstNext, srcNext, rest );
     dstNext += rest;
     int len = dstNext - dst;
-    #if OPTIMIZE_UNREPLACABLES
+#if OPTIMIZE_UNREPLACABLES
     // cases like II or IIIU or IUII or U
     if (len <= 1) { // None or only one unreplacable byte exists.
         return -len; // A negative value indicates, that optimizing is possible.
@@ -506,14 +512,18 @@ static int selectUnreplacableBytes( uint8_t * dst, unsigned pidx, const uint8_t 
     if ((msBit & UNREPLACABLE_MASK) == UNREPLACABLE_MASK ){ // All unreplacable bytes have most significant bit(s)==1.
         return -len; // We can optimize.
     }
-    #endif // #if OPTIMIZE_UNREPLACABLES
+#endif // #if OPTIMIZE_UNREPLACABLES
     return len;
 }
 
 //! @brief createOutput uses the u7 buffer and pidx to intermix transformed unreplacable bytes and pattern IDs.
 //! It uses idPatTable and the path index pidx in the actual srcMap, which is linked to IDPosTable.
 static size_t createOutput( uint8_t * dst, unsigned pidx, const uint8_t * u7src, size_t u7len, const uint8_t * src ){
-    path_t path = srcMap.path[pidx]; // This is the path we use. 
+    if (srcMap.count==0) { // If no path at all, all src buffer bytes are unreplacables.
+        memcpy( dst, u7src, u7len );
+        return u7len;
+    }
+    path_t path = srcMap.path[pidx]; // This is the path we use.
     const uint8_t * srcNext = src;   // next position for src buffer read
     uint8_t * dstNext = dst;         // next position for dst buffer write
     const uint8_t * u7Next = u7src;
@@ -530,7 +540,7 @@ static size_t createOutput( uint8_t * dst, unsigned pidx, const uint8_t * u7src,
         uint8_t patlen = IDPatternLength( id );
         srcNext += patlen + u8len;
 #if DEBUG
-        printf( "i %u: idx %u, id %u, start %u\n", i, idx, id, idPos.start );
+        printf( "i %u: pidx %u, id %u, start %u\n", i, pidx, id, idPos.start );
 #endif
         memcpy( dstNext, u7Next, u8len ); // Copy u8len bytes from u7src buffer.
         u7Next += u8len;
@@ -674,7 +684,7 @@ static void printSrcMap( void ){
 
 #endif
 
-#if 1 // VERBOSE
+#if VERBOSE
 
 //! @brief IDPatternAddress writes pattern address of id into and returns pattern length.
 static loc_t IDPatternAddress( const uint8_t ** patternAddress, uint8_t id ){

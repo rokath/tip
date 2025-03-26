@@ -1,6 +1,7 @@
 package tip
 
 import (
+	"encoding/hex"
 	"fmt"
 	"reflect"
 	"testing"
@@ -14,6 +15,9 @@ var tipTestTable = []struct {
 	unpacked []byte
 	packed   []byte
 }{
+	{[]byte{0xaa, 0xbb}, []byte{0xe0, 0xaa, 0xbb}}, // only unreplacable bytes
+	{[]byte{'A', 'B', 'C', 'A', 'B'}, []byte{0x80, 0x80|'A', 0x80|'B', 0x80|'C', 0x80|'A', 0x80|'B'}}, // only unreplacable bytes
+	{[]byte{0x41, 0x42, 0x43, 0x41, 0x42}, []byte{0x80, 0xc1, 0xc2, 0xc3, 0xc1, 0xc2}}, // only unreplacable bytes
 	{[]byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}, []byte{0xfc, 0xaa, 0xbb, 0xcc, 0xaa, 0xbb}}, // only unreplacable bytes
 	{[]byte{0xd1, 0xaa, 0xaa, 0xaa, 0xd2}, []byte{0xe0, 0x01, 0xd1, 0xd2}},             // 1 pattern in the middle
 	{[]byte{0xd1, 0xd2, 0xaa, 0xaa, 0xaa}, []byte{0xe0, 0xd1, 0x01, 0xd2}},             // 1 pattern in the end
@@ -27,7 +31,7 @@ func TestTIPack(t *testing.T) {
 	packet := make([]byte, 100)
 	for _, x := range tipTestTable {
 		n := TIPack(packet, table, x.unpacked)
-		fmt.Println(packet[:n])
+		fmt.Println("Tip pack result:", hex.EncodeToString(packet[:n]))
 		assert.Equal(t, len(x.packed), n)
 		act := packet[:n]
 		assertNoZeroes(t, act)

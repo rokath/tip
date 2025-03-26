@@ -16,8 +16,14 @@ extern "C" {
 //! Its size has influence on the statically allocated RAM.
 #define TIP_MAX_PATH_COUNT 20000
 
-#define VERBOSE 1
+#define VERBOSE 0
 #define DEBUG 0
+
+
+#define OPTIMIZE_UNREPLACABLES 0
+#define UNREPLACABLE_MASK 0x80
+#define DIRECT_ID_MAX 127
+
 
 #ifdef __cplusplus
 }

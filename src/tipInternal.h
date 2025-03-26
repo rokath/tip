@@ -29,10 +29,6 @@ typedef uint16_t loc_t;
 typedef uint8_t loc_t;
 #endif
 
-#define OPTIMIZE_UNREPLACABLES 1
-#define UNREPLACABLE_MASK 0x80
-#define DIRECT_ID_MAX 127
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Exported for target tests
 //
