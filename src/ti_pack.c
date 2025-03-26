@@ -102,7 +102,8 @@ static void getNextIDPattern(const uint8_t ** pt, size_t * sz ){
 }
 
 //! @brief IDPosTable holds all IDs with their positions occuring in the current src buffer.
-static IDPosTable_t IDPosTable = {0};
+//! TODO: Module locale objects seem not to be visible by Go.
+/*static*/ IDPosTable_t IDPosTable = {0};
 
 //! @brief insertIDPosSorted inserts id with pos into IDPosTable with smallest pos first.
 static void insertIDPosSorted(uint8_t id, loc_t pos){
@@ -447,14 +448,13 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
 #endif
 }
 
-//! @brief selectUnreplacableBytes coppies all unreplacable bytes from src to dst.
+//! @brief selectUnreplacableBytes copies all unreplacable bytes from src to dst and returns their count.
+//! If afterwards optimization is possible, the returned count i <= 0.
 //! It uses idPatTable and the path index pidx in the actual srcMap, which is linked to IDPosTable.
-static size_t selectUnreplacableBytes( uint8_t * dst, unsigned pidx, const uint8_t * src, size_t slen ){
+static int selectUnreplacableBytes( uint8_t * dst, unsigned pidx, const uint8_t * src, size_t slen ){
     path_t path = srcMap.path[pidx]; // This is the path we use. 
-    // loc_t pti_count = path.last + 1; // The path contains count IDPosTable indicies pti.
     const uint8_t * srcNext = src;   // next position for src buffer read
     uint8_t * dstNext = dst;         // next position for dst buffer write
-    //loc_t * tidx = path.pti;         // Here are starting the IDPosTable indices.
     loc_t u8sum = 0;
 #if DEBUG
     printf( "\n\nselectUnreplacableBytes:\n\n");
@@ -488,7 +488,25 @@ static size_t selectUnreplacableBytes( uint8_t * dst, unsigned pidx, const uint8
     size_t rest = slen - (srcNext - src); // total - pattern sum
     memcpy( dstNext, srcNext, rest );
     dstNext += rest;
-    size_t len = dstNext - dst;
+    int len = dstNext - dst;
+    #if OPTIMIZE_UNREPLACABLES
+    // cases like II or IIIU or IUII or U
+    if (len <= 1) { // None or only one unreplacable byte exists.
+        return -len; // A negative value indicates, that optimizing is possible.
+    }
+    // cases like IIUU or UIIUU or UUIU
+    if (rest > 0 && rest != slen){ // Path ends not with an ID but has at least one ID.
+        return len; // We cannot optimize.
+    }
+    // cases like UUU or UUUI or IUUIUI
+    uint8_t msBit = UNREPLACABLE_MASK;
+    for (int i = 0; i < len; i++){
+        msBit &= dst[i];
+    }
+    if ((msBit & UNREPLACABLE_MASK) == UNREPLACABLE_MASK ){ // All unreplacable bytes have most significant bit(s)==1.
+        return -len; // We can optimize.
+    }
+    #endif // #if OPTIMIZE_UNREPLACABLES
     return len;
 }
 
@@ -569,14 +587,25 @@ static size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * t
     printPath( "\n\nSELECT:", pidx );
 #endif
     memset(dst, 0, dstLimit-dst);
-    unsigned u8Count = selectUnreplacableBytes(dst, pidx, src, slen );
-    unsigned u7Count = shift87bit( dstLimit-1, dst, u8Count );
-    uint8_t * u7src = dstLimit - u7Count;
-
+    int u8Count = selectUnreplacableBytes(dst, pidx, src, slen );
+    unsigned u7Count;
+    uint8_t * u7src;
+#if OPTIMIZE_UNREPLACABLES
+    if (u8Count > 1){ // no optimization possible
+        u7Count = shift87bit( dstLimit-1, dst, (size_t)u8Count );
+        u7src = dstLimit - u7Count;
+    } else { // We keep name "u7" for clarity.
+        u7Count = -u8Count; // Make it positive.
+        u7src = dstLimit - u7Count;
+        memcpy( u7src, dst, u7Count );
+    }
+#else // #if OPTIMIZE_UNREPLACABLES
+    u7Count = shift87bit( dstLimit-1, dst, (size_t)u8Count );
+    u7src = dstLimit - u7Count;
+#endif // #else // #if OPTIMIZE_UNREPLACABLES
 #if DEBUG
-    printf( "ShortestTipPath: %u, u8Count: %u, u7Count: %u\n", pidx, u8Count, u7Count );
+    printf( "ShortestTipPath: %u, u8Count: %d, u7Count: %u\n", pidx, u8Count, u7Count );
 #endif
-
     size_t pkgSize = createOutput( dst, pidx, u7src, u7Count, src );
     return pkgSize; // final ti package size
 }

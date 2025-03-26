@@ -21,8 +21,20 @@ size_t tiUnpack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_
     size_t u7len = collectU7Bytes( u78, src, slen );
 
     static uint8_t u8[TIP_SRC_BUFFER_SIZE_MAX]; // todo
-    size_t u8len = shift78bit( u8, u78, u7len );
-
+    size_t u8len;
+#if OPTIMIZE_UNREPLACABLES
+    // cases like IIIUII or III or UII or IU or U
+    if ( (u7len <= 1 )  // TiP packet has no or max one unrplacable byte, so optimisation was possible.
+      || (*(src+slen-1) <= DIRECT_ID_MAX) // TiP packet ends with an ID, so optimization was possible.
+      || (u7len == slen) ) { // TiP packet has only unreplacable bytes, so optimization was possible.
+        u8len = u7len;
+        memcpy( u8, u78, u8len );
+    } else { // Otherwise the last byte is an unreplacable and not the only one and there is at least one ID.
+        u8len = shift78bit( u8, u78, u7len ); // Optimization was not possible.
+    }
+#else // #if OPTIMIZE_UNREPLACABLES
+    u8len = shift78bit( u8, u78, u7len );
+#endif // #else // #if OPTIMIZE_UNREPLACABLES
     size_t dlen = restorePacket( dst, table, u8, u8len, src, slen );
     return dlen;
 }
@@ -31,7 +43,7 @@ size_t tiUnpack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_
 static size_t collectU7Bytes( uint8_t * dst, const uint8_t * src, size_t slen ){
     uint8_t * p = dst;
     for( int i = 0; i < slen; i++ ){
-        if(0x80 & src[i]){
+        if(UNREPLACABLE_MASK & src[i]){
             *p++ = src[i];
         }
     }
