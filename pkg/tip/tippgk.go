@@ -10,6 +10,9 @@ package tip
 // #include "idTable.c"
 // #include "ti_pack.c"
 // #include "ti_unpack.c"
+// int optimizeUnreplacables(void) {
+//     return OPTIMIZE_UNREPLACABLES;
+// }
 import "C"
 
 import (
