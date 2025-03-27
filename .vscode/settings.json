@@ -2,6 +2,7 @@
     "files.associations": {
         "pack.h": "c",
         "tip.h": "c",
-        "tipconfig.h": "c"
+        "tipconfig.h": "c",
+        "tipinternal.h": "c"
     }
 }

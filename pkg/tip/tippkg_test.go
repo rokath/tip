@@ -19,12 +19,25 @@ type tipTestTable []struct {
 func testTable() tipTestTable {
 	if optimizeUnreplacables() {
 		return tipTestTable{
+			{[]byte{0xaa, 0xaa, 0xaa, 'A', 0xaa, 0xaa, 0xaa}, []byte{0x01, 0x80, 0x01, 0x80 | 'A'}}, // only unreplacable 1 byte, not optimizable
+			{[]byte{0xaa, 0xaa, 0xaa, 0xbb, 0xaa, 0xaa, 0xaa}, []byte{0x01, 0xbb, 0x01}},            // only unreplacable 1 byte in the middle, optimizable
+
+			{[]byte{0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 'A'}, []byte{0x01, 0x01, 0x80, 0x80 | 'A'}}, // only unreplacable 1 byte at the end, not optimizable
+			{[]byte{0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xbb}, []byte{0x01, 0x01, 0xbb}},            // only unreplacable 1 byte at the end, optimizable
+
+			{[]byte{'A'}, []byte{0x80, 0x80 | 'A'}}, // only unreplacable 1 byte, not optimizable
+			{[]byte{0xaa}, []byte{0xaa}},            // only unreplacable 1 byte, optimizable
+
+			{[]byte{0xd1, 'A', 0xaa, 0xaa, 0xaa}, []byte{0xa0, 0xd1, 0x01, 0x80 | 'A'}}, // 1 pattern in the end, not optimizable
+			{[]byte{0xd1, 0xd2, 0xaa, 0xaa, 0xaa}, []byte{0xd1, 0xd2, 0x01}},            // 1 pattern in the end, optimizable
+
 			{[]byte{0xaa, 0xbb}, []byte{0xe0, 0xaa, 0xbb}},                                                              // only unreplacable bytes
+			{[]byte{'A', 0xbb}, []byte{0xc0, 0x80 | 'A', 0xbb}},                                                         // only unreplacable bytes
 			{[]byte{'A', 'B', 'C', 'A', 'B'}, []byte{0x80, 0x80 | 'A', 0x80 | 'B', 0x80 | 'C', 0x80 | 'A', 0x80 | 'B'}}, // only unreplacable bytes
 			{[]byte{0x41, 0x42, 0x43, 0x41, 0x42}, []byte{0x80, 0xc1, 0xc2, 0xc3, 0xc1, 0xc2}},                          // only unreplacable bytes
 			{[]byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}, []byte{0xfc, 0xaa, 0xbb, 0xcc, 0xaa, 0xbb}},                          // only unreplacable bytes
+			
 			{[]byte{0xd1, 0xaa, 0xaa, 0xaa, 0xd2}, []byte{0xe0, 0x01, 0xd1, 0xd2}},                                      // 1 pattern in the middle
-			{[]byte{0xd1, 0xd2, 0xaa, 0xaa, 0xaa}, []byte{0xe0, 0xd1, 0x01, 0xd2}},                                      // 1 pattern in the end
 			{[]byte{0xaa, 0xaa, 0xaa, 0xd1, 0xd2}, []byte{0x01, 0xe0, 0xd1, 0xd2}},                                      // 1 pattern at start
 			{[]byte{0xaa, 0xaa, 0xaa}, []byte{0x01}},                                                                    // Just 1 pattern
 			{[]byte{0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa}, []byte{0x01, 0x01}},                                            // just 2 pattern
@@ -33,12 +46,12 @@ func testTable() tipTestTable {
 
 	} else { // Unreplacable bytes are not optimized.
 		return tipTestTable{
+			{[]byte{0xd1, 0xd2, 0xaa, 0xaa, 0xaa}, []byte{0xe0, 0xd1, 0x01, 0xd2}},                                      // 1 pattern in the end
 			{[]byte{0xaa, 0xbb}, []byte{0xe0, 0xaa, 0xbb}},                                                              // only unreplacable bytes
 			{[]byte{'A', 'B', 'C', 'A', 'B'}, []byte{0x80, 0x80 | 'A', 0x80 | 'B', 0x80 | 'C', 0x80 | 'A', 0x80 | 'B'}}, // only unreplacable bytes
 			{[]byte{0x41, 0x42, 0x43, 0x41, 0x42}, []byte{0x80, 0xc1, 0xc2, 0xc3, 0xc1, 0xc2}},                          // only unreplacable bytes
 			{[]byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}, []byte{0xfc, 0xaa, 0xbb, 0xcc, 0xaa, 0xbb}},                          // only unreplacable bytes
 			{[]byte{0xd1, 0xaa, 0xaa, 0xaa, 0xd2}, []byte{0xe0, 0x01, 0xd1, 0xd2}},                                      // 1 pattern in the middle
-			{[]byte{0xd1, 0xd2, 0xaa, 0xaa, 0xaa}, []byte{0xe0, 0xd1, 0x01, 0xd2}},                                      // 1 pattern in the end
 			{[]byte{0xaa, 0xaa, 0xaa, 0xd1, 0xd2}, []byte{0x01, 0xe0, 0xd1, 0xd2}},                                      // 1 pattern at start
 			{[]byte{0xaa, 0xaa, 0xaa}, []byte{0x01}},                                                                    // Just 1 pattern
 			{[]byte{0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa}, []byte{0x01, 0x01}},                                            // just 2 pattern
@@ -64,6 +77,7 @@ func TestTIUnpack(t *testing.T) {
 	for _, x := range testTable() {
 		assertNoZeroes(t, x.packed)
 		n := TIUnpack(buffer, table, x.packed)
+		fmt.Println("Tip unpack result:", hex.EncodeToString(buffer[:n]))
 		assert.Equal(t, len(x.unpacked), n)
 		act := buffer[:n]
 		assert.Equal(t, x.unpacked, act)

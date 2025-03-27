@@ -7,7 +7,7 @@
 #include "ti_unpack.h"
 #include "tipInternal.h"
 
-static size_t collectU7Bytes( uint8_t * dst, const uint8_t * src, size_t slen );
+static int collectU7Bytes( uint8_t * dst, const uint8_t * src, size_t slen );
 /*static*/ size_t shift78bit( uint8_t * dst, const uint8_t * src, size_t slen );
 static size_t restorePacket( uint8_t * dst, const uint8_t * table, const uint8_t * u8, size_t u8len, const uint8_t * src, size_t slen );
 static size_t getPatternFromId( uint8_t * pt, const uint8_t * table, uint8_t id );
@@ -18,16 +18,13 @@ size_t tiu( uint8_t * dst, const uint8_t * src, size_t slen ){
 
 size_t tiUnpack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen ){
     static uint8_t u78[TIP_SRC_BUFFER_SIZE_MAX*8u/7u+1]; // todo
-    size_t u7len = collectU7Bytes( u78, src, slen );
+    int u7len = collectU7Bytes( u78, src, slen );
 
     static uint8_t u8[TIP_SRC_BUFFER_SIZE_MAX]; // todo
     size_t u8len;
 #if OPTIMIZE_UNREPLACABLES
-    // cases like IIIUII or III or UII or IU or U
-    if ( (u7len <= 1 )  // TiP packet has no or max one unrplacable byte, so optimisation was possible.
-      || (*(src+slen-1) <= DIRECT_ID_MAX) // TiP packet ends with an ID, so optimization was possible.
-      || (u7len == slen) ) { // TiP packet has only unreplacable bytes, so optimization was possible.
-        u8len = u7len;
+    if (u7len <= 0 ) { // Unrplacable byte optimisation was possible.
+        u8len = -u7len;
         memcpy( u8, u78, u8len );
     } else { // Otherwise the last byte is an unreplacable and not the only one and there is at least one ID.
         u8len = shift78bit( u8, u78, u7len ); // Optimization was not possible.
@@ -40,14 +37,21 @@ size_t tiUnpack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_
 }
 
 // collectU7Bytes copies all bytes with msbit=1 into dst and returns their count.
-static size_t collectU7Bytes( uint8_t * dst, const uint8_t * src, size_t slen ){
+static int collectU7Bytes( uint8_t * dst, const uint8_t * src, size_t slen ){
     uint8_t * p = dst;
     for( int i = 0; i < slen; i++ ){
         if(UNREPLACABLE_MASK & src[i]){
             *p++ = src[i];
         }
     }
-    return p - dst;
+    int count = p - dst;
+#if OPTIMIZE_UNREPLACABLES // cases like III or IIU or UUIIIUII 
+    if ( (count <= 1) // TiP packet has no or max one unrplacable byte.
+      || (*(src+slen-1) <= DIRECT_ID_MAX ) ) {// TiP packet ends with an ID.
+        count = -count; // Unreplacable bytes optimisation was possible.
+    }
+#endif // #if OPTIMIZE_UNREPLACABLES
+    return count;
 }
 
 //! shift78bit transforms slen 7-bit bytes in src to 8-bit units in dst.

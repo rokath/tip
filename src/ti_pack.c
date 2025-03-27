@@ -497,14 +497,20 @@ onlyUnreplacables:
     int len = dstNext - dst;
 #if OPTIMIZE_UNREPLACABLES
     // cases like II or IIIU or IUII or U
-    if (len <= 1) { // None or only one unreplacable byte exists.
-        return -len; // A negative value indicates, that optimizing is possible.
+    if (len == 0) { // No unreplacable byte exists.
+        return len;
     }
-    // cases like IIUU or UIIUU or UUIU
-    if (rest > 0 && rest != slen){ // Path ends not with an ID but has at least one ID.
+    if (len == 1) { // Only one unreplacable byte exists.
+        if ((*dst & UNREPLACABLE_MASK) == UNREPLACABLE_MASK) {
+            return -len; // Unreplacable byte optimizing is possible.
+        }else{
+            return len; // Unreplacable byte optimizing is not possible.
+        }
+    }
+    if (rest > 0) { // Path ends not with an ID: cases like UU or IIUU or UIIUU or UUIU
         return len; // We cannot optimize.
     }
-    // cases like UUU or UUUI or IUUIUI
+    // Path ends with an ID: cases like UUUI or IUUIUI
     uint8_t msBit = UNREPLACABLE_MASK;
     for (int i = 0; i < len; i++){
         msBit &= dst[i];
@@ -601,7 +607,7 @@ static size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * t
     unsigned u7Count;
     uint8_t * u7src;
 #if OPTIMIZE_UNREPLACABLES
-    if (u8Count > 1){ // no optimization possible
+    if (u8Count > 0){ // no optimization possible
         u7Count = shift87bit( dstLimit-1, dst, (size_t)u8Count );
         u7src = dstLimit - u7Count;
     } else { // We keep name "u7" for clarity.
