@@ -102,7 +102,49 @@ static int collectUTBytes( uint8_t * dst, const uint8_t * src, size_t slen ){
 #endif
 
 #if UNREPLACABLE_BIT_COUNT == 6
-TODO
+//! shift68bit transforms slen 6-bit bytes in src to 8-bit units in dst.
+//! @param src is a byte buffer.
+//! @param slen is the 6-bit byte count.
+//! @param dst is the destination buffer. It is NOT allowed to be equal src for in-place conversion.
+//! @retval is count 8-bit bytes
+//! @details buf is filled from the end (=buf+limit)
+//! Example: slen=20, limit=24
+//!       (src)<---                   slen=23                            --->(lst)     
+//! slen=23: m6 b6 b6 m6 b6 b6 b6 m6 b6 b6 b6 m6 b6 b6 b6 m6 b6 b6 b6 m6 b6 b6 b6
+//! ret =17: b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8
+//!       (dst)<---               dlen=17               --->(ptr)
+//! dlen = slen*6/8
+/*static*/ size_t shift68bit( uint8_t * dst, const uint8_t * src, size_t slen ){
+    size_t dlen = (6*slen)>>3;
+    uint8_t * ptr = dst + dlen - 1; // ptr is last address in dst buffer
+    uint8_t * lst = (uint8_t *)src + slen - 1; // lst is last address in source buffer.
+hier weiter
+    while( src <= lst - 3 ){
+        uint8_t msbyte = 0x3f & *(lst-3); // remove 11 in msb __00 0000 == 0x40
+        for( int i = 0; i < 7; i++ ){ 
+            uint8_t bits6_0 = 0x7f & *lst--; // _111 1111 == 0x7f
+            uint8_t mask = 0x40 >> i;        // _100 0000
+            uint8_t b7bit = msbyte & mask;   // _100 0000 & _100 0000 == 0x40
+            b7bit = b7bit ? 0x80 : 0;
+            *ptr-- = b7bit | bits6_0;
+        }
+        lst--; // Skip over already processed msbyte.
+    }
+    if( lst <= src){
+        return dlen;
+    }
+    // Now we have one msbyte and 1-6 b7 bytes left.
+    uint8_t msbyte = 0x7f & *src;
+    size_t cnt = lst - src; // cnt of remaining 1-6 b7 bytes
+    for( int i = 0; i < cnt; i++ ){ 
+        uint8_t bits6_0 = 0x7f & *lst--; // _111 1111 == 0x7f
+        uint8_t mask = 0x40 >> i;        // _100 0000
+        uint8_t b7bit = msbyte & mask; // _100 0000 & _100 0000 == 0x40
+        b7bit = b7bit ? 0x80 : 0;
+        *ptr-- = b7bit | bits6_0;
+     }
+    return dlen;
+}
 #endif
 
 
