@@ -7,7 +7,7 @@
 #include "ti_unpack.h"
 #include "tipInternal.h"
 
-static int collectU7Bytes( uint8_t * dst, const uint8_t * src, size_t slen );
+static int collectUTBytes( uint8_t * dst, const uint8_t * src, size_t slen );
 /*static*/ size_t shift78bit( uint8_t * dst, const uint8_t * src, size_t slen );
 static size_t reconvertBits( uint8_t * lst, const uint8_t * src, size_t slen );
 static size_t restorePacket( uint8_t * dst, const uint8_t * table, const uint8_t * u8, size_t u8len, const uint8_t * src, size_t slen );
@@ -18,27 +18,27 @@ size_t tiu( uint8_t * dst, const uint8_t * src, size_t slen ){
 }
 
 size_t tiUnpack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen ){
-    static uint8_t u78[TIP_SRC_BUFFER_SIZE_MAX*8u/7u+1]; // todo
-    int u7len = collectU7Bytes( u78, src, slen );
+    static uint8_t uT8[TIP_SRC_BUFFER_SIZE_MAX*8u/7u+1]; // todo
+    int uTlen = collectUTBytes( uT8, src, slen );
 
     static uint8_t u8[TIP_SRC_BUFFER_SIZE_MAX]; // todo
     size_t u8len;
 #if OPTIMIZE_UNREPLACABLES
-    if (u7len <= 0 ) { // Unrplacable byte optimisation was possible.
-        u8len = -u7len;
-        memcpy( u8, u78, u8len );
+    if (uTlen <= 0 ) { // Unrplacable byte optimisation was possible.
+        u8len = -uTlen;
+        memcpy( u8, uT8, u8len );
     } else { // Otherwise the last byte is an unreplacable and not the only one and there is at least one ID.
-        u8len = reconvertBits( u8, u78, u7len ); // Optimization was not possible.
+        u8len = reconvertBits( u8, uT8, uTlen ); // Optimization was not possible.
     }
 #else // #if OPTIMIZE_UNREPLACABLES
-    u8len = reconvertBits( u8, u78, u7len );
+    u8len = reconvertBits( u8, uT8, uTlen );
 #endif // #else // #if OPTIMIZE_UNREPLACABLES
     size_t dlen = restorePacket( dst, table, u8, u8len, src, slen );
     return dlen;
 }
 
-// collectU7Bytes copies all bytes with msbit=1 into dst and returns their count.
-static int collectU7Bytes( uint8_t * dst, const uint8_t * src, size_t slen ){
+// collectUTBytes copies all bytes with msbit=1 into dst and returns their count.
+static int collectUTBytes( uint8_t * dst, const uint8_t * src, size_t slen ){
     uint8_t * p = dst;
     for( int i = 0; i < slen; i++ ){
         if(UNREPLACABLE_MASK & src[i]){
@@ -125,7 +125,7 @@ static size_t reconvertBits( uint8_t * lst, const uint8_t * src, size_t slen ){
 static size_t restorePacket( uint8_t * dst, const uint8_t * table, const uint8_t * u8, size_t u8len, const uint8_t * src, size_t slen ){
     uint8_t * p = dst;
     for( int i = 0; i < slen; i++ ){
-        if( 0x80 & src[i] ){ // an u78 byte
+        if( UNREPLACABLE_MASK & src[i] ){ // an uT8 byte
             if( u8len > 0){
                 *p++ = *u8++;
                 u8len--;
