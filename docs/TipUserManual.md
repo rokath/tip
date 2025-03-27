@@ -47,7 +47,8 @@ Table of Contents Generation:
   * 7.1. [Use MsBit=`1` as Bit marker for unreplacable Bytes](#use-msbit=`1`-as-bit-marker-for-unreplacable-bytes)
   * 7.2. [Use MsBits=`11` as Bit marker for unreplacable Bytes](#use-msbits=`11`-as-bit-marker-for-unreplacable-bytes)
   * 7.3. [Additional Indirect Dictionaries (planned)](#additional-indirect-dictionaries-(planned))
-  * 7.4. [Let Generator propose TiP packing Variant](#let-generator-propose-tip-packing-variant)
+  * 7.4. [Optimize Unreplacable Packing](#optimize-unreplacable-packing)
+  * 7.5. [Let Generator propose TiP packing Variant](#let-generator-propose-tip-packing-variant)
 * 8. [Refused Variations for unreplacable Bytes](#refused-variations-for-unreplacable-bytes)
   * 8.1. [Reserve an ID (for example`7f`) for embedded Run-Length Encoding](#reserve-an-id-(for-example`7f`)-for-embedded-run-length-encoding)
   * 8.2. [Minimize Worst-Case Size by using 16-bit transfer units with 2 zeroes as delimiter (refused)](#minimize-worst-case-size-by-using-16-bit-transfer-units-with-2-zeroes-as-delimiter-(refused))
@@ -453,15 +454,16 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 
 > **Consideration:** Promizing for data with many repeating longer pattern.
 
-### Optimize Unreplacable Packing 
+###  7.4. <a id='optimize-unreplacable-packing'></a>Optimize Unreplacable Packing 
 
-When there is a single unreplacable byte only and its MSBit is set, we can simply copy it.
+The TiP unpack routine can discover such cases:
 
-When there are several unreplacable bytes and their MSBit is set, we can simply copy them, if the TiP package ends with an ID.
+* When there is a single unreplacable byte only and its MSBit is set, we can simply copy it.
+* When there are several unreplacable bytes and their MSBit is set, we can simply copy them, if the TiP package ends with an ID.
 
-The TiP unpack routine can discover such cases.
+> **Consideration**: Easy to implement as small improvement. Done.
 
-###  7.4. <a name='let-generator-propose-tip-packing-variant'></a>Let Generator propose TiP packing Variant 
+###  7.5. <a name='let-generator-propose-tip-packing-variant'></a>Let Generator propose TiP packing Variant 
 
 * Variants could run parallel and we use the minimum result.
 * But how to inform the decoder?
