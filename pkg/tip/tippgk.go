@@ -20,13 +20,10 @@ import (
 )
 
 func optimizeUnreplacables() bool {
-	x:= C.optimizeUnreplacables()
-	if x>0 {
-		return true
-	}
-	return false
+	x := C.optimizeUnreplacables()
+	return x > 0
 }
-		
+
 // Pack compresses in to out with no zeroes in out and returns packed size plen.
 // out needs to have a size of at least 8*len(in)/7 + 1 for the case in cannot get compressed.
 func TIPack(out, table, in []byte) (plen int) {

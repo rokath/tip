@@ -10,44 +10,46 @@ import (
 )
 
 var table = []byte{3, 0xaa, 0xaa, 0xaa, 0}
-/*
-var tipTestTable = []struct {
-	unpacked []byte
-	packed   []byte
-}{
-	{[]byte{0xaa, 0xbb}, []byte{0xe0, 0xaa, 0xbb}}, // only unreplacable bytes
-	{[]byte{'A', 'B', 'C', 'A', 'B'}, []byte{0x80, 0x80|'A', 0x80|'B', 0x80|'C', 0x80|'A', 0x80|'B'}}, // only unreplacable bytes
-	{[]byte{0x41, 0x42, 0x43, 0x41, 0x42}, []byte{0x80, 0xc1, 0xc2, 0xc3, 0xc1, 0xc2}}, // only unreplacable bytes
-	{[]byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}, []byte{0xfc, 0xaa, 0xbb, 0xcc, 0xaa, 0xbb}}, // only unreplacable bytes
-	{[]byte{0xd1, 0xaa, 0xaa, 0xaa, 0xd2}, []byte{0xe0, 0x01, 0xd1, 0xd2}},             // 1 pattern in the middle
-	{[]byte{0xd1, 0xd2, 0xaa, 0xaa, 0xaa}, []byte{0xe0, 0xd1, 0x01, 0xd2}},             // 1 pattern in the end
-	{[]byte{0xaa, 0xaa, 0xaa, 0xd1, 0xd2}, []byte{0x01, 0xe0, 0xd1, 0xd2}},             // 1 pattern at start
-	{[]byte{0xaa, 0xaa, 0xaa}, []byte{0x01}},                                           // Just 1 pattern
-	{[]byte{0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa}, []byte{0x01, 0x01}},                   // just 2 pattern
-	{[]byte{0xd1, 0xaa, 0xaa, 0xaa, 0xd2, 0xaa, 0xaa, 0xaa, 0xd3}, []byte{0xf0, 0x01, 0xd1, 0x01, 0xd2, 0xd3}}, // 2 pattern with distributed unreplacable bytes
-}
-*/
-type []struct {
-	unpacked []byte
-	packed   []byte
-} tipTestTable
 
-func testtable() tipTestTable {
-	var ttto tipTestTable
-	ttto = {
-	{[]byte{0xaa, 0xbb}, []byte{0xe0, 0xaa, 0xbb}}, // only unreplacable bytes
-	}
-        if optimizeUnreplacables() {
-		return ttto
-	}
-	return tipTestTable {
-	{[]byte{0xaa, 0xbb}, []byte{0xe0, 0xaa, 0xbb}}, // only unreplacable bytes
+type tipTestTable []struct {
+	unpacked []byte
+	packed   []byte
+}
+
+func testTable() tipTestTable {
+	if optimizeUnreplacables() {
+		return tipTestTable{
+			{[]byte{0xaa, 0xbb}, []byte{0xe0, 0xaa, 0xbb}},                                                              // only unreplacable bytes
+			{[]byte{'A', 'B', 'C', 'A', 'B'}, []byte{0x80, 0x80 | 'A', 0x80 | 'B', 0x80 | 'C', 0x80 | 'A', 0x80 | 'B'}}, // only unreplacable bytes
+			{[]byte{0x41, 0x42, 0x43, 0x41, 0x42}, []byte{0x80, 0xc1, 0xc2, 0xc3, 0xc1, 0xc2}},                          // only unreplacable bytes
+			{[]byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}, []byte{0xfc, 0xaa, 0xbb, 0xcc, 0xaa, 0xbb}},                          // only unreplacable bytes
+			{[]byte{0xd1, 0xaa, 0xaa, 0xaa, 0xd2}, []byte{0xe0, 0x01, 0xd1, 0xd2}},                                      // 1 pattern in the middle
+			{[]byte{0xd1, 0xd2, 0xaa, 0xaa, 0xaa}, []byte{0xe0, 0xd1, 0x01, 0xd2}},                                      // 1 pattern in the end
+			{[]byte{0xaa, 0xaa, 0xaa, 0xd1, 0xd2}, []byte{0x01, 0xe0, 0xd1, 0xd2}},                                      // 1 pattern at start
+			{[]byte{0xaa, 0xaa, 0xaa}, []byte{0x01}},                                                                    // Just 1 pattern
+			{[]byte{0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa}, []byte{0x01, 0x01}},                                            // just 2 pattern
+			{[]byte{0xd1, 0xaa, 0xaa, 0xaa, 0xd2, 0xaa, 0xaa, 0xaa, 0xd3}, []byte{0xf0, 0x01, 0xd1, 0x01, 0xd2, 0xd3}},  // 2 pattern with distributed unreplacable bytes
+		}
+
+	} else { // Unreplacable bytes are not optimized.
+		return tipTestTable{
+			{[]byte{0xaa, 0xbb}, []byte{0xe0, 0xaa, 0xbb}},                                                              // only unreplacable bytes
+			{[]byte{'A', 'B', 'C', 'A', 'B'}, []byte{0x80, 0x80 | 'A', 0x80 | 'B', 0x80 | 'C', 0x80 | 'A', 0x80 | 'B'}}, // only unreplacable bytes
+			{[]byte{0x41, 0x42, 0x43, 0x41, 0x42}, []byte{0x80, 0xc1, 0xc2, 0xc3, 0xc1, 0xc2}},                          // only unreplacable bytes
+			{[]byte{0xaa, 0xbb, 0xcc, 0xaa, 0xbb}, []byte{0xfc, 0xaa, 0xbb, 0xcc, 0xaa, 0xbb}},                          // only unreplacable bytes
+			{[]byte{0xd1, 0xaa, 0xaa, 0xaa, 0xd2}, []byte{0xe0, 0x01, 0xd1, 0xd2}},                                      // 1 pattern in the middle
+			{[]byte{0xd1, 0xd2, 0xaa, 0xaa, 0xaa}, []byte{0xe0, 0xd1, 0x01, 0xd2}},                                      // 1 pattern in the end
+			{[]byte{0xaa, 0xaa, 0xaa, 0xd1, 0xd2}, []byte{0x01, 0xe0, 0xd1, 0xd2}},                                      // 1 pattern at start
+			{[]byte{0xaa, 0xaa, 0xaa}, []byte{0x01}},                                                                    // Just 1 pattern
+			{[]byte{0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa}, []byte{0x01, 0x01}},                                            // just 2 pattern
+			{[]byte{0xd1, 0xaa, 0xaa, 0xaa, 0xd2, 0xaa, 0xaa, 0xaa, 0xd3}, []byte{0xf0, 0x01, 0xd1, 0x01, 0xd2, 0xd3}},  // 2 pattern with distributed unreplacable bytes
+		}
 	}
 }
 
 func TestTIPack(t *testing.T) {
 	packet := make([]byte, 100)
-	for _, x := range tipTestTable {
+	for _, x := range testTable() {
 		n := TIPack(packet, table, x.unpacked)
 		fmt.Println("Tip pack result:", hex.EncodeToString(packet[:n]))
 		assert.Equal(t, len(x.packed), n)
@@ -59,7 +61,7 @@ func TestTIPack(t *testing.T) {
 
 func TestTIUnpack(t *testing.T) {
 	buffer := make([]byte, 100)
-	for _, x := range tipTestTable {
+	for _, x := range testTable() {
 		assertNoZeroes(t, x.packed)
 		n := TIUnpack(buffer, table, x.packed)
 		assert.Equal(t, len(x.unpacked), n)
@@ -71,7 +73,7 @@ func TestTIUnpack(t *testing.T) {
 // uses idTable.c
 func _TestPack(t *testing.T) { // uses idTable.c
 	packet := make([]byte, 100)
-	for _, x := range tipTestTable {
+	for _, x := range testTable() {
 		n := Pack(packet, x.unpacked)
 		act := packet[:n]
 		assertNoZeroes(t, act)
@@ -82,7 +84,7 @@ func _TestPack(t *testing.T) { // uses idTable.c
 // uses idTable.c
 func _TestUnpack(t *testing.T) { // uses idTable.c
 	buffer := make([]byte, 100)
-	for _, x := range tipTestTable {
+	for _, x := range testTable() {
 		n := Unpack(buffer, x.packed)
 		act := buffer[:n]
 		assert.Equal(t, x.packed, act)
@@ -95,7 +97,7 @@ func TestTIPackTIUnpack(t *testing.T) {
 	packet := make([]byte, 100)
 	var ratio float64
 	var i uint
-	for _, x := range tipTestTable {
+	for _, x := range testTable() {
 		n := TIPack(packet, table, x.unpacked)
 		act := packet[:n]
 
