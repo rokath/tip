@@ -113,7 +113,7 @@ static int collectUTBytes( uint8_t * dst, const uint8_t * src, size_t slen ){
 //! slen=23: m6 b6 b6 m6 b6 b6 b6 m6 b6 b6 b6 m6 b6 b6 b6 m6 b6 b6 b6 m6 b6 b6 b6
 //! ret =17: b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8
 //!       (dst)<---               dlen=17               --->(ptr)
-//! dlen = slen*6/8
+//! dlen = slen*6/8=slen*3/4
 /*static*/ size_t shift68bit( uint8_t * dst, const uint8_t * src, size_t slen ){
     size_t dlen = (6*slen)>>3;
     uint8_t * ptr = dst + dlen - 1; // ptr is last address in dst buffer
