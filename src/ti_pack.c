@@ -522,17 +522,17 @@ onlyUnreplacables:
     return len;
 }
 
-//! @brief createOutput uses the u7 buffer and pidx to intermix transformed unreplacable bytes and pattern IDs.
+//! @brief createOutput uses the uT buffer and pidx to intermix transformed unreplacable bytes and pattern IDs.
 //! It uses idPatTable and the path index pidx in the actual srcMap, which is linked to IDPosTable.
-static size_t createOutput( uint8_t * dst, unsigned pidx, const uint8_t * u7src, size_t u7len, const uint8_t * src ){
+static size_t createOutput( uint8_t * dst, unsigned pidx, const uint8_t * uTsrc, size_t uTlen, const uint8_t * src ){
     if (srcMap.count==0) { // If no path at all, all src buffer bytes are unreplacables.
-        memcpy( dst, u7src, u7len );
-        return u7len;
+        memcpy( dst, uTsrc, uTlen );
+        return uTlen;
     }
     path_t path = srcMap.path[pidx]; // This is the path we use.
     const uint8_t * srcNext = src;   // next position for src buffer read
     uint8_t * dstNext = dst;         // next position for dst buffer write
-    const uint8_t * u7Next = u7src;
+    const uint8_t * uTNext = uTsrc;
 #if DEBUG
     printf( "PATH %d\n", pidx );
     printPath( "DEBUG:", pidx );
@@ -548,18 +548,19 @@ static size_t createOutput( uint8_t * dst, unsigned pidx, const uint8_t * u7src,
 #if DEBUG
         printf( "i %u: pidx %u, id %u, start %u\n", i, pidx, id, idPos.start );
 #endif
-        memcpy( dstNext, u7Next, u8len ); // Copy u8len bytes from u7src buffer.
-        u7Next += u8len;
+        memcpy( dstNext, uTNext, u8len ); // Copy u8len bytes from uTsrc buffer.
+        uTNext += u8len;
         dstNext += u8len;
         *dstNext++ = id; // Write the pattern replace id.
     }
-    size_t rest = u7len - (u7Next - u7src);
-    memcpy( dstNext, u7Next, rest );
+    size_t rest = uTlen - (uTNext - uTsrc);
+    memcpy( dstNext, uTNext, rest );
     dstNext += rest;
     size_t len = dstNext - dst;
     return len;
 }
 
+#if UNREPLACABLE_BIT_COUNT == 7
 //! @brief shift87bit transforms slen 8-bit bytes in src to 7-bit units.
 //! @param src is the bytes source buffer.
 //! @param slen is the 8-bit byte count.
@@ -594,6 +595,57 @@ static size_t shift87bit( uint8_t * lst, const uint8_t * src, size_t slen ){
     }
     return lst - dst;
 }
+#endif
+
+#if UNREPLACABLE_BIT_COUNT == 6
+TODO
+//! @brief shift87bit transforms slen 8-bit bytes in src to 7-bit units.
+//! @param src is the bytes source buffer.
+//! @param slen is the 8-bit byte count.
+//! @param lst is the last address inside the dst buffer.
+//! @retval is count of 7-bit bytes after operation. 
+//! @details The dst buffer is filled from the end.That allows to do an in-buffer conversion.
+//! The destination address is computable afterwards: dst = lim - retval.
+//! lst is allowed to be "close" behind buf + slen, thus making in-place conversion possible.
+//! Example: slen=17, lst=src+24-1
+//!       (src) <---            slen=17                   --->(u8)
+//! slen=17: b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 __ __ __ __ __ __ __
+//! ret =20: __ __ __ __ m7 b7 b7 b7 m7 b7 b7 b7 b7 b7 b7 b7 m7 b7 b7 b7 b7 b7 b7 b7
+//!                   (dst) <---                ret=20                       --->(lst)
+//! In dst all MSBits are set to 1, to avoid any zeroes.
+//! The data are processed from the end.
+static size_t shift86bit( uint8_t * lst, const uint8_t * src, size_t slen ){
+    const uint8_t * u8 = src + slen; // first address behind src buffer
+    uint8_t * dst = lst;             // destination address
+    while( src < u8 ){
+        uint8_t msb = 0x80;
+        for( int i = 1; i < 8; i++ ){
+            u8--;                    // next value address
+            uint8_t ms = 0x80 & *u8; // most significant bit                i     12345678
+            msb |= ms >> i; // Store most significant bit at bit position:  8 -> _76543210 
+            *dst-- = (0x7F & *u8) | 0x80; // the last byte 7 LSBs and set MSB=1 to the end
+            if(src == u8){
+                break;
+            }
+        }
+        *dst-- = msb;
+        msb = 0x80;
+    }
+    return lst - dst;
+}
+#endif
+
+//! convertBits transmutes slen 8-bit bytes in src to n-bit units.
+//! The destination address is computable afterwards: dst = lim - retval.
+//! lst is allowed to be "close" behind buf + slen, thus making in-place conversion possible.
+static size_t convertBits( uint8_t * lst, const uint8_t * src, size_t slen ){
+    #if UNREPLACABLE_BIT_COUNT == 7
+        return shift87bit( lst, src, slen );
+    #endif
+    #if UNREPLACABLE_BIT_COUNT == 6
+        return shift86bit( lst, src, slen );
+    #endif
+}
 
 //! @brief buildTiPacket creates in dst the tip packet of the src buffer. 
 static size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
@@ -604,25 +656,25 @@ static size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * t
 #endif
     memset(dst, 0, dstLimit-dst);
     int u8Count = selectUnreplacableBytes(dst, pidx, src, slen );
-    unsigned u7Count;
-    uint8_t * u7src;
+    unsigned uTCount;
+    uint8_t * uTsrc;
 #if OPTIMIZE_UNREPLACABLES
     if (u8Count > 0){ // no optimization possible
-        u7Count = shift87bit( dstLimit-1, dst, (size_t)u8Count );
-        u7src = dstLimit - u7Count;
-    } else { // We keep name "u7" for clarity.
-        u7Count = -u8Count; // Make it positive.
-        u7src = dstLimit - u7Count;
-        memcpy( u7src, dst, u7Count );
+        uTCount = convertBits( dstLimit-1, dst, (size_t)u8Count );
+        uTsrc = dstLimit - uTCount;
+    } else { // We keep name "uT" for clarity.
+        uTCount = -u8Count; // Make it positive.
+        uTsrc = dstLimit - uTCount;
+        memcpy( uTsrc, dst, uTCount );
     }
 #else // #if OPTIMIZE_UNREPLACABLES
-    u7Count = shift87bit( dstLimit-1, dst, (size_t)u8Count );
-    u7src = dstLimit - u7Count;
+    uTCount = convertBits( dstLimit-1, dst, (size_t)u8Count );
+    uTsrc = dstLimit - uTCount;
 #endif // #else // #if OPTIMIZE_UNREPLACABLES
 #if DEBUG
-    printf( "ShortestTipPath: %u, u8Count: %d, u7Count: %u\n", pidx, u8Count, u7Count );
+    printf( "ShortestTipPath: %u, u8Count: %d, uTCount: %u\n", pidx, u8Count, uTCount );
 #endif
-    size_t pkgSize = createOutput( dst, pidx, u7src, u7Count, src );
+    size_t pkgSize = createOutput( dst, pidx, uTsrc, uTCount, src );
     return pkgSize; // final ti package size
 }
 

@@ -9,6 +9,7 @@
 
 static int collectU7Bytes( uint8_t * dst, const uint8_t * src, size_t slen );
 /*static*/ size_t shift78bit( uint8_t * dst, const uint8_t * src, size_t slen );
+static size_t reconvertBits( uint8_t * lst, const uint8_t * src, size_t slen );
 static size_t restorePacket( uint8_t * dst, const uint8_t * table, const uint8_t * u8, size_t u8len, const uint8_t * src, size_t slen );
 static size_t getPatternFromId( uint8_t * pt, const uint8_t * table, uint8_t id );
 
@@ -27,10 +28,10 @@ size_t tiUnpack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_
         u8len = -u7len;
         memcpy( u8, u78, u8len );
     } else { // Otherwise the last byte is an unreplacable and not the only one and there is at least one ID.
-        u8len = shift78bit( u8, u78, u7len ); // Optimization was not possible.
+        u8len = reconvertBits( u8, u78, u7len ); // Optimization was not possible.
     }
 #else // #if OPTIMIZE_UNREPLACABLES
-    u8len = shift78bit( u8, u78, u7len );
+    u8len = reconvertBits( u8, u78, u7len );
 #endif // #else // #if OPTIMIZE_UNREPLACABLES
     size_t dlen = restorePacket( dst, table, u8, u8len, src, slen );
     return dlen;
@@ -54,6 +55,7 @@ static int collectU7Bytes( uint8_t * dst, const uint8_t * src, size_t slen ){
     return count;
 }
 
+#if UNREPLACABLE_BIT_COUNT == 7
 //! shift78bit transforms slen 7-bit bytes in src to 8-bit units in dst.
 //! @param src is a byte buffer.
 //! @param slen is the 7-bit byte count.
@@ -96,6 +98,27 @@ static int collectU7Bytes( uint8_t * dst, const uint8_t * src, size_t slen ){
         *ptr-- = b7bit | bits6_0;
      }
     return dlen;
+}
+#endif
+
+#if UNREPLACABLE_BIT_COUNT == 6
+TODO
+#endif
+
+
+//! reconvertBits transmutes slen n-bit bytes in src to 8-bit units in dst.
+//! @param src is a byte buffer.
+//! @param slen is the n-bit byte count.
+//! @param dst is the destination buffer. It is NOT allowed to be equal src for in-place conversion.
+//! @retval is count 8-bit bytes
+//! @details buf is filled from the end (=buf+limit)
+static size_t reconvertBits( uint8_t * lst, const uint8_t * src, size_t slen ){
+    #if UNREPLACABLE_BIT_COUNT == 7
+        return shift78bit( lst, src, slen );
+    #endif
+    #if UNREPLACABLE_BIT_COUNT == 6
+        return shift68bit( lst, src, slen );
+    #endif
 }
 
 //! restorePacket reconstructs original data using src, slen, u8, u8len and table into dst and returns the count.

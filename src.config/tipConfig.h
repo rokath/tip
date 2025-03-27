@@ -23,6 +23,7 @@ extern "C" {
 #define OPTIMIZE_UNREPLACABLES 1
 #define UNREPLACABLE_MASK 0x80
 #define DIRECT_ID_MAX 127
+#define UNREPLACABLE_BIT_COUNT 7
 
 
 #ifdef __cplusplus
