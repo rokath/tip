@@ -628,8 +628,8 @@ static size_t shift86bit( uint8_t * lst, const uint8_t * src, size_t slen ){
         for( int i = 1; i < 4; i++ ){
             u8--;                    // next value address
             uint8_t ms = 0xc0 & *u8; // most significant bits 7&6 
-            msb |= ms >> (2*i); // Store most significant bits 7&6 at bit position 5&4, 3&2, 1&0
-            *dst-- = (/*0x3F &*/ *u8) | 0xc0; // Copy to the end: the last byte 6 LSBs and set MSB 7&6 
+            msb |= ms >> (2*(4-i)); // Store most significant bits 7&6 at bit position 5&4, 3&2, 1&0
+            *dst-- = 0xc0 | *u8; // Copy to the end: the last byte 6 LSBs and set MSB 7&6 
             if(src == u8){
                 break;
             }

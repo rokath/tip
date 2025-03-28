@@ -10,8 +10,11 @@ package tip
 // #include "idTable.c"
 // #include "ti_pack.c"
 // #include "ti_unpack.c"
-// int optimizeUnreplacables(void) {
+// int optimizeUnreplacablesEnabled(void) {
 //     return OPTIMIZE_UNREPLACABLES;
+// }
+// int unreplacableBitCount(void) {
+//     return UNREPLACABLE_BIT_COUNT;
 // }
 import "C"
 
@@ -19,9 +22,16 @@ import (
 	"unsafe"
 )
 
-func optimizeUnreplacables() bool {
-	x := C.optimizeUnreplacables()
+// OptimizeUnreplacablesEnabled returns, if in tipConfig.h OPTIMIZE_UNREPLACABLES was set.
+func OptimizeUnreplacablesEnabled() bool {
+	x := C.optimizeUnreplacablesEnabled()
 	return x > 0
+}
+
+// UnreplacableBitCount return the bit count used for unreplacable conversation (6 or 7).
+func UnreplacableBitCount() int {
+	x := C.unreplacableBitCount()
+	return int(x)
 }
 
 // Pack compresses in to out with no zeroes in out and returns packed size plen.

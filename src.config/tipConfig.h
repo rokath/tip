@@ -20,10 +20,10 @@ extern "C" {
 #define DEBUG 0
 
 
-#define OPTIMIZE_UNREPLACABLES 1
+#define OPTIMIZE_UNREPLACABLES 0
 #define UNREPLACABLE_MASK 0x80
 #define DIRECT_ID_MAX 127
-#define UNREPLACABLE_BIT_COUNT 7
+#define UNREPLACABLE_BIT_COUNT 6
 
 
 #ifdef __cplusplus
