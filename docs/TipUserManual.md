@@ -141,49 +141,49 @@ The `ti_unpack` then sees bytes `01` to `7f` and knows, that these are IDs, inte
 
 -####  3.2.1. <a id='10-bytes:-123456789a'></a>10 bytes: 123456789a 
 
-p   | m   | length | pattern                         | no pattern    | byte usage count | equ. factor
-----|-----|--------|---------------------------------|---------------|------------------|------------
-10  | 0   | 1er    | 1 ... a                         |               | 1                | 10/1
-9   | 1   | 2er    | 12 23 ... 9a                    | a1            | 2                | 10/2
-8   | 2   | 3er    | 123 234 ... 89a                 | 9a1 a12       | 3                | 10/3
-... | ... | ...    | ...                             | ...           | ...              | ...
-4   | 6   | 7er    | 1234567 2345678 3456789 456789a | 56789a1...    | 7                | 10/7
-3   | 7   | 8er    | 12345678 23456789 3456789a      | 456789a1...   | 8                | 10/8
-2   | 8   | 9er    | 123456789 23456789a             | 3456789a1...  | 9                | 10/9
-1   | 9   | 10er   | 123456789a                      | 23456789a1... | 10               | 10/10
+| p   | m   | length | pattern                         | no pattern    | byte usage count | equ. factor |
+| --- | --- | ------ | ------------------------------- | ------------- | ---------------- | ----------- |
+| 10  | 0   | 1er    | 1 ... a                         |               | 1                | 10/1        |
+| 9   | 1   | 2er    | 12 23 ... 9a                    | a1            | 2                | 10/2        |
+| 8   | 2   | 3er    | 123 234 ... 89a                 | 9a1 a12       | 3                | 10/3        |
+| ... | ... | ...    | ...                             | ...           | ...              | ...         |
+| 4   | 6   | 7er    | 1234567 2345678 3456789 456789a | 56789a1...    | 7                | 10/7        |
+| 3   | 7   | 8er    | 12345678 23456789 3456789a      | 456789a1...   | 8                | 10/8        |
+| 2   | 8   | 9er    | 123456789 23456789a             | 3456789a1...  | 9                | 10/9        |
+| 1   | 9   | 10er   | 123456789a                      | 23456789a1... | 10               | 10/10       |
 
 1234
 
-count           | balance factor | hist                | reduced             | \*length
-----------------|----------------|---------------------|---------------------|---------------
-1:1,2:1,3:1,4:1 | \*4/1          | all:4               | 1:3,2:2,3:2,4:3     | =
-12:1,23:1,34:1  | \*4/2          | all:2               | 12:1,23:0,34:1      | 12:2,23:0,34:2
-123:1, 234:1    | \*4/3          | 123:1.333,234:1.333 | 123:0.333,234:0.333 | 123:1,234:1
-1234:1          | \*4/4          | 1234:1              | 1234:1              | 1234:4
+| count           | balance factor | hist                | reduced             | \*length       |
+| --------------- | -------------- | ------------------- | ------------------- | -------------- |
+| 1:1,2:1,3:1,4:1 | \*4/1          | all:4               | 1:3,2:2,3:2,4:3     | =              |
+| 12:1,23:1,34:1  | \*4/2          | all:2               | 12:1,23:0,34:1      | 12:2,23:0,34:2 |
+| 123:1, 234:1    | \*4/3          | 123:1.333,234:1.333 | 123:0.333,234:0.333 | 123:1,234:1    |
+| 1234:1          | \*4/4          | 1234:1              | 1234:1              | 1234:4         |
 
 table: 1234, 12, 34, 123, 234, 23
 
 1111
 
-count       | balance factor | hist      | reduced   | \*length
-------------|----------------|-----------|-----------|---------
-1:4         | \*4/1          | 1:16      | 1:4       | 1:4
-11:3        | \*4/2          | 11:6      | 0.666     | 1.333
-111:2       | \*4/3          | 111:2.666 | 111:0.666 | 111:2
-1111:1\*4/4 | 1111:1         | 1111:1    | 1111:4    | 1111:4
+| count       | balance factor | hist      | reduced   | \*length |
+| ----------- | -------------- | --------- | --------- | -------- |
+| 1:4         | \*4/1          | 1:16      | 1:4       | 1:4      |
+| 11:3        | \*4/2          | 11:6      | 0.666     | 1.333    |
+| 111:2       | \*4/3          | 111:2.666 | 111:0.666 | 111:2    |
+| 1111:1\*4/4 | 1111:1         | 1111:1    | 1111:4    | 1111:4   |
 
 table: 1111 111 11
 
 aa0000bb0000cc maxSize 4
   ----  ----
 
-pattern | count | balance factor | balanced      | remark
---------|-------|----------------|---------------|---------------
-0000    | 1     | 4/2            | 4000/2 = 2000 | gets negative!
-aa0000  | 1     | 4/3            | 4000/3 = 1333 | contains 0000
-0000bb  | 1     | 4/3            | 4000/3 = 1333 | contains 0000
-bb0000  | 1     | 4/3            | 4000/3 = 1333 | contains 0000
-0000cc  | 1     | 4/3            | 4000/3 = 1333 | contains 0000
+| pattern | count | balance factor | balanced      | remark         |
+| ------- | ----- | -------------- | ------------- | -------------- |
+| 0000    | 1     | 4/2            | 4000/2 = 2000 | gets negative! |
+| aa0000  | 1     | 4/3            | 4000/3 = 1333 | contains 0000  |
+| 0000bb  | 1     | 4/3            | 4000/3 = 1333 | contains 0000  |
+| bb0000  | 1     | 4/3            | 4000/3 = 1333 | contains 0000  |
+| 0000cc  | 1     | 4/3            | 4000/3 = 1333 | contains 0000  |
 -->
 
 <p align="right">(<a href="#tip-um-top">back to top</a>)</p>
@@ -195,19 +195,19 @@ bb0000  | 1     | 4/3            | 4000/3 = 1333 | contains 0000
 * Step byte by byte thru the `slen` `src` buffer and check if a pattern from the (into `ti_pack` and `ti_unpack`) compiled [./src/idTable.c](../src/idTable.c) matches and build a sorted ID position table. Its max length is slen-1. Example for file 43.bin (see below):
 
 IDPositionTable:
-idx | ID  | pos | ASCII
-----|-----|-----|-------
-0   | 52  | 4   | '    '
-1   | 95  | 4   | '   '
-2   | 127 | 4   | '  '
-3   | 51  | 5   | '   ■'
-4   | 95  | 5   | '   '
-5   | 127 | 5   | '  '
-6   | 43  | 6   | '  ■ '
-7   | 94  | 6   | '  ■'
-8   | 127 | 6   | '  '
-9   | 35  | 7   | ' ■  '
-... | ... | ... | ...
+| idx | ID  | pos | ASCII  |
+| --- | --- | --- | ------ |
+| 0   | 52  | 4   | '    ' |
+| 1   | 95  | 4   | '   '  |
+| 2   | 127 | 4   | '  '   |
+| 3   | 51  | 5   | '   ■' |
+| 4   | 95  | 5   | '   '  |
+| 5   | 127 | 5   | '  '   |
+| 6   | 43  | 6   | '  ■ ' |
+| 7   | 94  | 6   | '  ■'  |
+| 8   | 127 | 6   | '  '   |
+| 9   | 35  | 7   | ' ■  ' |
+| ... | ... | ... | ...    |
 
 * The pattern in the IDPositionTable:
   * are a subset of the [./src/idTable.c](../src/idTable.c) pattern 
@@ -461,23 +461,42 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 #define INDIRECT_DICTIONARY_COUNT 0 
 ```
 
-* Possible `ti_generate` CLI switch `-primaryIDs=n`
+* Possible `ti_generate` CLI switches `-n` and `-u`
 
-|   n | ubits | + % max | * 255 IDs | sec. IDs | IDs total |
-|----:|:-----:|:-------:|----------:|---------:|----------:|
-|   0 |   7   |   14    |       127 |    32385 |     32385 |
-|   1 |   7   |   14    |       126 |    32130 |     32131 |
-| ... |  ...  |   ..    |       ... |      ... |       ... |
-| 126 |   7   |   14    |         1 |      255 |       381 |
-| 127 |   7   |   14    |         0 |        0 |       127 |
-|     |       |         |           |          |           |
-| 128 |   6   |   33    |        63 |    16065 |     16193 |
-| ... |  ...  |   ...   |       ... |      ... |        .. |
-| 189 |   6   |   33    |         2 |      510 |       699 |
-| 190 |   6   |   33    |         1 |      255 |       445 |
-| 191 |   6   |   33    |         0 |        0 |       191 |
+|       n | ubits | + % max | * 255 IDs | sec. IDs | IDs total |
+| ------: | :---: | :-----: | --------: | -------: | --------: |
+|       0 |   7   |   14    |       127 |    32385 |     32385 |
+|       1 |   7   |   14    |       126 |    32130 |     32131 |
+|     ... |  ...  |   ..    |       ... |      ... |       ... |
+|     126 |   7   |   14    |         1 |      255 |       381 |
+|     127 |   7   |   14    |         0 |        0 |       127 |
+|         |       |         |           |          |           |
+|       0 |   6   |   33    |       191 |    48705 |     48705 |
+|     ... |  ...  |   ...   |       ... |      ... |       ... |
+|     126 |   6   |   33    |        65 |    16575 |     16701 |
+|     127 |   6   |   33    |        64 |    16320 |     16447 |
+|     128 |   6   |   33    |        63 |    16065 |     16193 |
+|     ... |  ...  |   ...   |       ... |      ... |       ... |
+| **160** | **6** |   33    |        31 | **7905** |      8065 | ** |
+|     ... |  ...  |   ...   |       ... |      ... |       ... |
+|     180 |   6   |   33    |        11 |     2805 |      2985 |
+|     ... |  ...  |   ...   |       ... |      ... |       ... |
+|     189 |   6   |   33    |         2 |      510 |       699 |
+|     190 |   6   |   33    |         1 |      255 |       445 |
+|     191 |   6   |   33    |         0 |        0 |       191 |
 
-(n >= 192 invalid)
+(-u 7 && -n >= 128 invalid)
+(-u 6 && -n >= 192 invalid)
+
+* A good compromize could be `-n 160 -u 6`.
+* The `-u` switch is used to dedermine patterns count. For example `-n 127 -u 6` results in 16701 patterns and `-n 127 -u 7` in 381 patterns.
+  * **2-bytes pattern count is value of `-n` directly.**
+  * `-u 6` Factor 255 is 191 - n.
+  * `-u 7` Factor 255 is 127 - n.
+  * `-n 160 -u 6` Example: **IDMax = 160 + (191-160)\*n = 8065**.
+* Implementation:
+  * Extend `ti_generate`.
+  * Modificate C-code.
 
 > **Consideration:** Promizing for data with many repeating longer pattern.
 
@@ -486,6 +505,14 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 * Variants could run parallel and we use the minimum result.
 * But how to inform the decoder?
 * The answer: Let a lot of real data train the generator and it will create an optimal configuration plus pattern tables.
+* Use a big amount of sample data:
+  * start:
+    * Divide sample data in 2 randomly selected parts.
+    * Train one part.
+    * Find best compression settings for the other part.
+    * Go to start.
+* Out of several compression settings decide which is the best fitting.
+* The compression settings could get as defaults into tipTable.c
 
 ```diff
 ! The usage should be simple!
@@ -500,7 +527,7 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 * Example:
 
 | ID sequence                              | Meaning                                                      |
-|------------------------------------------|--------------------------------------------------------------|
+| ---------------------------------------- | ------------------------------------------------------------ |
 | ID `7F` + count `1...15`                 | 3 to 17 zeroes                                               |
 | ID `7F` + count `16...24`                | 3 to 11 FFs                                                  |
 | ID `7F` + count `25...63` + byte `XX`!=0 | 4 to 42 `XX`s, `XX` is any non-zero byte, all `XX` are equal |
