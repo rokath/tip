@@ -17,11 +17,11 @@ size_t tiu( uint8_t * dst, const uint8_t * src, size_t slen ){
     return tiUnpack(dst, idTable, src, slen );
 }
 
-size_t tiUnpack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen ){
-    static uint8_t uT8[TIP_SRC_BUFFER_SIZE_MAX*8u/7u+1]; // todo
-    int uTlen = collectUTBytes( uT8, src, slen );
+uint8_t uT8[TIP_SRC_BUFFER_SIZE_MAX*8u/7u+1]; // todo
+uint8_t u8[TIP_SRC_BUFFER_SIZE_MAX]; // todo
 
-    static uint8_t u8[TIP_SRC_BUFFER_SIZE_MAX]; // todo
+size_t tiUnpack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen ){
+    int uTlen = collectUTBytes( uT8, src, slen );
     size_t u8len;
 #if OPTIMIZE_UNREPLACABLES
     if (uTlen <= 0 ) { // Unrplacable byte optimisation was possible.
@@ -56,112 +56,78 @@ static int collectUTBytes( uint8_t * dst, const uint8_t * src, size_t slen ){
 }
 
 #if UNREPLACABLE_BIT_COUNT == 7
+
 //! shift78bit transforms slen 7-bit bytes in src to 8-bit units in dst.
 //! @param src is a byte buffer.
 //! @param slen is the 7-bit byte count.
-//! @param dst is the destination buffer. It is NOT allowed to be equal src for in-place conversion.
+//! @param dst is the destination buffer. It is allowed to be equal src for in-place conversion.
 //! @retval is count 8-bit bytes
-//! @details buf is filled from the end (=buf+limit)
-//! Example: slen=20, limit=24
-//!       (src)<---               slen=20                       --->(lst)     
-//! slen=20: m7 b7 b7 b7 m7 b7 b7 b7 b7 b7 b7 b7 m7 b7 b7 b7 b7 b7 b7 b7
-//! ret =17: b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8
-//!       (dst)<---               dlen=17               --->(ptr)
-//! dlen = slen*7/8
+//! Example: slen=7
+//!       (src)<--       slen=11        -->  
+//! slen=11: M7 A7 B7 m7 b7 b7 b7 b7 b7 b7 b7
+//! ret = 9: A8 B8 b8 b8 b8 b8 b8 b8 b8
+//! M7 == 0b100000AB, A is the msb of A8 and B is the msb of B8
 /*static*/ size_t shift78bit( uint8_t * dst, const uint8_t * src, size_t slen ){
-    size_t dlen = (7*slen)>>3;
-    uint8_t * ptr = dst + dlen - 1; // ptr is last address in dst buffer
-    uint8_t * lst = (uint8_t *)src + slen - 1; // lst is last address in source buffer.
+    uint8_t * pb8 = dst;
+    const uint8_t * slim = src + slen;
 
-    while( src <= lst - 7 ){
-        uint8_t msbyte = 0x7f & *(lst-7); // remove 1 in msb _100 0000 == 0x40
-        for( int i = 0; i < 7; i++ ){ 
-            uint8_t bits6_0 = 0x7f & *lst--; // _111 1111 == 0x7f
-            uint8_t mask = 0x40 >> i;        // _100 0000
-            uint8_t b7bit = msbyte & mask;   // _100 0000 & _100 0000 == 0x40
-            b7bit = b7bit ? 0x80 : 0;
-            *ptr-- = b7bit | bits6_0;
+    // m7len is alway 7, but the very first one can be 1 - 7:
+    // When slen is            2 3 4 5 6 7 8  a b c d e f 0 ...
+    // then dlen is            1 2 3 4 5 6 7  8 9 a b c d e ... 
+    // The first m7 byte count 1 2 3 4 5 6 7  1 2 3 4 5 6 7 ... (m7len)
+    // The slen 3 lsbits are   2 3 4 5 6 7 0  2 3 4 5 6 7 0 ... (m7len+1)
+    uint8_t slen3lsb = slen & 7;
+    uint8_t m7len = slen3lsb ? slen3lsb - 1 : 7;
+
+    while( src < slim){
+        uint8_t m7 = *src++; 
+        for( int i=m7len; i>0; i--){
+            uint8_t b8 = 0x7f & *src++; // get 7 lsb
+            uint8_t mask = 1 << (i-1);
+            uint8_t msb = mask & m7 ? 0x80 : 0;
+            b8 |= msb;
+            *pb8++ = b8;
         }
-        lst--; // Skip over already processed msbyte.
+        m7len = 7; 
     }
-    if( lst <= src){
-        return dlen;
-    }
-    // Now we have one msbyte and 1-6 b7 bytes left.
-    uint8_t msbyte = 0x7f & *src;
-    size_t cnt = lst - src; // cnt of remaining 1-6 b7 bytes
-    for( int i = 0; i < cnt; i++ ){ 
-        uint8_t bits6_0 = 0x7f & *lst--; // _111 1111 == 0x7f
-        uint8_t mask = 0x40 >> i;        // _100 0000
-        uint8_t b7bit = msbyte & mask; // _100 0000 & _100 0000 == 0x40
-        b7bit = b7bit ? 0x80 : 0;
-        *ptr-- = b7bit | bits6_0;
-     }
-    return dlen;
+    return pb8 - dst;
 }
+
 #endif
 
 #if UNREPLACABLE_BIT_COUNT == 6
 //! shift68bit transforms slen 6-bit bytes in src to 8-bit units in dst.
 //! @param src is a byte buffer.
 //! @param slen is the 6-bit byte count.
-//! @param dst is the destination buffer. It is NOT allowed to be equal src for in-place conversion.
+//! @param dst is the destination buffer. It is allowed to be equal src for in-place conversion.
 //! @retval is count 8-bit bytes
-//! @details buf is filled from the end (=buf+limit)
-//! Example: slen=20, limit=24
-//!       (src)<---                   slen=23                            --->(lst)     
-//! slen=23: m6 b6 b6 m6 b6 b6 b6 m6 b6 b6 b6 m6 b6 b6 b6 m6 b6 b6 b6 m6 b6 b6 b6
-//! ret =17: b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8 b8
-//!       (dst)<---               dlen=17               --->(ptr)
-//! dlen = slen*6/8=slen*3/4
+//! Example: slen=7
+//!      (src)<--  slen=7   -->  
+//! slen=7: m6 b6 b6 m6 b6 b6 b6
+//! ret =5: b8 b8 b8 b8 b8 
 /*static*/ size_t shift68bit( uint8_t * dst, const uint8_t * src, size_t slen ){
-    size_t dlen = (6*slen)>>3;
-    uint8_t * ptr = dst + dlen - 1; // ptr is last address in dst buffer
-    uint8_t * lst = (uint8_t *)src + slen - 1; // lst is last address in source buffer.
-hier weiter
+    uint8_t * pb8 = dst;
+    uint8_t slim = src + slen;
 
-    uint8_t stim = src + slen;
-    2lsb 2 3 4  2 3 4  2 3 4  2 3 4 ...
-    slen 2 3 4  6 7 8  a b c  e f 0 ...
-    dlen 1 2 3  4 5 6  7 8 9  a b c ...
-    1sub 1 2 3  1 2 3  1 2 3  1 2 3 ...
-    sub1 = slen & 3 - 1;
-    uint8_t m6 = *src++;
-    for( int i=0; i< sub1; i++){
-        uint8_t b8 = 0x3f & *src++;
-        m6 <<= 2;
-        b8 |= (m6 & 0xc0);
-        *dst++ = b8;
-    }
-    while( src < slimit){
-;
-    }
-    
-    while( src <= lst - 3 ){
-        uint8_t msbyte = 0x3f & *(lst-3); // remove 11 in msb __00 0000 == 0x40
-        for( int i = 0; i < 7; i++ ){ 
-            uint8_t bits6_0 = 0x7f & *lst--; // _111 1111 == 0x7f
-            uint8_t mask = 0x40 >> i;        // _100 0000
-            uint8_t b7bit = msbyte & mask;   // _100 0000 & _100 0000 == 0x40
-            b7bit = b7bit ? 0x80 : 0;
-            *ptr-- = b7bit | bits6_0;
+    // m6len is alway 3, but the very first one can be 1 or 2 or 3:
+    // When slen is            2 3 4  6 7 8  a b c  e f 0 ...
+    // then dlen is            1 2 3  4 5 6  7 8 9  a b c ... 
+    // The first m6 byte count 1 2 3  1 2 3  1 2 3  1 2 3 ... (m6len)
+    // The slen 2 lsbits are   2 3 0  2 3 0  2 3 0  2 3 0 ... (slen2lsb)
+    uint8_t slen2lsb = slen & 3;
+    uint8_t m6len = slen2lsb ? slen2lsb - 1 : 3;
+
+    while( src < slim){
+        uint8_t m6 = *src++;
+        for( int i=0; i< m6len; i++){
+            uint8_t b8 = 0x3f & *src++;
+            m6 <<= 2;
+            b8 |= (m6 & 0xc0);
+            *pb8++ = b8;
         }
-        lst--; // Skip over already processed msbyte.
+        m6len = 3; 
     }
-    if( lst <= src){
-        return dlen;
-    }
-    // Now we have one msbyte and 1-6 b7 bytes left.
-    uint8_t msbyte = 0x7f & *src;
-    size_t cnt = lst - src; // cnt of remaining 1-6 b7 bytes
-    for( int i = 0; i < cnt; i++ ){ 
-        uint8_t bits6_0 = 0x7f & *lst--; // _111 1111 == 0x7f
-        uint8_t mask = 0x40 >> i;        // _100 0000
-        uint8_t b7bit = msbyte & mask; // _100 0000 & _100 0000 == 0x40
-        b7bit = b7bit ? 0x80 : 0;
-        *ptr-- = b7bit | bits6_0;
-     }
-    return dlen;
+    return pb8 - dst;
 }
 #endif
 
@@ -169,15 +135,15 @@ hier weiter
 //! reconvertBits transmutes slen n-bit bytes in src to 8-bit units in dst.
 //! @param src is a byte buffer.
 //! @param slen is the n-bit byte count.
-//! @param dst is the destination buffer. It is NOT allowed to be equal src for in-place conversion.
+//! @param dst is the destination buffer. It is allowed to be equal src for in-place conversion.
 //! @retval is count 8-bit bytes
 //! @details buf is filled from the end (=buf+limit)
-static size_t reconvertBits( uint8_t * lst, const uint8_t * src, size_t slen ){
+static size_t reconvertBits( uint8_t * dst, const uint8_t * src, size_t slen ){
     #if UNREPLACABLE_BIT_COUNT == 7
-        return shift78bit( lst, src, slen );
+        return shift78bit( dst, src, slen );
     #endif
     #if UNREPLACABLE_BIT_COUNT == 6
-        return shift68bit( lst, src, slen );
+        return shift68bit( dst, src, slen );
     #endif
 }
 
