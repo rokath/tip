@@ -11,6 +11,12 @@ extern "C" {
 #include <stdint.h>
 #include "tipConfig.h" // project specific file
 
+size_t shift87bit( uint8_t * lst, const uint8_t * src, size_t slen );
+size_t shift78bit( uint8_t * dst, const uint8_t * src, size_t slen );
+
+size_t shift86bit( uint8_t * lst, const uint8_t * src, size_t slen );
+size_t shift68bit( uint8_t * dst, const uint8_t * src, size_t slen );
+
 #ifndef TIP_SRC_BUFFER_SIZE_MAX
 #error "needs to #define TIP_SRC_BUFFER_SIZE_MAX 248u // bytes (max65535)"
 #endif // #ifndef TIP_SRC_BUFFER_SIZE_MAX
@@ -27,6 +33,14 @@ typedef uint32_t loc_t;
 typedef uint16_t loc_t;
 #else
 typedef uint8_t loc_t;
+#endif
+
+#if UNREPLACABLE_BIT_COUNT == 7
+#define UNREPLACABLE_MASK 0x80
+#define DIRECT_ID_MAX 127
+#else
+#define UNREPLACABLE_MASK 0xC0
+#define DIRECT_ID_MAX 191
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

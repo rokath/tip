@@ -70,7 +70,7 @@ Table of Contents Generation:
 
 ---
 
-##  1. <a name='project-status'></a>Project Status
+##  1. <a id='project-status'></a>Project Status
 
 ```diff
 --> Experimental state! 
@@ -86,7 +86,7 @@ Table of Contents Generation:
 
 <!-- ABOUT THE PROJECT -->
 
-##  2. <a name='about-the-project'></a>About The Project
+##  2. <a id='about-the-project'></a>About The Project
 
 * Usual compressors cannot succeed on very small buffers (2...100 bytes), because they add translation information to the data:
 
@@ -105,7 +105,7 @@ Table of Contents Generation:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-##  3. <a name='tip-components'></a>TiP Components
+##  3. <a id='tip-components'></a>TiP Components
 
 * C-Code usable on embedded devices inside [src](./src/) folder containing:
   * [idTable.c](./src/idTable.c) - a generated data specific translation table
@@ -120,18 +120,22 @@ Table of Contents Generation:
 <!-- GETTING STARTED -->
 
 <!-- USAGE EXAMPLES -->
-##  4. <a name='usage'></a>Usage
+##  4. <a id='usage'></a>Usage
 
 See the [Tip User Manual](./docs/TipUserManual.md).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- ROADMAP -->
-##  5. <a name='roadmap'></a>Roadmap
+##  5. <a id='roadmap'></a>Roadmap
 
 * [x] Create `tipTable.h` Generator `ti_generate`.
 * [x] Create `pack.c` and `unpack.c` and test.
 * [x] Write [Tip User Manual](./docs/TipUserManual.md).
+* [x] Selectable unreplacable converter bit count (6 or 7).
+* [x] Optimization for unreplacables.
+* [ ] Extend `ti_pack` and `ti_unpack` CLI for unreplacable bits count.
+* [ ] Extend `ti_generate` CLI for a selectable primary pattern count.
 * [ ] Improve `ti_generate` to optimize pattern selection.
 * [ ] Extend `ti_generate` with a CLI switch to create longer ID tables.
 * [ ] Add `pack.c` and `unpack.c` compiler switch for max indirect indicies tables 0...127.
@@ -152,7 +156,7 @@ See the [open issues](https://github.com/rokath/tip/issues) for a full list of p
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTRIBUTING -->
-##  6. <a name='contributing'></a>Contributing
+##  6. <a id='contributing'></a>Contributing
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
@@ -175,14 +179,14 @@ Don't forget to give the project a star! Thanks again!
 </a>
 -->
 <!-- LICENSE -->
-##  7. <a name='license'></a>License
+##  7. <a id='license'></a>License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTACT -->
-##  8. <a name='contact'></a>Contact
+##  8. <a id='contact'></a>Contact
 
 <img src="https://contrib.rocks/image?repo=rokath/tip" alt="contrib.rocks image" />
 
@@ -193,7 +197,7 @@ Project Link: [https://github.com/rokath/tip](https://github.com/rokath/tip)
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- ACKNOWLEDGMENTS -->
-##  9. <a name='acknowledgments'></a>Acknowledgments
+##  9. <a id='acknowledgments'></a>Acknowledgments
 
 * [Consistent Overhead Byte Stuffing](http://www.stuartcheshire.org/papers/COBSforToN.pdf)
 * [Smaz](https://en.wikibooks.org/wiki/Data_Compression/Dictionary_compression#Smaz)

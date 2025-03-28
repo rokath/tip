@@ -19,11 +19,15 @@ extern "C" {
 #define VERBOSE 0
 #define DEBUG 0
 
+//! OPTIMIZE_UNREPLACABLES allows to reduce the TiP packet size in some special cases.
+//! It is a selectable option just for tests and should be enabled always.
+#define OPTIMIZE_UNREPLACABLES 1
 
-#define OPTIMIZE_UNREPLACABLES 0
-#define UNREPLACABLE_MASK 0x80
-#define DIRECT_ID_MAX 127
-#define UNREPLACABLE_BIT_COUNT 6
+//! UNREPLACABLE_BIT_COUNT can be set to 6 or to 7.
+//! * With 7 bits the TiP packets can get max 14% longer and max 127 primary pattern IDs possible.
+//! * With 6 bits the TiP packets can get max 33% longer and max 191 primary pattern IDs possible.
+//! * See TiP user manual for more information.
+#define UNREPLACABLE_BIT_COUNT 7
 
 
 #ifdef __cplusplus

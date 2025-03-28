@@ -10,6 +10,10 @@ package tip
 // #include "idTable.c"
 // #include "ti_pack.c"
 // #include "ti_unpack.c"
+// #include "shift87bit.c"
+// #include "shift78bit.c"
+// #include "shift86bit.c"
+// #include "shift68bit.c"
 // int optimizeUnreplacablesEnabled(void) {
 //     return OPTIMIZE_UNREPLACABLES;
 // }
