@@ -119,6 +119,24 @@ static int collectUTBytes( uint8_t * dst, const uint8_t * src, size_t slen ){
     uint8_t * ptr = dst + dlen - 1; // ptr is last address in dst buffer
     uint8_t * lst = (uint8_t *)src + slen - 1; // lst is last address in source buffer.
 hier weiter
+
+    uint8_t stim = src + slen;
+    2lsb 2 3 4  2 3 4  2 3 4  2 3 4 ...
+    slen 2 3 4  6 7 8  a b c  e f 0 ...
+    dlen 1 2 3  4 5 6  7 8 9  a b c ...
+    1sub 1 2 3  1 2 3  1 2 3  1 2 3 ...
+    sub1 = slen & 3 - 1;
+    uint8_t m6 = *src++;
+    for( int i=0; i< sub1; i++){
+        uint8_t b8 = 0x3f & *src++;
+        m6 <<= 2;
+        b8 |= (m6 & 0xc0);
+        *dst++ = b8;
+    }
+    while( src < slimit){
+;
+    }
+    
     while( src <= lst - 3 ){
         uint8_t msbyte = 0x3f & *(lst-3); // remove 11 in msb __00 0000 == 0x40
         for( int i = 0; i < 7; i++ ){ 
