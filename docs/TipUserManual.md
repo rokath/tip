@@ -86,7 +86,7 @@ To combine the [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stu
 
 There is also [smaz](https://github.com/antirez/smaz), but suitable only for text buffers mainly in English - or you need to adapt the codebook manually. Also zeroes would need a special treatment.
 
-[RZCOBS](https://github.com/Dirbaio/rzcobs), assumes many zeroes and tries some compression this way.
+[RZCOBS](https://github.com/Dirbaio/rzcobs) assumes many zeroes and tries some compression this way.
 
 An adaptive solution would be nice, meaning, not depending on a specific data structure like English text or many integers. [shoco](https://ed-von-schleck.github.io/shoco/) could be a way to go but focusses more on strings.
 
