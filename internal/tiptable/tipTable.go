@@ -1,6 +1,7 @@
 package tiptable
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"strings"
@@ -11,13 +12,32 @@ import (
 )
 
 var (
-	Verbose bool
+	Verbose                   bool
+	ID1Max                    int // ID1Max results immediately from UnreplacableContainerBits.
+	ID1Count                  int // ID1Count its the direct IDs count.
+	MaxID                     int
+	UnreplacableContainerBits = 6 // UnreplacableContainerBits is container bit size for unreplacebale bytes.
 )
+
+func init() {
+	flag.IntVar(&UnreplacableContainerBits, "u", UnreplacableContainerBits, "unreplacable bytes container bit size (6 or 7)")
+	flag.IntVar(&ID1Count, "n", 127, "direct ID count ID1Count, 0-127 for u=7 and 0-191 for u=7")
+}
 
 // Generate writes a file oFn containing C code using loc file(s) and max pattern size.
 // https://en.wikipedia.org/wiki/Dictionary_coder
 // https://cs.stackexchange.com/questions/112901/algorithm-to-find-repeated-patterns-in-a-large-string
 func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error) {
+
+	if UnreplacableContainerBits == 7 {
+		ID1Max = 127
+	} else if UnreplacableContainerBits == 6 {
+		ID1Max = 191
+	} else {
+		log.Fatalf("Invalid value %d for UnreplacableContainerBits", UnreplacableContainerBits)
+	}
+	MaxID = ID1Count + (ID1Max-ID1Count)*255
+
 	var m sync.Mutex
 	p := pattern.NewHistogram(&m)
 
@@ -43,10 +63,8 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 	// Todo: Reduce bigger keys if smaller keys fit?
 
 	rlist := p.ExportAsList()
-
 	list := pattern.SortByDescCountDescLength(rlist)
-
-	idCount := min(127, len(list))
+	idCount := min(MaxID, len(list))
 	idList := pattern.SortByDescLength(list[:idCount])
 	maxListPatternSize := len(idList[0].Bytes)
 	oh, err := fSys.Create(oFn)
@@ -59,8 +77,36 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 //! @brief Generated code - do not edit!
 
 #include <stdint.h>
-#include <stddef.h>
+#include <stddef.h>`)
 
+	fmt.Fprintf(oh, `
+
+// UnreplacableContainerBits is container bit size for unreplacebale bytes.
+const unsigned unreplacableContainerBits = %d; // 6 bits or 7 bits
+`, UnreplacableContainerBits)
+
+	fmt.Fprintf(oh, `
+// ID1Max is the max possible number of primary IDs. Its value depends on UnreplacableContainerBits.
+const unsigned ID1Max = %d; // 7 bits:127 or 6 bits:191
+`, ID1Max)
+
+	fmt.Fprintf(oh, `
+// ID1Count is the direct ID count. The resulting indirect ID count is (ID1Max - ID1Count) * 255.
+const unsigned ID1Count = %d;
+`, ID1Count)
+
+	fmt.Fprintf(oh, `
+// MaxID is a computed value: MaxID = ID1Count + (ID1Max - ID1Count) * 255.
+// It is the max possible amount of pattern in the idTable.
+const unsigned MaxID = %d;
+`, MaxID)
+
+	fmt.Fprintf(oh, `
+// LastID is pattern count inside the idTable. If it is < MaxID, consider increasing ID1Count.
+const unsigned LastID = %d;
+`, len(idList))
+
+	fmt.Fprintln(oh, `
 //! idTable is sorted by pattern length and pattern count.
 //! The pattern position + 1 is the replace id.
 //! The generator pattern max size was`, maxPatternSize, `and the list pattern max size is:`, maxListPatternSize)
@@ -81,10 +127,9 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 	fmt.Fprintln(oh)
 	fmt.Fprintf(oh, "// tipTableSize is %d.\n", tipTableSize)
 	fmt.Fprintln(oh)
+
+	fmt.Fprint(oh, "// Informal, here are all pattern occuring at least twice:\n")
 	for i, x := range list {
-		if i == 127 {
-			fmt.Fprintln(oh, "// --------------------------------")
-		}
 		if x.Cnt > 1 {
 			pls := createPatternLineString(x.Bytes, maxListPatternSize) // todo: review and improve code
 			fmt.Fprintf(oh, "//%4d: (%4d) %s\n", i, x.Cnt, pls)

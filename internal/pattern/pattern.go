@@ -2,6 +2,7 @@ package pattern
 
 import (
 	"encoding/hex"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -15,6 +16,10 @@ var (
 	PatternSizeMax int // PatternSizeMax is the longest pattern to search for to build idTable.c
 	Verbose        bool
 )
+
+func init() {
+	flag.IntVar(&PatternSizeMax, "z", 8, "max pattern size to find")
+}
 
 // Pat is the pattern descriptor of Key.
 type Pat struct {
@@ -36,7 +41,7 @@ func NewHistogram(mu *sync.Mutex) *Histogram {
 	return &object
 }
 
-// ScanData searches data for any 2-to-max bytes sequences and extends p 
+// ScanData searches data for any 2-to-max bytes sequences and extends p
 // with them as key strings hex encoded with their increased count as values in hist.
 // ScanData( searches data for any 2-to-max bytes sequences and extends p.Hist with them.
 // The byte sequences are getting hex encodedand used as keys with their increased count as values in p.Hist.

@@ -26,16 +26,15 @@ func init() {
 	flag.BoolVar(&verbose, "v", false, "verbose")
 	flag.StringVar(&iFn, "i", "", "input file/folder name")
 	flag.StringVar(&oFn, "o", "idTable.c", "output file name")
-	flag.IntVar(&pattern.PatternSizeMax, "z", 8, "max pattern size to find")
 }
 
 func main() {
 	fSys := &afero.Afero{Fs: afero.NewOsFs()}
-	flag.Parse()
 	doit(os.Stdout, fSys)
 }
 
 func doit(w io.Writer, fSys *afero.Afero) {
+	flag.Parse()
 	distributeArgs()
 	if help {
 		fmt.Fprintln(w, "Usage: ti_generate -i inputFileName [-o outputFileName] [-z max pattern size] [-v]")
@@ -52,7 +51,7 @@ func doit(w io.Writer, fSys *afero.Afero) {
 		}
 	}
 	if iFn == "" {
-		if ! verbose {
+		if !verbose {
 			fmt.Fprintln(w, `"ti_generate -h" prints help`)
 		}
 		return

@@ -414,7 +414,7 @@ The TiP unpack routine can discover such cases:
 
 ###  7.4. <a id='additional-indirect-dictionaries-(planned)'></a>Additional Indirect Dictionaries (planned)
 
-For example we can limit the direct pattern count to 120 (instead of 127) and use their order in such a way:
+For example we can limit the direct pattern count to 120 (instead of 127 or 191) and use their order in such a way:
 
 * ID 1...120                    -> at least 2-bytes pattern <= 50% compressed
 * ID 121 followed by id 1...255 -> at least 3-bytes pattern <= 67% compressed
