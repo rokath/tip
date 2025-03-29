@@ -434,10 +434,13 @@ This allows 120 at least 2-bytes pattern and 1780 longer pattern.
 -->
 
 To implement, extend `ti_generate` to write into `idTable.c`:
-* `const unsigned unreplacableContainerBits = 6;`
-* `const unsigned ID1Max = 191;`
-* `const unsigned ID1Count = 160;`
-* `const unsigned LastID = ID1Count + (ID1Max - ID1Count) * 255;`
+
+```C
+const unsigned unreplacableContainerBits = 6;
+const unsigned ID1Max = 191;
+const unsigned ID1Count = 160;
+const unsigned LastID = ID1Count + (ID1Max - ID1Count) * 255;
+```
 
 On unpacking:
 
