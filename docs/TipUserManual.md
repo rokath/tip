@@ -388,12 +388,6 @@ If the real data are similar to the training data, an average packed size of abo
 
 > **Consideration**: Implemented and working primary idea
 
-* Additional Special Cases Optimizing (_not yet implemented_):
-  * If there is a single unreplacable byte only, and it is >127, we simply copy it.
-  * If there are several unreplacable bytes and all >127 **and** src ends with a pattern, we simply copy them.
-
-> **Consideration**: Easy to implement as part of the unreplacable bytes handler functions. A significant effect is expected. Done.
-
 ###  7.2. <a id='use-msbits=`11`-as-bit-marker-for-unreplacable-bytes'></a>Use MsBits=`11` as Bit marker for unreplacable Bytes
 
 * `11uuuuuu` = 64 "ID"s for unreplacables
@@ -406,20 +400,17 @@ If the real data are similar to the training data, an average packed size of abo
 
 > **Consideration**: Easy implementable as config option for further investigation. Done.
 
-* Additional Special Cases Optimizing:
-  * If there is a single unreplacable byte and it is >191, we simply copy it.
-  * If there are several unreplacable bytes and all are >191 **and** src ends with a pattern, we simply copy them.
-
-> **Consideration**: Easy to implement as part of the unreplacable bytes handler functions. A small effect is expected. Done.
-
 ###  7.3. <a id='optimize-unreplacable-packing'></a>Optimize Unreplacable Packing 
 
 The TiP unpack routine can discover such cases:
 
-* When there is a single unreplacable byte only and its MSBit is set, we can simply copy it.
-* When there are several unreplacable bytes and their MSBit is set, we can simply copy them, if the TiP package ends with an ID.
+* Bits for converted unreplacablebytes:
+  * 6: primary ID1max==127
+  * 7: primary ID1max==191
+* If there is a single unreplacable byte only, and it is > IDmax, we simply copy it.
+* If there are several unreplacable bytes and all > IDmax **and** src ends with a pattern, we simply copy them.
 
-> **Consideration**: Easy to implement as small improvement. Done.
+> **Consideration**: Easy to implement as part of the unreplacable bytes handler functions. A small effect is expected. Done.
 
 ###  7.4. <a id='additional-indirect-dictionaries-(planned)'></a>Additional Indirect Dictionaries (planned)
 
@@ -442,15 +433,24 @@ This allows 120 at least 2-bytes pattern and 1780 longer pattern.
 * the MSBit = 0 not after ID 121-126 are the direct table indices
 -->
 
- On unpacking:
+To implement, extend `ti_generate` to write into `idTable.c`:
 
-* START 
-  * Next byte with MSBit=1 is unreplaceable, goto START
-  * Next byte=1...120 is direct at least 2-bytes pattern ID, goto START
-  * Next byte=121...126 is followed by indirect at least 3.bytes pattern ID, goto START
-  * Next byte=127 is followed by runlength code, goto START
+```C
+const unsigned unreplacableContainerBits = 6;
+const unsigned ID1Max = 191;
+const unsigned ID1Count = 160;
+const unsigned LastID = ID1Count + (ID1Max - ID1Count) * 255;
+```
 
-To implement add to [tipConfig.h](../src.config/tipConfig.h):
+On unpacking:
+
+* START:
+  * Next byte > ID1Max is unreplaceable, goto START
+  * Next byte <= ID1Count is direct pattern ID, goto START
+  * Next byte is followed by indirect pattern ID 1...255, goto START
+
+<!--
+add to [tipConfig.h](../src.config/tipConfig.h):
 
 ```C
 //! INDIRECT_DICTIONARY_COUNT adds a number of indirect dictionaries.
@@ -460,6 +460,7 @@ To implement add to [tipConfig.h](../src.config/tipConfig.h):
 //! Values making sense are probably in the range 0...10. The optimum depends on the kind of data.
 #define INDIRECT_DICTIONARY_COUNT 0 
 ```
+-->
 
 * Possible `ti_generate` CLI switches `-n` and `-u`
 
