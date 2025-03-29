@@ -15,7 +15,7 @@ var (
 	Verbose                   bool
 	ID1Max                    int // ID1Max results immediately from UnreplacableContainerBits.
 	ID1Count                  int // ID1Count its the direct IDs count.
-	MaxID                     int
+	MaxID                     int // MaxID is the max possible amount of pattern in the idTable.
 	UnreplacableContainerBits = 6 // UnreplacableContainerBits is container bit size for unreplacebale bytes.
 )
 
@@ -64,8 +64,23 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 
 	rlist := p.ExportAsList()
 	list := pattern.SortByDescCountDescLength(rlist)
-	idCount := min(MaxID, len(list))
-	idList := pattern.SortByDescLength(list[:idCount])
+	idList, moreBytes := pattern.Extract2BytesPatterns(rlist)
+	// lists are sorted by descending count here.
+	if len(idList) >= ID1Count {
+		idList = idList[:ID1Count]
+	}
+	// idList contains now up to ID1Count 2-bytes pattern. Remaining 2-bytes patterns are discarded
+	// because they give nearly no compression effect when indexed with an indirect ID.
+    
+	moreBytesCount := MaxID-ID1Count
+	moreBytes = moreBytes[:moreBytesCount]
+	for _, x := range moreBytes {
+		idList = append( idList, x)
+	}
+
+	// indirectIndexedCount := min(MaxID, len(moreBytes))
+	// idList := pattern.SortByDescLength(list[:idCount])
+
 	maxListPatternSize := len(idList[0].Bytes)
 	oh, err := fSys.Create(oFn)
 	if err != nil {
@@ -118,7 +133,7 @@ const unsigned LastID = %d;
 		pls := createPatternLineString(x.Bytes, maxListPatternSize) // todo: review and improve code
 		sz := len(x.Bytes)
 		tipTableSize += 1 + sz
-		if i < idCount {
+		if i < len(idList) {
 			fmt.Fprintf(oh, "\t%s|%7d  %02x\n", pls, x.Cnt, i+1)
 		}
 	}

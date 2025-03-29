@@ -22,6 +22,26 @@ func (p *Histogram) SortKeysByIncrSize() {
 	slices.SortFunc(p.Key, compareFn)
 }
 
+// Extract2BytesPatterns returns all 2-bytes patterns separated from list.
+func Extract2BytesPatterns(list []Patt)( twoBytes, moreBytes []Patt ){
+	twoBytes = make([]Patt, len(list))
+	i := 0 
+	moreBytes = make([]Patt, len(list))
+	k := 0
+	for _, x := range list {
+		if len(x.Bytes) == 2 {
+			twoBytes[i] = x
+			i++
+		}else{
+			moreBytes[k] = x
+			k++
+		}
+	}
+	twoBytes = twoBytes[:i]
+	moreBytes = moreBytes[:k]
+	return 
+}
+
 // SortByDescCountDescLength returns list ordered for descenting count and pattern length.
 // It also sorts alphabetical to get reproducable results.
 func SortByDescCountDescLength(list []Patt) []Patt {
