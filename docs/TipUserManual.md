@@ -444,10 +444,10 @@ const unsigned LastID = ID1Count + (ID1Max - ID1Count) * 255;
 
 On unpacking:
 
-* START 
+* START:
   * Next byte > ID1Max is unreplaceable, goto START
   * Next byte <= ID1Count is direct pattern ID, goto START
-  * Next byte > ID1Count is followed by indirect pattern ID 1...255ö, goto START
+  * Next byte is followed by indirect pattern ID 1...255, goto START
 
 <!--
 add to [tipConfig.h](../src.config/tipConfig.h):
