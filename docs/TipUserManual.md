@@ -433,17 +433,18 @@ This allows 120 at least 2-bytes pattern and 1780 longer pattern.
 * the MSBit = 0 not after ID 121-126 are the direct table indices
 -->
 
- On unpacking:
+To implement, extend `ti_generate` to write into `idTable.c`:
+* `const unsigned unreplacableContainerBits = 6;`
+* `const unsigned ID1Max = 191;`
+* `const unsigned ID1Count = 160;`
+* `const unsigned LastID = ID1Count + (ID1Max - ID1Count) * 255;`
+
+On unpacking:
 
 * START 
-  * Next byte > IDmax is unreplaceable, goto START
-  * Next byte=1...120 is direct pattern ID, goto START
-  * Next byte=121...127 is followed by indirect pattern ID, goto START
-
-To implement, extend `ti_generate` to write into `idTable.c`:
-* `const unsigned ID1max = 160;`
-* `const unsigned IDlast = 160 + 31 * 255;`
-* `const unsigned unreplacableContainerBits = 6;`
+  * Next byte > ID1Max is unreplaceable, goto START
+  * Next byte <= ID1Count is direct pattern ID, goto START
+  * Next byte > ID1Count is followed by indirect pattern ID 1...255ö, goto START
 
 <!--
 add to [tipConfig.h](../src.config/tipConfig.h):
