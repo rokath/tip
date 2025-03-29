@@ -270,7 +270,7 @@ On the receiver side all bytes with MSBit=0 are identified as IDs and are replac
 
 ####  6.1. <a id='training'></a>Training 
 
-* Find the 127 most common pattern in some sample data, similar to the real data expected later, and assign the IDs 1-127 to them. This is done once offline and the generated ID table gets part of the tiny packer code as well as for the tiny unpacker code. For that task a generator tool `ti_generate` was build.
+* Find the most common pattern in some sample data, similar to the real data expected later, and assign the IDs to them. This is done once offline and the generated ID table gets part of the tiny packer code as well as for the tiny unpacker code. For that task a generator tool `ti_generate` was build.
 * Sample data specific result: [./src/idTable.c](../src/idTable.c)
 
 > 🛑 The current ID table generation might not give an optimal result and is matter of further investigation❗
