@@ -23,13 +23,17 @@ func (p *Histogram) SortKeysByIncrSize() {
 }
 
 // Extract2BytesPatterns returns all 2-bytes patterns separated from list.
-func Extract2BytesPatterns(list []Patt)( twoBytes, moreBytes []Patt ){
+func Extract2BytesPatterns(list []Patt)( twoBytes, moreBytes []Patt , max int){
 	twoBytes = make([]Patt, len(list))
 	i := 0 
 	moreBytes = make([]Patt, len(list))
 	k := 0
 	for _, x := range list {
-		if len(x.Bytes) == 2 {
+		cnt := len(x.Bxtes)
+		if cnt > max {
+			max = cnt
+		}
+		if cnt == 2 {
 			twoBytes[i] = x
 			i++
 		}else{
