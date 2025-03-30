@@ -528,9 +528,33 @@ static unsigned  writeID( uint8_t * dst, id_t id ){
         *dst++ = (uint8_t)id;
         return 1;
     }else{
-        // TODO
-        *dst++ = (uint8_t)id;
-        *dst = (uint8_t)id;
+        // Example for understanding the id computation with ID1Count=124 and ID1Max=127:
+        //                   id1            id2-1                  id2-1      id1
+        // ID1                 1:                       =   1
+        // ID1               ...:                       = ...
+        // ID1 = ID1Count    124:                       = 124
+        // indirectID=offs   125: (0*255) + 0...254 - 0 = 0*254 + 0...254 + 0 + 125 = 125...378 <- level 0
+        // indirectID        126: (1*255) + 0...254 - 1 = 1*254 + 0...254 + 1 + 125 = 379...632 <- level 1
+        // indirectID=ID1Max 127: (2*255) + 0...254 - 2 = 2*254 + 0...254 + 2 + 125 = 633...887 <- level 2
+        //
+        // 255^1 255^0 = decimal + offs   id1 id2 id=(id1-offs)*255+id2-1+offs result
+        //    0     0  =     0   =  125   125   1 id=( 125-125)*255+  1-1+ 125=  125
+        //    0     1  =     1   =  126   125   2
+        //    0   254  =   254   =  379   125 255
+        //    1     0  =   255   =  380   126   1
+        //    1   254  =   509   =  634   126 255
+        //    2     0  =   510   =  635   127   1
+        //    2   254  =   764   =  889   127 255 id=( 127-125)*255+255-1+ 125=  889
+        // id == 255*id1 - 254*offs + id2 - 1
+        const unsigned offs = ID1Count + 1; 
+        unsigned level = (id-offs)/254; // (378-125)/254=0, (379-125)/254=1, (632-125)/254=1, (633-125)/254=2, (988-125)/254=2
+        unsigned id2 = (id-offs)%254 + 1; // (379-125)%254 + 1 = 0 + 1 = 1
+        unsigned id1 = offs + level; // 125, 126, 127
+        *dst++ = (uint8_t)id1;
+        *dst = (uint8_t)id2;
+        if (id!=(id1-offs)*255+id2-1+offs) {
+            for(;;);
+        }
         return 2;
     }
 }
