@@ -21,7 +21,7 @@ var (
 
 func init() {
 	flag.IntVar(&UnreplacableContainerBits, "u", UnreplacableContainerBits, "unreplacable bytes container bit size (6 or 7)")
-	flag.IntVar(&ID1Count, "n", 127, "direct ID count ID1Count, 0-127 for u=7 and 0-191 for u=7")
+	flag.IntVar(&ID1Count, "n", 127, "direct ID count ID1Count, 0-127 for u=7 and 0-191 for u=6")
 }
 
 // Generate writes a file oFn containing C code using loc file(s) and max pattern size.
