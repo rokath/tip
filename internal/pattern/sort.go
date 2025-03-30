@@ -29,7 +29,7 @@ func Extract2BytesPatterns(list []Patt)( twoBytes, moreBytes []Patt , max int){
 	moreBytes = make([]Patt, len(list))
 	k := 0
 	for _, x := range list {
-		cnt := len(x.Bxtes)
+		cnt := len(x.Bytes)
 		if cnt > max {
 			max = cnt
 		}
