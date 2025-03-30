@@ -40,7 +40,11 @@ size_t tiUnpack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_
 static int collectUTBytes( uint8_t * dst, const uint8_t * src, size_t slen ){
     uint8_t * p = dst;
     for( int i = 0; i < slen; i++ ){
-        if(UNREPLACABLE_MASK & src[i]){
+        if(src[i] <= ID1Count ){
+            // primary ID
+        } else if(src[i] <= ID1Max) 
+            i++; // indirect ID
+        } else {
             *p++ = src[i];
         }
     }
