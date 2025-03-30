@@ -64,7 +64,7 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 
 	rlist := p.ExportAsList()
 	list := pattern.SortByDescCountDescLength(rlist)
-	idList, moreBytes := pattern.Extract2BytesPatterns(rlist)
+	idList, moreBytes, maxListPatternSize := pattern.Extract2BytesPatterns(rlist)
 	// lists are sorted by descending count here.
 	if len(idList) >= ID1Count {
 		idList = idList[:ID1Count]
@@ -81,7 +81,7 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 	// indirectIndexedCount := min(MaxID, len(moreBytes))
 	// idList := pattern.SortByDescLength(list[:idCount])
 
-	maxListPatternSize := len(idList[0].Bytes)
+	//maxListPatternSize := len(idList[ID1Count].Bytes)
 	oh, err := fSys.Create(oFn)
 	if err != nil {
 		log.Fatal(err)
