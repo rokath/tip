@@ -43,6 +43,27 @@ typedef uint8_t loc_t;
 #define DIRECT_ID_MAX 191
 #endif
 
+//! id_t could be uint8_t to safe memory, when no indirect IDs are used.
+typedef uint16_t id_t; 
+
+//! UnreplacableContainerBits is an in idTable.c generated value.
+extern const unsigned unreplacableContainerBits; 
+
+//! ID1Max is an in idTable.c generated value.
+extern const unsigned ID1Max;
+
+//! ID1Count is an in idTable.c generated value.
+extern const unsigned ID1Count;
+
+//! MaxID is an in idTable.c generated value.
+extern const unsigned MaxID;
+
+//! LastID is an in idTable.c generated value.
+extern const unsigned LastID;
+
+//! idTable is an in idTable.c generated value.
+extern const uint8_t idTable[];
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Exported for target tests
 //

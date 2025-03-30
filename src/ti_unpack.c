@@ -10,7 +10,7 @@
 static int collectUTBytes( uint8_t * dst, const uint8_t * src, size_t slen );
 static size_t reconvertBits( uint8_t * lst, const uint8_t * src, size_t slen );
 static size_t restorePacket( uint8_t * dst, const uint8_t * table, const uint8_t * u8, size_t u8len, const uint8_t * src, size_t slen );
-static size_t getPatternFromId( uint8_t * pt, const uint8_t * table, uint8_t id );
+static size_t getPatternFromId( uint8_t * pt, const uint8_t * table, id_t id );
 
 size_t tiu( uint8_t * dst, const uint8_t * src, size_t slen ){
     return tiUnpack(dst, idTable, src, slen );
@@ -41,11 +41,11 @@ static int collectUTBytes( uint8_t * dst, const uint8_t * src, size_t slen ){
     uint8_t * p = dst;
     for( int i = 0; i < slen; i++ ){
         if(src[i] <= ID1Count ){
-            // primary ID
-        } else if(src[i] <= ID1Max) 
-            i++; // indirect ID
+            // primary ID, do nothing
+        } else if(src[i] <= ID1Max) {
+            i++; // indirect ID, ignore next byte (secondary ID)
         } else {
-            *p++ = src[i];
+            *p++ = src[i]; // collect
         }
     }
     int count = p - dst;
@@ -77,14 +77,25 @@ static size_t reconvertBits( uint8_t * dst, const uint8_t * src, size_t slen ){
 static size_t restorePacket( uint8_t * dst, const uint8_t * table, const uint8_t * u8, size_t u8len, const uint8_t * src, size_t slen ){
     uint8_t * p = dst;
     for( int i = 0; i < slen; i++ ){
-        if( UNREPLACABLE_MASK & src[i] ){ // an uT8 byte
-            if( u8len > 0){
-                *p++ = *u8++;
-                u8len--;
-            }
-        }else{ // an id
+        if(src[i] <= ID1Count ){ // primary ID
             size_t sz = getPatternFromId( p, table, src[i] );
             p += sz;
+        } else if(src[i] <= ID1Max) { // indirect ID + secondary ID
+            uint8_t indirectID = src[i++];
+            uint8_t secondaryID = src[i];
+            // Example for understanding the id computation with ID1Count=124 and ID1Max=127:
+            // ID1                 1:                       =   1
+            // ID1               ...:                       = ...
+            // ID1 = ID1Count    124:                       = 124
+            // indirectID        125: (0*255) + 0...254 - 0 = 125...379 <- level 0
+            // indirectID        126: (1*255) + 0...254 - 1 = 380...508 <- level 1
+            // indirectID=ID1Max 127: (2*255) + 0...254 - 2 = 509...763 <- level 2
+            int level = indirectID - ID1Count - 1;
+            id_t id = level * 255 + (secondaryID-1) - level;
+            size_t sz = getPatternFromId( p, table, id);
+            p += sz;
+        } else {
+            *p++ = src[i]; // collect
         }
     }
     return p - dst;
@@ -95,9 +106,9 @@ static size_t restorePacket( uint8_t * dst, const uint8_t * table, const uint8_t
 //! @param table is the pattern table.
 //! @param id is the replace byte. Valid values for id are 1...0x7f.
 //! @retval is the pattern size or 0, if id was not found.
-static size_t getPatternFromId( uint8_t * pt, const uint8_t * table, uint8_t id ){
+static size_t getPatternFromId( uint8_t * pt, const uint8_t * table, id_t id ){
     size_t sz;
-    unsigned int idx = 0x01;
+    id_t idx = 0x01;
     while( (sz = *table++) && sz){  // a pattern exists here
         if( idx == id ){ // id found
             memcpy(pt, table, sz);
