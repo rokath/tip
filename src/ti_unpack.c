@@ -36,22 +36,59 @@ size_t tiUnpack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_
     return dlen;
 }
 
+//! isID checks, if at p an ID or ID begin occures.
+//! @retval 0: no ID
+//! @retval 1: primary ID
+//! @retval 2: secondary ID (id1 at p[0] and id2 at p[1])
+static int isID( const uint8_t * p){
+    if (*p <= ID1Count){
+        return 1;
+    }else if (*p <= ID1Max){
+        return 2;
+    }
+    return 0;
+}
+
+#if OPTIMIZE_UNREPLACABLES
+
+//! endsWithID checks, if src ends with an ID.
+//! @retval 0: no ID
+//! @retval 1: primary ID
+//! @retval 2: secondary ID (id1 at p[0] and id2 at p[1])
+static int endsWithID(const uint8_t * src, size_t slen){
+    if (slen == 0){
+        return 0;
+    }
+    if (slen == 1){
+        uint8_t by = src[slen-1];
+        if (by <= ID1Count){
+            return 1;
+        } else if (by <= ID1Max){
+            for(;;); // unexpected, option for further optimization?
+        } // The last src byte is > ID1Count, what would expect one more byte. 
+        return 0;    
+    }
+    return isID( src + slen - 2); // slen >= 2
+}
+
+#endif // #if OPTIMIZE_UNREPLACABLES
+
 // collectUTBytes copies all bytes with msbit=1 into dst and returns their count.
 static int collectUTBytes( uint8_t * dst, const uint8_t * src, size_t slen ){
     uint8_t * p = dst;
     for( int i = 0; i < slen; i++ ){
-        if(src[i] <= ID1Count ){
-            // primary ID, do nothing
-        } else if(src[i] <= ID1Max) {
-            i++; // indirect ID, ignore next byte (secondary ID)
-        } else {
+        int x = isID(src+i);
+        if (x==0){
             *p++ = src[i]; // collect
-        }
+        }else if (x==2){
+            i++; // indirect ID, ignore next byte (secondary ID)
+        } // else primary ID, do nothing
     }
     int count = p - dst;
 #if OPTIMIZE_UNREPLACABLES // cases like III or IIU or UUIIIUII 
-    if ( (count <= 1) // TiP packet has no or max one unrplacable byte.
-      || (*(src+slen-1) <= DIRECT_ID_MAX ) ) {// TiP packet ends with an ID.
+    if (count <= 1) { // TiP packet has no or max one unrplacable byte, cases like III or IIU
+        count = -count; // Unreplacable bytes optimisation was possible.
+    }else if (endsWithID(src, slen) ) {// TiP packet ends with an ID.
         count = -count; // Unreplacable bytes optimisation was possible.
     }
 #endif // #if OPTIMIZE_UNREPLACABLES
@@ -65,12 +102,13 @@ static int collectUTBytes( uint8_t * dst, const uint8_t * src, size_t slen ){
 //! @retval is count 8-bit bytes
 //! @details buf is filled from the end (=buf+limit)
 static size_t reconvertBits( uint8_t * dst, const uint8_t * src, size_t slen ){
-    #if UNREPLACABLE_BIT_COUNT == 7
+    if (unreplacableContainerBits == 7){
         return shift78bit( dst, src, slen );
-    #endif
-    #if UNREPLACABLE_BIT_COUNT == 6
+    }else if (unreplacableContainerBits == 6){
         return shift68bit( dst, src, slen );
-    #endif
+    }else{
+        for(;;);
+    }
 }
 
 //! restorePacket reconstructs original data using src, slen, u8, u8len and table into dst and returns the count.
@@ -83,26 +121,9 @@ static size_t restorePacket( uint8_t * dst, const uint8_t * table, const uint8_t
         } else if(src[i] <= ID1Max) { // indirect ID + secondary ID
             uint8_t id1 = src[i++];
             uint8_t id2 = src[i];
-            // Example for understanding the id computation with ID1Count=124 and ID1Max=127:
-            //                   id1            id2-1                  id2-1      id1
-            // ID1                 1:                       =   1
-            // ID1               ...:                       = ...
-            // ID1 = ID1Count    124:                       = 124
-            // indirectID=offs   125: (0*255) + 0...254 - 0 = 0*254 + 0...254 + 0 + 125 = 125...378 <- level 0
-            // indirectID        126: (1*255) + 0...254 - 1 = 1*254 + 0...254 + 1 + 125 = 379...632 <- level 1
-            // indirectID=ID1Max 127: (2*255) + 0...254 - 2 = 2*254 + 0...254 + 2 + 125 = 633...887 <- level 2
-            //
-            // 255^1 255^0 = decimal + offs   id1 id2 id=(id1-offs)*255+id2-1+offs result
-            //    0     0  =     0   =  125   125   1 id=( 125-125)*255+  1-1+ 125=  125
-            //    0     1  =     1   =  126   125   2
-            //    0   254  =   254   =  379   125 255
-            //    1     0  =   255   =  380   126   1
-            //    1   254  =   509   =  634   126 255
-            //    2     0  =   510   =  635   127   1
-            //    2   254  =   764   =  889   127 255 id=( 127-125)*255+255-1+ 125=  889
-            // id == 255*id1 - 254*offs + id2 - 1
+            // See in tipTable.go func tipPackageIDs() and TiP Usermanual Appendix.
             int offs = ID1Count + 1;
-            int id =(id1-offs)*255+id2-1+offs; // == 255*id1 - 254*offs + id2 - 1
+            int id =(id1-offs)*255 + id2 - 1 + offs; // == 255*id1 - 254*offs + id2 - 1
             size_t sz = getPatternFromId( p, table, (id_t)id);
             p += sz;
         } else {
@@ -115,7 +136,7 @@ static size_t restorePacket( uint8_t * dst, const uint8_t * table, const uint8_t
 //! getPatternFromId seaches in testTable for id.
 //! @param pt is filled with the replace pattern if id was found.
 //! @param table is the pattern table.
-//! @param id is the replace byte. Valid values for id are 1...0x7f.
+//! @param id is the replacement. Valid values for id are 1...MaxID.
 //! @retval is the pattern size or 0, if id was not found.
 static size_t getPatternFromId( uint8_t * pt, const uint8_t * table, id_t id ){
     size_t sz;

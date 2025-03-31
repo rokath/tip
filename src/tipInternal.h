@@ -35,14 +35,6 @@ typedef uint16_t loc_t;
 typedef uint8_t loc_t;
 #endif
 
-#if UNREPLACABLE_BIT_COUNT == 7
-#define UNREPLACABLE_MASK 0x80
-#define DIRECT_ID_MAX 127
-#else
-#define UNREPLACABLE_MASK 0xC0
-#define DIRECT_ID_MAX 191
-#endif
-
 //! id_t could be uint8_t to safe memory, when no indirect IDs are used.
 typedef uint16_t id_t; 
 

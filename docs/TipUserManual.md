@@ -15,7 +15,7 @@
 Table of Contents Generation:
 * Install vsCode extension "Markdown TOC" from dumeng
 * Use Shift-Command-P "markdownTOC:generate" to get the automatic numbering.
-* replace "<a name" with "<a id"
+* replace "<a id" with "<a id"
 * replace "##" followed by 2 spaces with "## "‚
 -->
 
@@ -55,6 +55,7 @@ Table of Contents Generation:
   * 8.3. [Do not remove zeroes in favour of better compression as an option or a separate project](#do-not-remove-zeroes-in-favour-of-better-compression-as-an-option-or-a-separate-project)
   * 8.4. [Use 3 to 7 MSBits as marker](#use-3-to-7-msbits-as-marker)
   * 8.5. [Use Prefix Byte as marker for unreplacable bytes (like smaz)](#use-prefix-byte-as-marker-for-unreplacable-bytes-(like-smaz))
+* 9. [Appendix](#appendix)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -410,7 +411,7 @@ The TiP unpack routine can discover such cases:
 * If there is a single unreplacable byte only, and it is > IDmax, we simply copy it.
 * If there are several unreplacable bytes and all > IDmax **and** src ends with a pattern, we simply copy them.
 
-> **Consideration**: Easy to implement as part of the unreplacable bytes handler functions. A small effect is expected. Done.
+> **Consideration**: Easy to implement as part of the unreplacable bytes handler functions. A small effect is expected, but only for very short buffers, because the probability for a possible optimization sinks with the buffer length. Done.
 
 ###  7.4. <a id='additional-indirect-dictionaries-(planned)'></a>Additional Indirect Dictionaries (planned)
 
@@ -605,6 +606,32 @@ This example allows 2560 additional pattern for the price 14 less 2-bytes patter
 ```
 
 > **Considereation:** Data with many unreplacable short byte groups will double their size easily.
+
+##  9. <a id='appendix'></a>Appendix
+
+```C
+        // Example for understanding the id computation with ID1Count=124 and ID1Max=127:
+        //                   id1            id2-1                  id2-1      id1
+        // ID1                 1:                       =   1
+        // ID1               ...:                       = ...
+        // ID1 = ID1Count    124:                       = 124
+        // indirectID=offs   125: (0*255) + 0...254 - 0 = 0*254 + 0...254 + 0 + 125 = 125...378 <- level 0
+        // indirectID        126: (1*255) + 0...254 - 1 = 1*254 + 0...254 + 1 + 125 = 379...632 <- level 1
+        // indirectID=ID1Max 127: (2*255) + 0...254 - 2 = 2*254 + 0...254 + 2 + 125 = 633...887 <- level 2
+        //
+        // 255^1 255^0 = decimal + offs   id1 id2 id=(id1-offs)*255+id2-1+offs result
+        //    0     0  =     0   =  125   125   1 id=( 125-125)*255+  1-1+ 125=  125
+        //    0     1  =     1   =  126   125   2
+        //    0   254  =   254   =  379   125 255
+        //    1     0  =   255   =  380   126   1
+        //    1   254  =   509   =  634   126 255
+        //    2     0  =   510   =  635   127   1
+        //    2   254  =   764   =  889   127 255 id=( 127-125)*255+255-1+ 125=  889
+        // id == 255*id1 - 254*offs + id2 - 1
+```
+
+
+
 
 <!--
 ```diff

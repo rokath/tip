@@ -12,8 +12,11 @@
             "program": "${workspaceFolder}/cmd/ti_generate",
             "env": {},
             "args": [
-                    //"-i", "${workspaceFolder}/docs/TipUserManual.md",
-                    // "-z", "4",
+                    "-i", "${workspaceFolder}/test/samples/trice.bin.sample",
+                    "-o", "${workspaceFolder}/src/idTable.c",
+                     "-z", "6",
+                     "-u", "7",
+                     "-n", "100",
                      "-v"
             ]
         },

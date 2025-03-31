@@ -23,13 +23,6 @@ extern "C" {
 //! It is a selectable option just for tests and should be enabled always.
 #define OPTIMIZE_UNREPLACABLES 1
 
-//! UNREPLACABLE_BIT_COUNT can be set to 6 or to 7.
-//! * With 7 bits the TiP packets can get max 14% longer and max 127 primary pattern IDs possible.
-//! * With 6 bits the TiP packets can get max 33% longer and max 191 primary pattern IDs possible.
-//! * See TiP user manual for more information.
-#define UNREPLACABLE_BIT_COUNT 7
-
-
 #ifdef __cplusplus
 }
 #endif

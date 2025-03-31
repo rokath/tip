@@ -18,7 +18,7 @@ package tip
 //     return OPTIMIZE_UNREPLACABLES;
 // }
 // int unreplacableBitCount(void) {
-//     return UNREPLACABLE_BIT_COUNT;
+//     return unreplacableContainerBits;
 // }
 import "C"
 

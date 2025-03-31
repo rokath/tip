@@ -13,7 +13,7 @@
 
 //! @brief IDPosition_t describes a src buffer position which is replacable with an id.
 typedef struct {
-    id_t id; // id of pattern found in src
+    id_t id; // id of pattern found in src, starts with 1
     loc_t start; // id pattern start in src
 } IDPosition_t;
 
@@ -500,8 +500,12 @@ onlyUnreplacables:
     if (len == 0) { // No unreplacable byte exists.
         return len;
     }
+    uint8_t unreplacableMask = 0xc0;
+    if (unreplacableContainerBits == 7){
+        unreplacableMask = 0x80;
+    }
     if (len == 1) { // Only one unreplacable byte exists.
-        if ((*dst & UNREPLACABLE_MASK) == UNREPLACABLE_MASK) {
+        if ((*dst & unreplacableMask) == unreplacableMask) {
             return -len; // Unreplacable byte optimizing is possible.
         }else{
             return len; // Unreplacable byte optimizing is not possible.
@@ -511,11 +515,11 @@ onlyUnreplacables:
         return len; // We cannot optimize.
     }
     // Path ends with an ID: cases like UUUI or IUUIUI
-    uint8_t msBit = UNREPLACABLE_MASK;
+    uint8_t msBit = unreplacableMask;
     for (int i = 0; i < len; i++){
         msBit &= dst[i];
     }
-    if ((msBit & UNREPLACABLE_MASK) == UNREPLACABLE_MASK ){ // All unreplacable bytes have most significant bit(s)==1.
+    if ((msBit & unreplacableMask) == unreplacableMask ){ // All unreplacable bytes have most significant bit(s)==1.
         return -len; // We can optimize.
     }
 #endif // #if OPTIMIZE_UNREPLACABLES
@@ -528,33 +532,13 @@ static unsigned  writeID( uint8_t * dst, id_t id ){
         *dst++ = (uint8_t)id;
         return 1;
     }else{
-        // Example for understanding the id computation with ID1Count=124 and ID1Max=127:
-        //                   id1            id2-1                  id2-1      id1
-        // ID1                 1:                       =   1
-        // ID1               ...:                       = ...
-        // ID1 = ID1Count    124:                       = 124
-        // indirectID=offs   125: (0*255) + 0...254 - 0 = 0*254 + 0...254 + 0 + 125 = 125...378 <- level 0
-        // indirectID        126: (1*255) + 0...254 - 1 = 1*254 + 0...254 + 1 + 125 = 379...632 <- level 1
-        // indirectID=ID1Max 127: (2*255) + 0...254 - 2 = 2*254 + 0...254 + 2 + 125 = 633...887 <- level 2
-        //
-        // 255^1 255^0 = decimal + offs   id1 id2 id=(id1-offs)*255+id2-1+offs result
-        //    0     0  =     0   =  125   125   1 id=( 125-125)*255+  1-1+ 125=  125
-        //    0     1  =     1   =  126   125   2
-        //    0   254  =   254   =  379   125 255
-        //    1     0  =   255   =  380   126   1
-        //    1   254  =   509   =  634   126 255
-        //    2     0  =   510   =  635   127   1
-        //    2   254  =   764   =  889   127 255 id=( 127-125)*255+255-1+ 125=  889
-        // id == 255*id1 - 254*offs + id2 - 1
+        // See in tipTable.go func tipPackageIDs() and TiP Usermanual Appendix.
         const unsigned offs = ID1Count + 1; 
-        unsigned level = (id-offs)/254; // (378-125)/254=0, (379-125)/254=1, (632-125)/254=1, (633-125)/254=2, (988-125)/254=2
-        unsigned id2 = (id-offs)%254 + 1; // (379-125)%254 + 1 = 0 + 1 = 1
-        unsigned id1 = offs + level; // 125, 126, 127
+        unsigned level = (id-offs)/255;
+        unsigned id2 = (id-offs)%255 + 1;
+        unsigned id1 = offs + level;
         *dst++ = (uint8_t)id1;
         *dst = (uint8_t)id2;
-        if (id!=(id1-offs)*255+id2-1+offs) {
-            for(;;);
-        }
         return 2;
     }
 }
@@ -602,12 +586,11 @@ static size_t createOutput( uint8_t * dst, unsigned pidx, const uint8_t * uTsrc,
 //! The destination address is computable afterwards: dst = lim - retval.
 //! lst is allowed to be "close" behind buf + slen, thus making in-place conversion possible.
 static size_t convertBits( uint8_t * lst, const uint8_t * src, size_t slen ){
-    #if UNREPLACABLE_BIT_COUNT == 7
+    if (unreplacableContainerBits == 7){
         return shift87bit( lst, src, slen );
-    #endif
-    #if UNREPLACABLE_BIT_COUNT == 6
+    }else{
         return shift86bit( lst, src, slen );
-    #endif
+    }
 }
 
 //! @brief buildTiPacket creates in dst the tip packet of the src buffer. 

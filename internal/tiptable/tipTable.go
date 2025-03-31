@@ -21,7 +21,7 @@ var (
 
 func init() {
 	flag.IntVar(&UnreplacableContainerBits, "u", UnreplacableContainerBits, "unreplacable bytes container bit size (6 or 7)")
-	flag.IntVar(&ID1Count, "n", 127, "direct ID count ID1Count, 0-127 for u=7 and 0-191 for u=6")
+	flag.IntVar(&ID1Count, "n", 127, "direct ID count ID1Count (count for 2-bytes pattern), 0-127 for u=7 and 0-191 for u=6")
 }
 
 // Generate writes a file oFn containing C code using loc file(s) and max pattern size.
@@ -71,12 +71,17 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 	}
 	// idList contains now up to ID1Count 2-bytes pattern. Remaining 2-bytes patterns are discarded
 	// because they give nearly no compression effect when indexed with an indirect ID.
-    
-	moreBytesCount := MaxID-ID1Count
-	moreBytes = moreBytes[:moreBytesCount]
-	for _, x := range moreBytes {
-		idList = append( idList, x)
+
+	moreBytesCount := MaxID - ID1Count
+	if len(moreBytes) > moreBytesCount {
+		moreBytes = moreBytes[:moreBytesCount]
+	}else{
+		fmt.Printf( "warning:more pattern ID space than pattern (LastID %d < MaxID %d)", len(moreBytes), MaxID)
 	}
+	//for _, x := range moreBytes {
+	//	idList = append(idList, x)
+	//}
+	idList = append(idList, moreBytes...)
 
 	// indirectIndexedCount := min(MaxID, len(moreBytes))
 	// idList := pattern.SortByDescLength(list[:idCount])
@@ -128,13 +133,18 @@ const unsigned LastID = %d;
 	start := fmt.Sprintf("const uint8_t idTable[] = { // from %s\n", loc)
 	fill := spaces(len("    xxx, ") + len("0x00, ")*maxListPatternSize)
 	fill2 := spaces(maxListPatternSize - len("ASCII"))
-	fmt.Fprintf(oh, start+"%s// `ASCII%s`|  count  id\n", fill, fill2)
+	fmt.Fprintf(oh, start+"%s// `ASCII%s`|  count    id (decimal)  id1  id2\n", fill, fill2)
 	for i, x := range idList {
 		pls := createPatternLineString(x.Bytes, maxListPatternSize) // todo: review and improve code
 		sz := len(x.Bytes)
 		tipTableSize += 1 + sz
 		if i < len(idList) {
-			fmt.Fprintf(oh, "\t%s|%7d  %02x\n", pls, x.Cnt, i+1)
+			id1, id2 := tipPackageIDs(i + 1)
+			if id2 == -1 {
+				fmt.Fprintf(oh, "\t%s|%7d  0x%04x (%5d)   %02x   --\n", pls, x.Cnt, i+1, i+1, id1)
+			} else {
+				fmt.Fprintf(oh, "\t%s|%7d  0x%04x (%5d)   %02x   %02x\n", pls, x.Cnt, i+1, i+1, id1, uint8(id2))
+			}
 		}
 	}
 	fmt.Fprintln(oh, "\t  0 // table end marker")
@@ -151,6 +161,28 @@ const unsigned LastID = %d;
 		}
 	}
 	fmt.Fprintln(oh)
+	return
+}
+
+// tipPackageIDs computes id1 and id2 from id = 1...MaxID.
+// id1 range is 1...ID1Count
+// id2 range is 1...255, when -1, than no id2
+func tipPackageIDs(id int) (id1 uint8, id2 int) {
+	if id <= ID1Count {
+		id1 = uint8(id)
+		id2 = -1
+		return
+	}
+	offs := ID1Count + 1
+	level := (id - offs) / 255
+	id2 = (id-offs)%255 + 1
+	id1 = uint8(offs + level)
+
+	// cross check:
+	idx := (int(id1)-offs)*255 + id2 - 1 + offs
+	if id != idx {
+		fmt.Printf("ERROR: id:%5d, id1:0x%02x, id2:0x%02x, id != %5d !!!\n", id, id1, id2, idx)
+	}
 	return
 }
 
