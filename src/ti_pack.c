@@ -52,7 +52,7 @@ static void printBufferAsASCII( const uint8_t * buf, size_t len);
 //! @brief idPatTable points to a parameter "table" passed to some functions.
 //! @details This allows using different idTable's than idTable.c 
 //! especially for testing and not to have to pass it to all functions.
-//! The ID table has max 127 IDs with pattern, each max 255 bytes long.
+//! The ID table has MaxID IDs with pattern, each max 255 bytes long.
 //! ATTENTION: The pack functions are usable only sequentially!
 static const uint8_t * idPatTable = idTable;
 
