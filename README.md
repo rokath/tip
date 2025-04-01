@@ -79,9 +79,9 @@ Table of Contents Generation:
 
 * Pack & Unpack are working in a first implementation.
 * The pack code is probably error free and finds the best packaging for a given ID table, but could get improved.
-  * A TiP extension is planned to support longer pattern lists.
-  * A TiP variant is planned to use 6-bit for unreplaceable bytes.
-  * A TiP optimization is planned to reduce the needed space for unreplaceable bytes in some cases.
+  * A TiP extension is done to support longer pattern lists.
+  * A TiP variant is done to use 6-bit for unreplaceable bytes.
+  * A TiP optimization is done to reduce the needed space for unreplaceable bytes in some cases.
 * The `idTable.c` generation is ok, but the generated table might not be optimal.
 
 <!-- ABOUT THE PROJECT -->
@@ -134,12 +134,13 @@ See the [Tip User Manual](./docs/TipUserManual.md).
 * [x] Write [Tip User Manual](./docs/TipUserManual.md).
 * [x] Selectable unreplacable converter bit count (6 or 7).
 * [x] Optimization for unreplacables.
-* [ ] Extend `ti_pack` and `ti_unpack` CLI for unreplacable bits count.
-* [ ] Extend `ti_generate` CLI for a selectable primary pattern count.
+* [x] Extend `ti_pack` and `ti_unpack` CLI for unreplacable bits count.
+* [x] Extend `ti_generate` CLI for a selectable primary pattern count.
 * [ ] Improve `ti_generate` to optimize pattern selection.
-* [ ] Extend `ti_generate` with a CLI switch to create longer ID tables.
-* [ ] Add `pack.c` and `unpack.c` compiler switch for max indirect indicies tables 0...127.
+* [x] Extend `ti_generate` with a CLI switch to create longer ID tables.
+* [x] Add `pack.c` and `unpack.c` compiler switch for max indirect indicies tables 0...127.
 * [ ] Build `tip` executable, which accepts stdin and writes to stdout.
+* [ ] Extend ti_generate to find best settings automatically.
 * [ ] Write extensive tests.
 * [ ] Write fuzzy tests.
 * [ ] Remove 65528 bytes limitation.
