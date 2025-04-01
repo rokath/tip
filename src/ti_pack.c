@@ -85,9 +85,8 @@ static void initGetNextPattern( const uint8_t * idTbl ){
 }
 
 //! @brief maxIdPatternLength returns length of longest ID pattern.
-//! TODO: generate value 
-static uint8_t maxIdPatternLength( void ){
-    return *idPatTable;
+uint8_t maxIdPatternLength( void ){
+    return maxPatternlength;
 }
 
 //! @brief getNextIDPattern returns next pattern location in pt and size in sz or *sz == 0.
@@ -226,7 +225,6 @@ static int pathCompare( unsigned firstPIdx, unsigned secondPIdx ){
 //! @brief ShortestTipPath returns srcMap path index which results in a shortest package.
 //! TODO: Faster implemtation
 static unsigned ShortestTipPath(void){
-
     // Get maxSum.
     loc_t maxSum = 0;
     unsigned pidx = 0;
@@ -237,30 +235,20 @@ static unsigned ShortestTipPath(void){
             pidx = i;
         }
     }
-#if DEBUG
-    printPath( "first:", pidx );
-#endif
     // Maximum psiz results in smallest tip size only for min path length.
     loc_t minLast = TIP_SRC_BUFFER_SIZE_MAX;
     for( unsigned i = 0; i < srcMap.count; i++ ){
         if( maxSum == pathPatternSizeSum(i) ){
 #if DEBUG
-            printPath( "altern", i );
+            printPath( "option:", i );
 #endif
             path_t path = srcMap.path[i];
             if( path.last < minLast ){
                 minLast = path.last;
                 pidx = i;
-#if DEBUG
-                printf( "pidx %u, minlen %u\n", pidx, minLast );
-#endif
             }
         }
     }
-#if DEBUG
-    printf( "%u paths\n", srcMap.count );
-    printPath( "select", pidx );
-#endif
     return pidx;
 }
 
@@ -322,7 +310,7 @@ static loc_t pathLimit( unsigned pidx ){
 //!     - 0&5 -> 5, 1&4 -> 4, 2&3 -> 3 
 //!   - If several paths end with same idx, keep only biggest pathPatternSize.
 //!     - 3&4&5 -> 5
-//! TODO: faster with acrual pti?
+//! TODO: faster with acruate pti?
 void shrinkSrcMap( void ){
 // start:
     if( srcMap.count <= 1 ){
@@ -339,7 +327,7 @@ void shrinkSrcMap( void ){
     for( unsigned i = 0; i < srcMap.count; i++ ){ // Loop over all so far existing paths.
         loc_t limit = pathLimit(i);
         if( limit + maxIdPatternLength() < maxlimit ){
-            removePath( i ); // This path is obsolete.
+           removePath( i ); // This path is obsolete.
         }
     }
 
@@ -365,12 +353,9 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
     createIDPosTable(table, src, slen); // Get all ID positions in src ordered by increasing offset.
     memset(&srcMap, 0, sizeof(srcMap)); // Start with no path (PathCount=0).
 #if DEBUG
-    printf( "SrcMap:\npti\n" );
+    printf( "SrcMap:\n" );
 #endif
     for( unsigned pti = 0; pti < IDPosTable.count; pti++ ){ // Loop over IDPosition table.
-#if DEBUG
-        printf( "%d ", pti );
-#endif
         IDPosition_t nnn_idPos = IDPosTable.item[pti]; // For each next idPos nnn:
         loc_t nnn_start = nnn_idPos.start;
         uint8_t nnn_len = IDPatternLength( nnn_idPos.id );
@@ -443,7 +428,6 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
         shrinkSrcMap();
     }
 #if DEBUG
-    printf("\n\n");
     printSrcMap();
 #endif
 }
@@ -453,7 +437,7 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
 //! It uses idPatTable and the path index pidx in the actual srcMap, which is linked to IDPosTable.
 static int selectUnreplacableBytes( uint8_t * dst, unsigned pidx, const uint8_t * src, size_t slen ){
 #if DEBUG
-    printf( "\n\nselectUnreplacableBytes:\n\n");
+    printf( "selectUnreplacableBytes:\n");
 #endif
     const uint8_t * srcNext = src;   // next position for src buffer read
     uint8_t * dstNext = dst;         // next position for dst buffer write
@@ -598,15 +582,15 @@ static size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * t
     createSrcMap(table, src, slen);
     unsigned pidx = ShortestTipPath(); // find minimum line
 #if DEBUG
-    printPath( "\n\nSELECT:", pidx );
+    printPath( "SELECT:", pidx );
 #endif
     memset(dst, 0, dstLimit-dst);
     int u8Count = selectUnreplacableBytes(dst, pidx, src, slen );
-    size_t uTCount;
+    int uTCount;
     uint8_t * uTsrc;
 #if OPTIMIZE_UNREPLACABLES == 1
     if (u8Count > 0){ // no optimization possible
-        uTCount = convertBits( dstLimit-1, dst, (size_t)u8Count );
+        uTCount = (int)convertBits( dstLimit-1, dst, (size_t)u8Count );
         uTsrc = dstLimit - uTCount;
     } else { // We keep name "uT" for clarity.
         u8Count = -u8Count; // Make it positive by revering the sign.
@@ -619,7 +603,7 @@ static size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * t
     uTsrc = dstLimit - uTCount;
 #endif // #else // #if OPTIMIZE_UNREPLACABLES == 1
 #if DEBUG
-    printf( "ShortestTipPath: %u, u8Count: %d, uTCount: %u\n", pidx, u8Count, uTCount );
+    printf( "ShortestTipPath: %u, u8Count: %d, uTCount: %d\n", pidx, u8Count, uTCount );
 #endif
     size_t pkgSize = createOutput( dst, pidx, uTsrc, uTCount, src );
     return pkgSize; // final ti package size
@@ -679,11 +663,11 @@ static void printPath( char * prefix, unsigned pidx ){
 
 //! @brief 
 static void printSrcMap( void ){
-    printf( "\n\nsrcMap:\n-----------\n");
+    printf( "-----------\n");
     for( unsigned i = 0; i < srcMap.count; i++ ){
         printPath("      ", i);
     }
-    printf( "-----------\n\n");
+    printf( "-----------\n");
 }
 
 

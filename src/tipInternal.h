@@ -38,6 +38,9 @@ typedef uint8_t loc_t;
 //! id_t could be uint8_t to safe memory, when no indirect IDs are used.
 typedef uint16_t id_t; 
 
+//! maxPatternlength is the length of the longes pattern inside idTable. It cannot exceed 255
+extern const uint8_t maxPatternlength;
+
 //! UnreplacableContainerBits is an in idTable.c generated value.
 extern const unsigned unreplacableContainerBits; 
 

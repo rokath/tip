@@ -20,11 +20,20 @@ package tip
 // int unreplacableBitCount(void) {
 //     return unreplacableContainerBits;
 // }
+// int maxPatternSize(void) {
+//     return maxPatternlength;
+// }
 import "C"
 
 import (
 	"unsafe"
 )
+
+// maxPatternSize returns the length of the longest existing pattern inside ID table.
+func MaxPatternSize() int {
+	x := C.maxIdPatternLength()
+	return int(x)
+}
 
 // OptimizeUnreplacablesEnabled returns, if in tipConfig.h OPTIMIZE_UNREPLACABLES was set.
 func OptimizeUnreplacablesEnabled() bool {

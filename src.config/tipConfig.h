@@ -21,7 +21,7 @@ extern "C" {
 
 //! OPTIMIZE_UNREPLACABLES allows to reduce the TiP packet size in some special cases.
 //! It is a selectable option just for tests and should be enabled always.
-#define OPTIMIZE_UNREPLACABLES 1
+#define OPTIMIZE_UNREPLACABLES 0
 
 #ifdef __cplusplus
 }
