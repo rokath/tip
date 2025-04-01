@@ -70,23 +70,9 @@ Table of Contents Generation:
 
 ---
 
-##  1. <a id='project-status'></a>Project Status
-
-```diff
---> Experimental state! 
-+   You can try it out!
-```
-
-* Pack & Unpack are working in a first implementation.
-* The pack code is probably error free and finds the best packaging for a given ID table, but could get improved.
-  * A TiP extension is done to support longer pattern lists.
-  * A TiP variant is done to use 6-bit for unreplaceable bytes.
-  * A TiP optimization is done to reduce the needed space for unreplaceable bytes in some cases.
-* The `idTable.c` generation is ok, but the generated table might not be optimal.
-
 <!-- ABOUT THE PROJECT -->
 
-##  2. <a id='about-the-project'></a>About The Project
+##  1. <a id='about-the-project'></a>About The Project
 
 * Usual compressors cannot succeed on very small buffers (2...100 bytes), because they add translation information to the data:
 
@@ -100,10 +86,23 @@ Table of Contents Generation:
   ```
 
 * **TiP** is an adaptable very-short-buffer packer, suitable for embedded devices. Like [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) it removes all zeroes from the data, but additionally tries data compression.
-* The TiP worst-case overhead is 1 byte per each starting 7 bytes (+14%) or 1 byte for 3 uncompressable data bytes (+33%), but the expected average packed size is about 50% or less of the unpacked data. <sub>(For comparism: [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) adds 1 byte overhead per each starting 255 bytes, but does not compress at all.)</sub>
+* The TiP worst-case overhead is 1 byte per each starting 7 bytes (+14%) or 1 byte for 3 uncompressable data bytes (+33%), but **the expected average packed size is about 50% or less** of the unpacked data. <sub>(For comparism: [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) adds 1 byte overhead per each starting 255 bytes, but does not compress at all.)</sub>
 * Like [TCOBS](https://github.com/rokath//tcobs), TiP can already compress 2 bytes into 1 byte but is expected to do better on arbitrary data (similar to samples) with a bit more computing effort.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+##  2. <a id='project-status'></a>Project Status
+
+```diff
+--> Experimental state! 
++   You can try it out!
+```
+
+* With `go install ./cmd/generate/...` you can build `ti_generate` and run it.
+* Copy the generated `idTable.c`  into `./src`.
+* Run`go clean -cache && go install ./cmd/...` and use `ti_pack` and `ti_unpack`.
+* If the results convincing, integrate `./src` in your project. 
+* The generated ID table might not be optimal right now.
 
 ##  3. <a id='tip-components'></a>TiP Components
 
@@ -134,13 +133,9 @@ See the [Tip User Manual](./docs/TipUserManual.md).
 * [x] Write [Tip User Manual](./docs/TipUserManual.md).
 * [x] Selectable unreplacable converter bit count (6 or 7).
 * [x] Optimization for unreplacables.
-* [x] Extend `ti_pack` and `ti_unpack` CLI for unreplacable bits count.
-* [x] Extend `ti_generate` CLI for a selectable primary pattern count.
 * [ ] Improve `ti_generate` to optimize pattern selection.
-* [x] Extend `ti_generate` with a CLI switch to create longer ID tables.
-* [x] Add `pack.c` and `unpack.c` compiler switch for max indirect indicies tables 0...127.
-* [ ] Build `tip` executable, which accepts stdin and writes to stdout.
 * [ ] Extend ti_generate to find best settings automatically.
+* [ ] Build `tip` executable, which accepts stdin and writes to stdout.
 * [ ] Write extensive tests.
 * [ ] Write fuzzy tests.
 * [ ] Remove 65528 bytes limitation.
