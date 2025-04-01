@@ -235,6 +235,14 @@ On the receiver side all bytes with MSBit(s)=0 are identified as IDs and are rep
 
 ##  5. <a id='getting-started'></a>Getting Started
 
+<!--
+* With `go install ./cmd/generate/...` you can build `ti_generate` and run it.
+* Copy the generated `idTable.c`  into `./src`.
+* Run`go clean -cache && go install ./cmd/...` and use `ti_pack` and `ti_unpack`.
+* If the results convincing, integrate `./src` in your project. 
+* The generated ID table might not be optimal right now.
+-->
+
 ###  5.1. <a id='prerequisites'></a>Prerequisites
 
 * For now install [Go](https://golang.org/) to easily build the executables.
