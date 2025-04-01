@@ -1,4 +1,4 @@
-8<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a id="tip-um-top"></a>
 
 # TiP Tiny Packer User Manual
@@ -106,7 +106,7 @@ If there is a buffer of, let's say 20 bytes, we can consider it as a (big) 20-di
 
 The `ti_unpack` then sees bytes `01` to `7f` and knows, that these are IDs, intermixed with bytes `80` to `ff` and knows, that the 7 least significant bits are parts of the unreplacable bytes. The byte places are containing the position informtion for the unreplacable bytes.
 
-Instead of this, only 6 least significant bits are usable for the unreplacables conversion. Than IDs 1...0xbf (191) are usable.
+Instead of this, only 6 least significant bits are usable for the unreplacables conversion. That is the 64 base case. Than IDs 1...0xbf (191) are usable.
 
 <p align="right">(<a href="#tip-um-top">back to top</a>)</p>
 
@@ -124,6 +124,7 @@ Instead of this, only 6 least significant bits are usable for the unreplacables 
 * We take the first N bytes of some sample data and move that window in 1-byte steps over the sample data and build a histogram over all found pattern and their occurances count.
 * The same is done with all smaller pattern sizes, ergo N, ..., 3, 2. Not interesting are 1-byte patterns, because their replacement by an ID gives no compression effect.
 * The most often occuring pattern are sorted by descending size and are used to create the file `idTable.c`.
+* It is matter of optimization, how many primary and secondary pattern IDs are used for a given set of data. Also the ID table size could be limited.6
 
 ###  3.2. <a id='id-table-generation-questions'></a>ID Table Generation Questions
 
@@ -216,19 +217,19 @@ IDPositionTable:
 
 ###  4.2. <a id='id-position-table-processing'></a>ID Position Table Processing
 
-* To build a TiP packet, many different ID position sequences are possible, maybe interrupted by some _unreplacable_ bytes. The TiP packer starts creating a full `srcMap` containing all possible paths. For that it traverses the (by incrementing position sorted) IDPositionTable and checks, if the current ID position is appenable to any paths. If so, these paths are forked and the ID position is appended to the fork. That fork is needed, because the same path is extendable with different ID positions. If the current ID position did not fit to any path, a new path is created. After processing an ID position, a new path may exist or some paths have been foked and the forked paths are extended with this ID position. Before going to the next ID position from the IDPositionTable, obsolete `srcMap` paths are deleted. Obsolete are paths, if their limit plus the maximum pattern size is smaller than biggest existing path limit. Obsolete paths are too those path, which have an equal limit but wuld result in a bigger (partial) TiP packet. Even if they would result in an equal TiP packet size, it is only one of them needed for futher ID position provessing. We select one with the minimum unreplaceable byte count.
+* To build a TiP packet, many different ID position sequences are possible, maybe interrupted by some _unreplacable_ bytes. The TiP packer starts creating a full `srcMap` containing all possible paths. For that it traverses the (by incrementing position sorted) IDPositionTable and checks, if the current ID position is appenable to any paths. If so, these paths are forked and the ID position is appended to the fork. That fork is needed, because the same path is extendable with different ID positions. If the current ID position did not fit to any path, a new path is created. After processing an ID position, a new path may exist or some paths have been foked and the forked paths are extended with this ID position. Before going to the next ID position from the IDPositionTable, obsolete `srcMap` paths are deleted. Obsolete are paths, if their limit plus the maximum pattern size is smaller than biggest existing path limit. Obsolete paths are too those path, which have an equal limit but wuld result in a bigger (partial) TiP packet. Even if they would result in an equal TiP packet size, it is only one of them needed for futher ID position processing. We select one with the minimum unreplaceable byte count.
 * When the PositionTable was processed completely, a few paths are remaining. A path, which would result in the smallest TiP packet is selected to create the TiP packet.
 
 ###  4.3. <a id='packing---unreplacable-bytes-handling'></a>Packing - Unreplacable Bytes Handling
 
 The selected path covers no, some or all bytes with ID pattern. Bytes not covered, are unreplacable bytes.
-All unreplacable bytes are collected into one separate buffer. N unreplacable bytes occupy N\*8 bits. These bits are distributed onto N\*8/7 7-bit bytes, all getting the MSBit set to avoid zeroes and to distinguish them later from the ID bytes. In fact we do not change these N\*8 bits, we simply reorder them slightly. This bit reordering is de-facto the number transformation to the base 128, mentioned above. By setting the most significant bits, also is guarantied, that no `00` bytes exist anymore.
+All unreplacable bytes are collected into one separate buffer. N unreplacable bytes occupy N\*8 bits. These bits are distributed onto N\*8/7 7-bit (N\*8/6 6-bit) bytes, all getting the MSBit(s) set to avoid zeroes and to distinguish them later from the ID bytes. In fact we do not change these N\*8 bits, we simply reorder them slightly. This bit reordering is de-facto the number transformation to the base 128 (64), mentioned above. By setting the most significant bits, also is guarantied, that no `00` bytes exist anymore.
 
-Next all found patterns are replaced with their IDs, which all have MSBit=0. The unreplacable bytes are replaced with the bit-reordered unreplacable bytes, having MSBit=1. The bit-reordered unreplacable bytes fill the wholes between the IDs.
+Next all found patterns are replaced with their IDs, which all have MSBit(s)=0. The unreplacable bytes are replaced with the bit-reordered unreplacable bytes, having MSBit(s)=1. The bit-reordered unreplacable bytes fill the wholes between the IDs.
 
 ###  4.4. <a id='unpacking'></a>Unpacking
 
-On the receiver side all bytes with MSBit=0 are identified as IDs and are replaced with the patterns they stay for. All bytes with MSBit=1 are carying the unreplacable bytes bits. These are ordered back to restore the unreplacable bytes which fill the wholes between the patterens then.
+On the receiver side all bytes with MSBit(s)=0 are identified as IDs and are replaced with the patterns they stay for. All bytes with MSBit(s)=1 are carying the unreplacable bytes bits. These are ordered back to restore the unreplacable bytes which fill the wholes between the patterens then.
 
 <p align="right">(<a href="#tip-um-top">back to top</a>)</p>
 
