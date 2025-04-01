@@ -1,4 +1,4 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+8<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a id="tip-um-top"></a>
 
 # TiP Tiny Packer User Manual
@@ -104,7 +104,9 @@ If there is a buffer of, let's say 20 bytes, we can consider it as a (big) 20-di
 * Before we pack the buffer data, we try to find pattern from the ID table, we can then replace with IDs. See [The TiP Algorithm](./docsTipUserManual.md#the-tip-algorithm) for the how-to-do.
 * _Unreplacable_ bytes need a transformation in a way, that no bytes in the range 0-127 remain. That is our tranformation to the 128 base. We simply collect them and do a bit shifting in a way, that no most significant bit is used anymore. The MSBits of the reordered unreplacable bytes are all set to 1 and so we have only bytes `80` to `ff` left.
 
-The `ti_unpack` then sees bytes `01` to `7f` and knows, that these are IDs, intermixed with bytes `80` to `ff` and knows, that the 7 least significant bits are the unreplacable bytes. The byte places are containing the position informtion for the unreplacable bytes.
+The `ti_unpack` then sees bytes `01` to `7f` and knows, that these are IDs, intermixed with bytes `80` to `ff` and knows, that the 7 least significant bits are parts of the unreplacable bytes. The byte places are containing the position informtion for the unreplacable bytes.
+
+Instead of this, only 6 least significant bits are usable for the unreplacables conversion. Than IDs 1...0xbf (191) are usable.
 
 <p align="right">(<a href="#tip-um-top">back to top</a>)</p>
 
@@ -121,15 +123,12 @@ The `ti_unpack` then sees bytes `01` to `7f` and knows, that these are IDs, inte
   * For very short buffers, 2 to 8 bytes as maximum is recommended as max size N.
 * We take the first N bytes of some sample data and move that window in 1-byte steps over the sample data and build a histogram over all found pattern and their occurances count.
 * The same is done with all smaller pattern sizes, ergo N, ..., 3, 2. Not interesting are 1-byte patterns, because their replacement by an ID gives no compression effect.
-* The 127 most often occuring pattern are sorted by descending size and are used to create the file `idTable.c`.
-  * TODO: Sorting is not needed anymore, but `INDIRECT_DICTIONARY_COUNT > 0` needs adapted treatment: No 2-bytes pattern into indirect diectionaries.
+* The most often occuring pattern are sorted by descending size and are used to create the file `idTable.c`.
 
 ###  3.2. <a id='id-table-generation-questions'></a>ID Table Generation Questions
 
 * It is not clear, if the this way created ID table is optimal. Especially, when pattern are sub-pattern of other patterns. That is easily the case with sample data containing the same bytes in longer rows.
 * Also it could make sense to use the length of a pattern as weigth. If, for example a 5-bytes long pattern occurs 100 times and a 2-bytes long pattern exists 200 times in the sample data - which should get preceedence to get into the ID table? My guess is, to multiply the pattern length with its occureances count gives a good approximation.
-* We could also just determine all pattern from 2 to N bytes length and then go byte by byte through the sample data and increment for each byte the pattern counter for the pattern containing this byte on the right place.
-  * Already with N==4 we get > 4 billion possible patterns - no good idea.
 * It could make sense, to build several ID tables and then measure how good the packing is with the different tables.
 
 <!--
@@ -375,9 +374,9 @@ If the real data are similar to the training data, an average packed size of abo
 
 <p align="right">(<a href="#tip-um-top">back to top</a>)</p>
 
-##  7. <a id='possible-variations'></a>Possible Variations
+##  7. <a id='possible-variations'></a>TiP Options
 
-###  7.1. <a id='use-msbit=`1`-as-bit-marker-for-unreplacable-bytes'></a>Use MsBit=`1` as Bit marker for unreplacable Bytes
+###  7.1. <a id='use-msbit=`1`-as-bit-marker-for-unreplacable-bytes'></a>Use MsBit=`1` as Bit marker for unreplacable Bytes (7 bits container)
 
 * `1uuuuuuu` = 128 "ID"s for unreplacables
 * Max TiP package length = srcLen * 8/7 = srcLen * 1.14 -> data can get 14% larger in the worst case.
@@ -389,7 +388,7 @@ If the real data are similar to the training data, an average packed size of abo
 
 > **Consideration**: Implemented and working primary idea
 
-###  7.2. <a id='use-msbits=`11`-as-bit-marker-for-unreplacable-bytes'></a>Use MsBits=`11` as Bit marker for unreplacable Bytes
+###  7.2. <a id='use-msbits=`11`-as-bit-marker-for-unreplacable-bytes'></a>Use MsBits=`11` as Bit marker for unreplacable Bytes (6 bits container)
 
 * `11uuuuuu` = 64 "ID"s for unreplacables
 * Max TiP package length = srcLen * 8/6 = srcLen * 1.33 -> data can get 33% larger in the worst case.
@@ -413,7 +412,7 @@ The TiP unpack routine can discover such cases:
 
 > **Consideration**: Easy to implement as part of the unreplacable bytes handler functions. A small effect is expected, but only for very short buffers, because the probability for a possible optimization sinks with the buffer length. Done.
 
-###  7.4. <a id='additional-indirect-dictionaries-(planned)'></a>Additional Indirect Dictionaries (planned)
+###  7.4. <a id='additional-indirect-dictionaries-(planned)'></a>Additional Indirect Dictionaries
 
 For example we can limit the direct pattern count to 120 (instead of 127 or 191) and use their order in such a way:
 
