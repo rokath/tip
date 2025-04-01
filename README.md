@@ -98,7 +98,7 @@ Table of Contents Generation:
 +   You can try it out!
 ```
 
-./docs/TipUserManual.md#getting-started
+[quick start](./docs/TipUserManual.md#getting-started)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
