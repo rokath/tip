@@ -34,7 +34,8 @@ https://www.markdownguide.org/basic-syntax/#reference-style-links
 # TiP - Tiny Packer For Very Small Buffers
 
 ```diff
-+ Pack buffers from 2 bytes: compression and zeroes elimination for easy package framing❗
++ Pack buffers from 2 bytes size for easy package framing❗
+++ zeroes elimination and adaptable compression in one step
 ```
 
 ---
