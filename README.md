@@ -104,6 +104,8 @@ Table of Contents Generation:
 * If the results convincing, integrate `./src` in your project. 
 * The generated ID table might not be optimal right now.
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ##  3. <a id='tip-components'></a>TiP Components
 
 * C-Code usable on embedded devices inside [src](./src/) folder containing:
