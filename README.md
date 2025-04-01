@@ -1,4 +1,4 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+/<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a id="readme-top"></a>
 
 <!-- PROJECT SHIELDS -->
@@ -98,11 +98,7 @@ Table of Contents Generation:
 +   You can try it out!
 ```
 
-* With `go install ./cmd/generate/...` you can build `ti_generate` and run it.
-* Copy the generated `idTable.c`  into `./src`.
-* Run`go clean -cache && go install ./cmd/...` and use `ti_pack` and `ti_unpack`.
-* If the results convincing, integrate `./src` in your project. 
-* The generated ID table might not be optimal right now.
+./docs/TipUserManual.md#getting-started
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
