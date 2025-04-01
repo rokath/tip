@@ -495,7 +495,7 @@ onlyUnreplacables:
     memcpy( dstNext, srcNext, rest );
     dstNext += rest;
     int len = dstNext - dst;
-#if OPTIMIZE_UNREPLACABLES
+#if OPTIMIZE_UNREPLACABLES == 1
     // cases like II or IIIU or IUII or U
     if (len == 0) { // No unreplacable byte exists.
         return len;
@@ -522,7 +522,7 @@ onlyUnreplacables:
     if ((msBit & unreplacableMask) == unreplacableMask ){ // All unreplacable bytes have most significant bit(s)==1.
         return -len; // We can optimize.
     }
-#endif // #if OPTIMIZE_UNREPLACABLES
+#endif // #if OPTIMIZE_UNREPLACABLES == 1
     return len;
 }
 
@@ -604,7 +604,7 @@ static size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * t
     int u8Count = selectUnreplacableBytes(dst, pidx, src, slen );
     size_t uTCount;
     uint8_t * uTsrc;
-#if OPTIMIZE_UNREPLACABLES
+#if OPTIMIZE_UNREPLACABLES == 1
     if (u8Count > 0){ // no optimization possible
         uTCount = convertBits( dstLimit-1, dst, (size_t)u8Count );
         uTsrc = dstLimit - uTCount;
@@ -614,10 +614,10 @@ static size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * t
         uTsrc = dstLimit - uTCount;
         memcpy( uTsrc, dst, uTCount );
     }
-#else // #if OPTIMIZE_UNREPLACABLES
+#else // #if OPTIMIZE_UNREPLACABLES == 1
     uTCount = convertBits( dstLimit-1, dst, (size_t)u8Count );
     uTsrc = dstLimit - uTCount;
-#endif // #else // #if OPTIMIZE_UNREPLACABLES
+#endif // #else // #if OPTIMIZE_UNREPLACABLES == 1
 #if DEBUG
     printf( "ShortestTipPath: %u, u8Count: %d, uTCount: %u\n", pidx, u8Count, uTCount );
 #endif
