@@ -1,12 +1,12 @@
 #!/bin/bash
-maxPatternSize=4
+maxPatternSize=12
 fn="./trice.bin.sample"
 #fn="../../docs/TipUserManual.md"
-#fn="../../LICENSE.md"
+fn="../../LICENSE.md"
 time ( \
 go clean -cache && \
 go install ../../... && \
-ti_generate -u 6 -n 184 -o ../../src/idTable.c -z ${1:-$maxPatternSize} -i $fn && \
+ti_generate -u 6 -n 186 -o ../../src/idTable.c -z ${1:-$maxPatternSize} -i $fn && \
 go clean -cache && \
 go install ../../... && \
 ti_pack -v -i $fn && \
