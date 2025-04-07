@@ -1,6 +1,7 @@
 package tiptable
 
 import (
+	"encoding/hex"
 	"flag"
 	"fmt"
 	"log"
@@ -22,6 +23,17 @@ var (
 func init() {
 	flag.IntVar(&UnreplacableContainerBits, "u", UnreplacableContainerBits, "unreplacable bytes container bit size (6 or 7)")
 	flag.IntVar(&ID1Count, "n", 127, "direct ID count ID1Count (count for 2-bytes pattern), 0-127 for u=7 and 0-191 for u=6")
+}
+
+func PrintPattern(x pattern.Pattern) {
+	s := make([]byte, 32)
+	for _, b := range x.Bytes {
+		if !(20 <= b && b <= 127) {
+			b = ' '
+		}
+		s = append(s, b)
+	}
+	fmt.Printf("cnt:%4d w:%9.1f b:%8.2f rateD:%8.4f rateI:%8.4f hex:%16s, ascci:'%s'\n", len(x.Pos), x.Weight, x.Balance, 1000*x.RateDirect, 1000*x.RateIndirect, hex.EncodeToString(x.Bytes), string(s))
 }
 
 // Generate writes a file oFn containing C code using loc file(s) and max pattern size.
@@ -50,21 +62,63 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 		p.PrintInfo("Histogram after Scan")
 	}
 	// All these trials did not result in significantly improved
-	//p.DiscardSeldomPattern(10)
+	//p.DiscardSeldomPattern(0)
 	//p.PrintInfo("Histogram after DiscardSeldomPattern")
-	//p.BalanceByteUsage(maxPatternSize)
 	//p.PrintInfo("Histogram after Balance")
-	//p.Reduce()
-	//p.DeleteEmptyKeys()
+	p.ComputeValues(maxPatternSize)
+	p.Reduce()
+	p.ComputeValues(maxPatternSize)
+	p.DeleteEmptyKeys()
+
 	//p.PrintInfo("Histogram after Reduce")
-	//p.AddWeigths()
 	//p.PrintInfo("Histogram after AddWeights")
 
 	// Todo: Reduce bigger keys if smaller keys fit?
+	ll := 1000
+	list := p.ExportAsList()
+	pattern.SortByDescCount(list)
+	fmt.Println("SortByDescCount")
+	for i, x := range list {
+		PrintPattern(x)
+		if i == ll {
+			break
+		}
+	}
+	pattern.SortByDescWeight(list)
+	fmt.Println("SortByDescWeight")
+	for i, x := range list {
+		PrintPattern(x)
+		if i == ll {
+			break
+		}
+	}
+	pattern.SortByDescBalance(list)
+	fmt.Println("SortByDescBalance")
+	for i, x := range list {
+		PrintPattern(x)
+		if i == ll {
+			break
+		}
+	}
+	pattern.SortByIncrRateDirect(list)
+	fmt.Println("SortByIncrRateDirect (i len weight balance RateDirect RateIndirect pattern)")
+	for i, x := range list {
+		PrintPattern(x)
+		if i == ll {
+			break
+		}
+	}
+	pattern.SortByIncrRateIndirect(list)
+	fmt.Println("SortByIncrRateIndirect (i len weight balance RateDirect RateIndirect pattern)")
+	for i, x := range list {
+		PrintPattern(x)
+		if i == ll {
+			break
+		}
+	}
 
-	rlist := p.ExportAsList()
-	list := pattern.SortByDescCountDescLength(rlist)
-	idList, moreBytes, maxListPatternSize := pattern.Extract2BytesPatterns(rlist)
+	idList, moreBytes, maxListPatternSize := pattern.Extract2BytesPatterns(list)
+	//moreBytes = list
 	// lists are sorted by descending count here.
 	if len(idList) >= ID1Count {
 		idList = idList[:ID1Count]
@@ -146,9 +200,9 @@ const uint8_t maxPatternlength = %d;
 		if i < len(idList) {
 			id1, id2 := tipPackageIDs(i + 1)
 			if id2 == -1 {
-				fmt.Fprintf(oh, "\t%s|%7d  0x%04x (%5d)   %02x   --\n", pls, x.Cnt, i+1, i+1, id1)
+				fmt.Fprintf(oh, "\t%s|%7d  0x%04x (%5d)   %02x   --\t%f\t%f\n", pls, len(x.Pos), i+1, i+1, id1, x.Weight, x.Balance)
 			} else {
-				fmt.Fprintf(oh, "\t%s|%7d  0x%04x (%5d)   %02x   %02x\n", pls, x.Cnt, i+1, i+1, id1, uint8(id2))
+				fmt.Fprintf(oh, "\t%s|%7d  0x%04x (%5d)   %02x   %02x\t%f\t%f\n", pls, len(x.Pos), i+1, i+1, id1, uint8(id2), x.Weight, x.Balance)
 			}
 		}
 	}
@@ -160,9 +214,9 @@ const uint8_t maxPatternlength = %d;
 
 	fmt.Fprint(oh, "// Informal, here are all pattern occuring at least twice:\n")
 	for i, x := range list {
-		if x.Cnt > 1 {
+		if len(x.Pos) > 1 {
 			pls := createPatternLineString(x.Bytes, maxListPatternSize) // todo: review and improve code
-			fmt.Fprintf(oh, "//%4d: (%4d) %s\n", i, x.Cnt, pls)
+			fmt.Fprintf(oh, "//%4d: (%4d) %s\n", i, len(x.Pos), pls)
 		}
 	}
 	fmt.Fprintln(oh)

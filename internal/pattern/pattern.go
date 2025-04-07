@@ -21,22 +21,27 @@ func init() {
 	flag.IntVar(&PatternSizeMax, "z", 8, "max pattern size to find")
 }
 
-// Pat is the pattern descriptor of Key.
-type Pat struct {
-	Weight float64 // Weight is first len(Pos) but gets modifikated later
-	Pos    []int   // Pos holds all start occurances of Key
+// Pattern contains a pattern and its occurrances count.
+type Pattern struct {
+	Bytes []byte // Bytes is the pattern as byte slice.
+	//Key   string // Key is the pattern as hex string.
+	Pos          []int // Pos holds all start occurances of Bytes
+	Balance      float64
+	Weight       float64 // count * length
+	RateDirect   float64 // 2 / Weight = 2 / (count * length)
+	RateIndirect float64 // 3 / Weight = 3 / (count * length)
 }
 
 // Histogram objects hold pattern strings occurences count.
 type Histogram struct {
-	Hist map[string]Pat // Hist is the created histogram. len(Pat.Pos) is the occurrances count.
-	mu   *sync.Mutex    // mu guaranties mutual exclusion access to the histogram.
-	Key  []string       // Key holds all histogram keys separately for faster processing.
+	Hist map[string]Pattern // Hist is the created histogram. len(Pat.Pos) is the occurrances count.
+	mu   *sync.Mutex        // mu guaranties mutual exclusion access to the histogram.
+	Keys []string           // Key holds all histogram keys separately for faster processing.
 }
 
 // NewHistogram returns a new Histogram instance.
 func NewHistogram(mu *sync.Mutex) *Histogram {
-	h := make(map[string]Pat, 10000)
+	h := make(map[string]Pattern, 10000)
 	object := Histogram{h, mu, nil}
 	return &object
 }
@@ -60,17 +65,17 @@ func (p *Histogram) ScanData(data []byte, maxPatternSize int, ring bool) {
 }
 
 // DiscardSeldomPattern removes all keys occuring only discardSize or less often.
-func (p *Histogram) DiscardSeldomPattern(discardSize float64) {
+func (p *Histogram) DiscardSeldomPattern(discardSize int) {
 	hlen := len(p.Hist)
-	counts := make([]int, int(discardSize))
+	counts := 0 // make([]int, discardSize)
 	for k, v := range p.Hist {
-		if v.Weight <= discardSize {
+		if len(v.Pos) <= discardSize {
 			delete(p.Hist, k)
-			counts[int(v.Weight-1)]++
+			counts++
 		}
 	}
 	if Verbose {
-		fmt.Println(counts, "of", hlen, "patterns removed.")
+		fmt.Println(counts, "of", hlen, "patterns removed;", len(p.Hist), "remaining,")
 	}
 }
 
@@ -78,7 +83,7 @@ func (p *Histogram) DiscardSeldomPattern(discardSize float64) {
 // and adds them as key strings hex encoded with their count as values to p.Hist.
 // Also the pattern positions are recorded.
 // This pattern search algorithm: Start at offset 0 with ptLen bytes from data as pattern
-// and search data for repetitions by moving byte by byte. ScanData( p.Hist accordingly.
+// and search data for repetitions by moving byte by byte.
 // When ring is true, the data are considered as ring.
 func (p *Histogram) scanForRepetitions(data []byte, ptLen int, ring bool) {
 	if ring {
@@ -93,45 +98,33 @@ func (p *Histogram) scanForRepetitions(data []byte, ptLen int, ring bool) {
 			pat := data[k : k+ptLen]
 			key := hex.EncodeToString(pat) // We need to convert pat into a key.
 			p.mu.Lock()
+
 			pt := p.Hist[key]
+			pt.Bytes = pat
 			pt.Pos = append(pt.Pos, k)
-			pt.Weight++
 			p.Hist[key] = pt
+
 			p.mu.Unlock()
 		}(i)
 	}
 	wg.Wait()
 }
 
-// GetKeys extracts all p.Hist keys into p.Keys.
-func (p *Histogram) GetKeys() {
-	p.mu.Lock()
-	for key := range p.Hist {
-		p.Key = append(p.Key, key)
-	}
-	p.mu.Unlock()
-}
-
 // ExportAsList converts p.Hist into list and restores original patterns.
-func (p *Histogram) ExportAsList() (list []Patt) {
-	list = make([]Patt, len(p.Hist))
+func (p *Histogram) ExportAsList() (list []Pattern) {
+	list = make([]Pattern, len(p.Hist))
 	var i int
 	p.mu.Lock()
-	for key, cnt := range p.Hist {
-		list[i].Cnt = int(cnt.Weight)            // TODO
-		list[i].Bytes, _ = hex.DecodeString(key) // restore bytes
-		list[i].Key = key
+	for _, value := range p.Hist {
+		//list[i].Bytes = value.Bytes
+		//list[i].Key = key
+		//list[i].Pos = value.Pos
+		//value.Key = key
+		list[i] = value
 		i++
 	}
 	p.mu.Unlock()
 	return
-}
-
-// Patt contains a pattern and its occurrances count.
-type Patt struct {
-	Cnt   int    // Cnt is the count of occurrances.
-	Bytes []byte // Bytes is the pattern as byte slice.
-	Key   string // key is the pattern as hex string.
 }
 
 // ScanFile reads iFn ands its data to the histogram.

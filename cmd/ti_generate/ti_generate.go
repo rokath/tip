@@ -4,11 +4,15 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"os"
+	"strings"
 
 	"github.com/rokath/tip/internal/pattern"
 	"github.com/rokath/tip/internal/tiptable"
 	"github.com/spf13/afero"
+
+	"gopkg.in/neurosnap/sentences.v1/english"
 )
 
 var (
@@ -17,6 +21,7 @@ var (
 	date    string // do not initialize, goreleaser will handle that
 	iFn     string // input file name
 	oFn     string // ouput file name
+	tFn     string // token file/folder name
 	help    bool
 	verbose bool
 )
@@ -26,11 +31,48 @@ func init() {
 	flag.BoolVar(&verbose, "v", false, "verbose")
 	flag.StringVar(&iFn, "i", "", "input file/folder name")
 	flag.StringVar(&oFn, "o", "idTable.c", "output file name")
+	flag.StringVar(&tFn, "t", "", "tokenizer file name")
 }
 
 func main() {
 	fSys := &afero.Afero{Fs: afero.NewOsFs()}
 	doit(os.Stdout, fSys)
+}
+
+func tokenize(w io.Writer, fSys *afero.Afero, tFn string) {
+	folder := tFn + ".SAMPLES"
+	if ok, _ := fSys.IsDir(folder); ok {
+		log.Fatal(folder, " exists")
+		return
+	}
+	err := fSys.Mkdir(folder, 0755)
+	if err != nil {
+		log.Fatal(err)
+	}
+	data, err := fSys.ReadFile(tFn)
+	if err != nil {
+		fmt.Fprintln(w, "oh no!")
+		log.Fatal(err)
+	}
+	text := string(data)
+	tokenizer, err := english.NewSentenceTokenizer(nil)
+	if err != nil {
+		fmt.Fprintln(w, "oh no?")
+		panic(err)
+	}
+
+	sentences := tokenizer.Tokenize(text)
+
+	for _, s := range sentences {
+		t := strings.TrimSpace(s.Text)
+		f, err := os.CreateTemp(folder+"", "*.txt")
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+		f.WriteString(t)
+		//fmt.Printf("%3d:\t'%s'\n", i, t)
+	}
 }
 
 func doit(w io.Writer, fSys *afero.Afero) {
@@ -50,7 +92,13 @@ func doit(w io.Writer, fSys *afero.Afero) {
 			fmt.Fprintln(w, version, commit, date)
 		}
 	}
-	if iFn == "" {
+
+	if tFn != "" {
+		tokenize(w, fSys, tFn)
+		return
+	}
+
+	if iFn == "" && tFn == "" {
 		if !verbose {
 			fmt.Fprintln(w, `"ti_generate -h" prints help`)
 		}

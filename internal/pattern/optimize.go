@@ -9,21 +9,19 @@ import (
 )
 
 func (p *Histogram) PrintInfo(message string) {
-	var (
-		smallest float64 = math.MaxFloat32
-		biggest          = float64(0)
-		sum      float64
-		count    int
-	)
-
+	smallest := math.MaxInt
+	biggest := 0
+	sum := 0
+	count := 0
 	for _, v := range p.Hist {
-		smallest = min(smallest, v.Weight)
-
-		biggest = max(biggest, v.Weight)
-		sum += v.Weight
+		size := len(v.Pos)
+		smallest = min(smallest, size)
+		biggest = max(biggest, size)
+		sum += size
 		count++
 	}
-	fmt.Println("average=\t", sum/float64(count), "\tsmallest:", smallest, "\tbiggest:", biggest, "\t", message)
+	avr := float64(sum) / float64(count)
+	fmt.Println("average=\t", avr, "\tsmallest:", smallest, "\tbiggest:", biggest, "\t", message)
 }
 
 func (p *Histogram) DeleteEmptyKeys() {
@@ -34,7 +32,7 @@ func (p *Histogram) DeleteEmptyKeys() {
 	}
 }
 
-// BalanceByteUsage multiplies each key value with maxPatternSize / len(key)
+// ComputeBalance multiplies key length value with maxPatternSize / len(key)
 // to achieve a balance in byte usage for pattern of different length.
 // pattern   | counts | sum | factor | weight
 // abcd      | 1	  | 1	| 4/1    | 4
@@ -47,18 +45,34 @@ func (p *Histogram) DeleteEmptyKeys() {
 // a a a a   | 1+1+1+1|	4   | 4/4    | 4
 // sum = max - (size - 1) = max+1-size
 // weight = max/(max+1-size)
-func (p *Histogram) BalanceByteUsage(maxPatternSize int) {
+func (p *Histogram) ComputeBalance(maxPatternSize int) {
 	for k, v := range p.Hist {
-		factor := float64(maxPatternSize) / float64((maxPatternSize+1)-(len(k)>>1))
-		v.Weight *= factor
+		x := maxPatternSize + 1 - len(k)/2 // longest pattern: x==1, 2-bytes pattern: x == maxPatternSize-1
+		// Longer pattern get a bigger factor, shorter once a smaller factor.
+		// This is the same as with simply using the pattern length but weaker.
+		factor := float64(maxPatternSize) / float64(x)
+		v.Balance = factor * float64(len(v.Bytes))
 		p.Hist[k] = v
 	}
 }
 
-// AddWeigths multiplies weight values with key len.
-func (p *Histogram) AddWeigths() {
+// GetKeys extracts all p.Hist keys into p.Keys.
+func (p *Histogram) GetKeys() {
+	p.mu.Lock()
+	for key := range p.Hist {
+		p.Keys = append(p.Keys, key)
+	}
+	p.mu.Unlock()
+}
+
+// ComputeValues multiplies weight values with key len.
+func (p *Histogram) ComputeValues(maxPatternSize int) {
+	p.GetKeys()
+	p.ComputeBalance(maxPatternSize)
 	for k, v := range p.Hist {
-		v.Weight *= float64(len(k) >> 1)
+		v.Weight = float64(len(v.Pos) * len(v.Bytes))
+		v.RateDirect = 1 / v.Weight
+		v.RateIndirect = 2 / v.Weight
 		p.Hist[k] = v
 	}
 }
@@ -74,20 +88,19 @@ func (p *Histogram) Reduce() {
 	if len(p.Hist) < 2 { // less than 2 keys
 		return
 	}
-	p.GetKeys()
 	p.SortKeysByIncrSize()
-	for i := 0; i < len(p.Key)-1; { // iterate over by increasing length sorted keys
+	for i := 0; i < len(p.Keys)-1; { // iterate over by increasing length sorted keys
 		var smallerKeys []string
-		smallerLength := len(p.Key[i]) // is multiple of 2
-		for i < len(p.Key)-1 && smallerLength == len(p.Key[i]) {
-			smallerKeys = append(smallerKeys, p.Key[i])
+		smallerLength := len(p.Keys[i]) // smallerLength is multiple of 2 and the actual (smallest) size
+		for i < len(p.Keys)-1 && smallerLength == len(p.Keys[i]) {
+			smallerKeys = append(smallerKeys, p.Keys[i]) // collect all keys with the same smaller size
 			i++
 		}
 		k := i // Keep position
 		var biggerKeys []string
-		biggerLength := len(p.Key[i]) // is multiple of 2
-		for i < len(p.Key) && biggerLength == len(p.Key[i]) {
-			biggerKeys = append(biggerKeys, p.Key[i])
+		biggerLength := len(p.Keys[i]) // biggerLength is multiple of 2 and the aktual next bigger size
+		for i < len(p.Keys) && biggerLength == len(p.Keys[i]) {
+			biggerKeys = append(biggerKeys, p.Keys[i]) // collect all keys with the same next bigger size
 			i++
 		}
 		if smallerLength < biggerLength { // == on last item

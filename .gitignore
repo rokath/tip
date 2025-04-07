@@ -6,3 +6,5 @@ examples/L432_inst/out.gcc/
 **/.DS_Store
 
 dummy.txt.SAMPLES/
+
+test/samples/dummy.txt
