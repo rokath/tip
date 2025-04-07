@@ -22,7 +22,7 @@ Table of Contents Generation:
 <!-- vscode-markdown-toc -->
 * 1. [TiP - Why and How? Initial Situation](#tip---why-and-how?-initial-situation)
   * 1.1. [Framing](#framing)
-  * 1.2. [ Very Small Buffer Data Compession](#-very-small-buffer-data-compession)
+  * 1.2. [ Very Small Buffer Data Compression](#-very-small-buffer-data-compression)
 * 2. [Bytes, Numbers and the TiP Idea](#bytes,-numbers-and-the-tip-idea)
 * 3. [ID Table Generation](#id-table-generation)
   * 3.1. [ID Table Generation Algorithm](#id-table-generation-algorithm)
@@ -79,7 +79,7 @@ For low level buffer storage or MCU transfers some kind of framing is needed for
 
 [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) is a newer and much better approach, to achieve framing. It transformes the buffer data containing 256 different characters into a sequence of 255 only characters. That allows to use the spare character as frame delimiter. Usually `0` is used for that.
 
-###  1.2. <a id='-very-small-buffer-data-compession'></a> Very Small Buffer Data Compession
+###  1.2. <a id='-very-small-buffer-data-compression'></a> Very Small Buffer Data Compression
 
 A compression and then [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) framing would do perfectly. But when it comes to very short buffers, like 4 or 20 bytes, **normal zip code fails** to reduce the buffer size and [COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) adds a byte too.
 
