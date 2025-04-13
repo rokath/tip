@@ -44,12 +44,12 @@ func TestHistogram_SortKeysByIncrSize(t *testing.T) {
 func TestSortByDescCountDescLength(t *testing.T) {
 	defer Setup(t)() // This executes Setup(t) and puts the returned function into the defer list.
 	pat := []Pattern{
-		{[]byte{1, 2, 3, 1, 2, 3, 4}, []int{0, 10}, 0, 0, 0, 0},
-		{[]byte{1, 2, 3, 1, 2, 3, 4}, []int{0, 10, 20}, 0, 0, 0, 0},
+		{Bytes: []byte{1, 2, 3, 1, 2, 3, 4}, Pos: []int{0, 10}},
+		{Bytes: []byte{1, 2, 3, 1, 2, 3, 4}, Pos: []int{0, 10, 20}},
 	}
 	exp := []Pattern{
-		{[]byte{1, 2, 3, 1, 2, 3, 4}, []int{0, 10, 20}, 0, 0, 0, 0},
-		{[]byte{1, 2, 3, 1, 2, 3, 4}, []int{0, 10}, 0, 0, 0, 0},
+		{Bytes: []byte{1, 2, 3, 1, 2, 3, 4}, Pos: []int{0, 10, 20}},
+		{Bytes: []byte{1, 2, 3, 1, 2, 3, 4}, Pos: []int{0, 10}},
 	}
 	act := SortByDescCount(pat)
 	assert.Equal(t, exp, act)

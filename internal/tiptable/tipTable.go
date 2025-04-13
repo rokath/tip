@@ -199,9 +199,9 @@ const uint8_t maxPatternlength = %d;
 		if i < len(idList) {
 			id1, id2 := tipPackageIDs(i + 1)
 			if id2 == -1 {
-				fmt.Fprintf(oh, "\t%s|%7d  0x%04x (%5d)   %02x   --\t%f\t%f\n", pls, len(x.Pos), i+1, i+1, id1, x.Weight, x.Balance)
+				fmt.Fprintf(oh, "\t%s|%7d  0x%04x (%5d)   %02x   --\n", pls, len(x.Pos), i+1, i+1, id1)
 			} else {
-				fmt.Fprintf(oh, "\t%s|%7d  0x%04x (%5d)   %02x   %02x\t%f\t%f\n", pls, len(x.Pos), i+1, i+1, id1, uint8(id2), x.Weight, x.Balance)
+				fmt.Fprintf(oh, "\t%s|%7d  0x%04x (%5d)   %02x   %02x\n", pls, len(x.Pos), i+1, i+1, id1, uint8(id2))
 			}
 		}
 	}

@@ -24,6 +24,7 @@ func (p *Histogram) PrintInfo(message string) {
 	fmt.Println("average=\t", avr, "\tsmallest:", smallest, "\tbiggest:", biggest, "\t", message)
 }
 
+/*
 // ComputeBalance multiplies key length value with maxPatternSize / len(key)
 // to achieve a balance in byte usage for pattern of different length.
 // pattern   | counts | sum | factor | weight
@@ -47,6 +48,7 @@ func (p *Histogram) ComputeBalance(maxPatternSize int) {
 		p.Hist[k] = v
 	}
 }
+*/
 
 // GetKeys extracts all p.Hist keys into p.Keys.
 func (p *Histogram) GetKeys() {
@@ -57,6 +59,7 @@ func (p *Histogram) GetKeys() {
 	p.mu.Unlock()
 }
 
+/*
 // ComputeValues computes various values:
 // weight: multiply position count with key len
 // ...
@@ -70,6 +73,7 @@ func (p *Histogram) ComputeValues(maxPatternSize int) {
 		p.Hist[k] = v
 	}
 }
+*/
 
 /*
 ms@MacBook-Pro TRY % time ti_generate -i t1.txt -v -o idTable -u 7 -n 126 -z 3

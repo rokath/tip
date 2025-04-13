@@ -25,11 +25,11 @@ func init() {
 type Pattern struct {
 	Bytes []byte // Bytes is the pattern as byte slice.
 	Pos          []int // Pos holds all start occurances of Bytes. Its len is the occurances count.
-	//DeletedPos   []int // DeletedPos holds all deleted Pos elements.
-	Balance      float64
-	Weight       float64 // count * length
-	RateDirect   float64 // 1 / Weight = 1 / (count * length) is the compression effect
-	RateIndirect float64 // 2 / Weight = 1 / (count * length) is the compression effect
+	DeletedPos   []int // DeletedPos holds all deleted Pos elements.
+	//Balance      float64
+	//Weight       float64 // count * length
+	//RateDirect   float64 // 1 / Weight = 1 / (count * length) is the compression effect
+	//RateIndirect float64 // 2 / Weight = 1 / (count * length) is the compression effect
 }
 
 // Histogram objects hold pattern strings occurences count.

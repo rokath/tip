@@ -68,6 +68,7 @@ func SortByDescCount(list []Pattern) []Pattern {
 	return list
 }
 
+/*
 // SortByDescRateDirect sorts and returns list ordered for descenting count and pattern length.
 // It also sorts alphabetical to get reproducable results.
 func SortByIncrRateDirect(list []Pattern) []Pattern {
@@ -89,6 +90,8 @@ func SortByIncrRateDirect(list []Pattern) []Pattern {
 	slices.SortFunc(list, compareFn)
 	return list
 }
+*/
+/*
 // SortByDescRateDirect sorts and returns list ordered for descenting count and pattern length.
 // It also sorts alphabetical to get reproducable results.
 func SortByIncrRateIndirect(list []Pattern) []Pattern {
@@ -152,7 +155,7 @@ func SortByDescBalance(list []Pattern){
 	}
 	slices.SortFunc(list, compareFn)
 }
-
+*/
 // SortByDescLength sorts and returns list ordered for descending pattern length.
 // It also sorts alphabetical to get reproducable results.
 func SortByDescLength(list []Pattern) []Pattern {
