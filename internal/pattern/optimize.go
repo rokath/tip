@@ -175,7 +175,6 @@ i: 17, cnt:   911, ascci:'ba'
 i: 18, cnt:   889, ascci:'Ua'
 i: 19, cnt:   887, ascci:'ya'
 
-
 If we reduce from larger size we get:
 
 i:  0, cnt: 20185, ascci:'bc' stable
@@ -194,7 +193,6 @@ i: 12, cnt:   650, ascci:'ca'
 i: 13, cnt:   548, ascci:'Ia'
 
 So, the 3-byte sub-pattern are removed but not the 2-byte sub-pattern.
-
 */
 func (p *Histogram) ReduceFromLargerSide() {
 	if Verbose {
@@ -256,24 +254,6 @@ func positionIndexMatch(a []int, idx int, b []int) int {
 	return -1
 }
 
-// DeletePositionsOfKey removes positions from key.
-func (p *Histogram) DeletePositionsOfKey(key string, positions []int) {
-	slices.Sort(positions)
-	positions = slices.Compact(positions) // uniq
-	v := p.Hist[key]
-	n := 0
-	for _, x := range v.Pos {
-		if !slices.Contains(positions, x) {
-			v.Pos[n] = x // keep
-			n++
-		} else {
-			
-		}
-	}
-	v.Pos = v.Pos[:n]
-	p.Hist[key] = v
-}
-
 // getMatchingSubKeyPositions returns those subKey positions, which match appropriate bkey positions.
 func (p *Histogram) getMatchingSubKeyPositions(bkey, subKey string) []int {
 	var offset int
@@ -308,15 +288,40 @@ func (p *Histogram) getMatchingSubKeyPositions(bkey, subKey string) []int {
 	}
 }
 
+// DeletePositionsOfKey removes positions from key.
+func (p *Histogram) DeletePositionsOfKey(key string, positions []int) {
+	if len(positions) == 0 {
+		return
+	}
+	slices.Sort(positions)
+	positions = slices.Compact(positions) // uniq
+	v := p.Hist[key]
+	n := 0
+	for _, x := range v.Pos {
+		if !slices.Contains(positions, x) {
+			v.Pos[n] = x // keep
+			n++
+		} else {
+			// v.DeletedPos = append(v.DeletedPos, x)
+		}
+	}
+	v.Pos = v.Pos[:n]
+	p.Hist[key] = v
+}
+
 // ReduceSubKey checks if subKey is inside bkey and removes the subKey internal positions,
-// if they match with the bkey positions. Example: if subkey has positions 14, 18, 42 and bkey has
-// position 10 and subkey is at index is 4 and 8 and, then the subkey positions 14, 18 are removed.
+// if they match with the bkey positions. Example:
+//
+//	Xabc  Xabc         Yabc
+//
+// subkey:        abc found @       14    18           42
+// bkey:         Xabc found @ 10
+// subkey index inside bkey @        4     8
+// then the subkey positions 14, 18 are removed.
 func (p *Histogram) ReduceSubKey(bkey, subKey string) {
 	p.mu.Lock()
 	pos := p.getMatchingSubKeyPositions(bkey, subKey)
-	if len(pos) > 0 {
-		p.DeletePositionsOfKey(subKey, pos)
-	}
+	p.DeletePositionsOfKey(subKey, pos)
 	p.mu.Unlock()
 }
 
