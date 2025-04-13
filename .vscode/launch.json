@@ -5,6 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "ti_generate rand",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/ti_generate",
+            "env": {},
+            "args": [
+                    "-r", "${workspaceFolder}/RAAANNDDDOMMM.txt",
+                     "-v"
+            ]
+        },
+        {
             "name": "ti_generate launch app",
             "type": "go",
             "request": "launch",
@@ -12,7 +24,7 @@
             "program": "${workspaceFolder}/cmd/ti_generate",
             "env": {},
             "args": [
-                    "-i", "${workspaceFolder}/test/samples/trice.bin.sample",
+                    "-i", "${workspaceFolder}/try.txt",
                     "-o", "${workspaceFolder}/src/idTable.c",
                      "-z", "6",
                      "-u", "7",

@@ -8,3 +8,7 @@ examples/L432_inst/out.gcc/
 dummy.txt.SAMPLES/
 
 test/samples/dummy.txt
+
+TRY/t1.txt
+
+TRY/t2.txt

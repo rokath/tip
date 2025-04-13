@@ -24,12 +24,12 @@ func init() {
 // Pattern contains a pattern and its occurrances count.
 type Pattern struct {
 	Bytes []byte // Bytes is the pattern as byte slice.
-	//Key   string // Key is the pattern as hex string.
-	Pos          []int // Pos holds all start occurances of Bytes
+	Pos          []int // Pos holds all start occurances of Bytes. Its len is the occurances count.
+	//DeletedPos   []int // DeletedPos holds all deleted Pos elements.
 	Balance      float64
 	Weight       float64 // count * length
-	RateDirect   float64 // 2 / Weight = 2 / (count * length)
-	RateIndirect float64 // 3 / Weight = 3 / (count * length)
+	RateDirect   float64 // 1 / Weight = 1 / (count * length) is the compression effect
+	RateIndirect float64 // 2 / Weight = 1 / (count * length) is the compression effect
 }
 
 // Histogram objects hold pattern strings occurences count.
@@ -62,6 +62,15 @@ func (p *Histogram) ScanData(data []byte, maxPatternSize int, ring bool) {
 		}(i)
 	}
 	wg.Wait()
+}
+
+
+func (p *Histogram) DeleteEmptyKeys() {
+	for k, v := range p.Hist {
+		if len(v.Pos) == 0 {
+			delete(p.Hist, k)
+		}
+	}
 }
 
 // DiscardSeldomPattern removes all keys occuring only discardSize or less often.
@@ -116,10 +125,6 @@ func (p *Histogram) ExportAsList() (list []Pattern) {
 	var i int
 	p.mu.Lock()
 	for _, value := range p.Hist {
-		//list[i].Bytes = value.Bytes
-		//list[i].Key = key
-		//list[i].Pos = value.Pos
-		//value.Key = key
 		list[i] = value
 		i++
 	}

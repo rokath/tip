@@ -256,42 +256,43 @@ func TestHistogram_DiscardSeldomPattern(t *testing.T) {
 		p    *Histogram
 		args args
 		exp  *Histogram
-	}{
-		// test cases:
+	}{ // test cases:
 		{"",
 			&Histogram{
-				map[string]Pattern{
-					s2h("ab"):  {[]byte{'a', 'b'}, []int{8, 16, 24, 32}, 0, 0, 0, 0},
-					s2h("bc"):  {[]byte{'b', 'c'}, []int{44}, 0, 0, 0, 0},
-					s2h("abc"): {[]byte{'a', 'b', 'c'}, []int{8}, 0, 0, 0, 0},
+				map[string]Pattern{ // data
+					s2h("ab"):  {[]byte{'a', 'b'}, []int{8, 16, 24, 32}, 0, 0, 0, 0}, // 4 positions
+					s2h("bc"):  {[]byte{'b', 'c'}, []int{44, 66, 88}, 0, 0, 0, 0},    // 3 positions
+					s2h("abc"): {[]byte{'a', 'b', 'c'}, []int{8}, 0, 0, 0, 0},        // 1 position
+					s2h("xyz"): {[]byte{'x', 'y', 'z'}, []int{}, 0, 0, 0, 0},         // 0 position
 				},
 				&m, nil,
 			},
-			args{3},
+			args{3}, // discard 0, 1, 2, 3
 			&Histogram{
-				map[string]Pattern{
-					s2h("ab"): {[]byte{'a', 'b'}, []int{8, 16, 24, 32}, 0, 0, 0, 0},
+				map[string]Pattern{ // expected
+					s2h("ab"): {[]byte{'a', 'b'}, []int{8, 16, 24, 32}, 0, 0, 0, 0}, // 4 positions
 				},
 				&m, nil,
 			},
 		},
-		//{"",
-		//	&Histogram{
-		//		map[string]Pattern{
-		//			s2h("ab"):  {[]byte{'a', 'b'}, []int{8, 16, 24, 32}, 0, 0, 0, 0},
-		//			s2h("bc"):  {[]byte{'b', 'c'}, []int{44}, 0, 0, 0, 0},
-		//			s2h("abc"): {[]byte{'a', 'b', 'c'}, []int{8}, 0, 0, 0, 0},
-		//		},
-		//		&m, nil,
-		//	}, args{1},
-		//	&Histogram{
-		//		map[string]Pattern{
-		//			s2h("ab"): {[]byte{'a', 'b'}, []int{8, 16, 24, 32}, 0, 0, 0, 0},
-		//			s2h("bc"): {[]byte{'b', 'c'}, []int{44}, 0, 0, 0, 0},
-		//		},
-		//		&m, nil,
-		//	},
-		//},
+		{"",
+			&Histogram{
+				map[string]Pattern{ // data
+					s2h("ab"):  {[]byte{'a', 'b'}, []int{8, 16, 24, 32}, 0, 0, 0, 0}, // 4 positions
+					s2h("bc"):  {[]byte{'b', 'c'}, []int{44, 66, 88}, 0, 0, 0, 0},    // 3 positions
+					s2h("abc"): {[]byte{'a', 'b', 'c'}, []int{8}, 0, 0, 0, 0},        // 1 position
+					s2h("xyz"): {[]byte{'x', 'y', 'z'}, []int{}, 0, 0, 0, 0},         // 0 position
+				},
+				&m, nil,
+			}, args{1}, // discard 0, 1
+			&Histogram{
+				map[string]Pattern{ // expected
+					s2h("ab"): {[]byte{'a', 'b'}, []int{8, 16, 24, 32}, 0, 0, 0, 0}, // 4 positions
+					s2h("bc"): {[]byte{'b', 'c'}, []int{44, 66, 88}, 0, 0, 0, 0},    // 3 positions
+				},
+				&m, nil,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -307,18 +308,17 @@ func TestHistogram_GetKeys(t *testing.T) {
 		name string
 		p    *Histogram
 		exp  []string
-	}{
-		// test cases:
+	}{ // test cases:
 		{"",
 			&Histogram{
-				map[string]Pattern{
+				map[string]Pattern{ // data
 					s2h("ab"):  {[]byte{'a', 'b'}, []int{8, 16, 24, 32}, 0, 0, 0, 0},
 					s2h("bc"):  {[]byte{'b', 'c'}, []int{44}, 0, 0, 0, 0},
 					s2h("abc"): {[]byte{'a', 'b', 'c'}, []int{8}, 0, 0, 0, 0},
 				},
 				&m, nil,
 			},
-			[]string{"ab", "bc", "abc"},
+			[]string{"ab", "bc", "abc"}, // expected
 		},
 	}
 	for _, tt := range tests {
@@ -343,14 +343,14 @@ func TestHistogram_ExportAsList(t *testing.T) {
 		// test cases:
 		{"",
 			&Histogram{
-				map[string]Pattern{
+				map[string]Pattern{ // data
 					s2h("ab"):  {[]byte{'a', 'b'}, []int{8, 16, 24, 32}, 0, 0, 0, 0},
 					s2h("bc"):  {[]byte{'b', 'c'}, []int{44}, 0, 0, 0, 0},
 					s2h("abc"): {[]byte{'a', 'b', 'c'}, []int{8}, 0, 0, 0, 0},
 				},
 				&m, nil,
 			},
-			[]Pattern{
+			[]Pattern{ // expected
 				{[]byte{'a', 'b'}, []int{8, 16, 24, 32}, 0, 0, 0, 0},
 				{[]byte{'b', 'c'}, []int{44}, 0, 0, 0, 0},
 				{[]byte{'a', 'b', 'c'}, []int{8}, 0, 0, 0, 0},

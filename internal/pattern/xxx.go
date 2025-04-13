@@ -1,6 +1,26 @@
 package pattern
 
+import "slices"
 
+// SortKeysDescSize sorts p.Keys by decending size and alphabetical.
+func (p *Histogram) SortKeysByDescSize() {
+	compareFn := func(a, b string) int {
+		if len(a) < len(b) {
+			return 1
+		}
+		if len(a) > len(b) {
+			return -1
+		}
+		if a > b {
+			return 1
+		}
+		if a < b {
+			return -1
+		}
+		return 0
+	}
+	slices.SortFunc(p.Keys, compareFn)
+}
 
 /*
 // countOverlapping2 returns sub count in s, assuming s & sub are hex-encoded byte buffers (even length).
@@ -15,7 +35,6 @@ func countOverlapping2(s, sub string) int {
 	return c
 }
 */
-
 
 //  // positionMatch return pos if a and b have one value common or -1.
 //  func positionMatch(a, b []int) int {
@@ -80,26 +99,6 @@ func countOverlapping(s, sub string) int {
 		}
 	}
 	return c
-}
-
-// SortKeysDescSize sorts p.Keys by decending size and alphabetical.
-func (p *Histogram) SortKeysByDescSize() {
-	compareFn := func(a, b string) int {
-		if len(a) < len(b) {
-			return 1
-		}
-		if len(a) > len(b) {
-			return -1
-		}
-		if a > b {
-			return 1
-		}
-		if a < b {
-			return -1
-		}
-		return 0
-	}
-	slices.SortFunc(p.Key, compareFn)
 }
 
 // SortByIncrLength returns list ordered for increasing pattern length.

@@ -126,9 +126,9 @@ func TestHistogram_Reduce_0(t *testing.T) {
 			//     01234
 			fields{
 				map[string]Pattern{
-					//s2h("ab"):  {[]byte{'a', 'b'}, []int{0, 3}, 0, 0, 0, 0}, // in abc and cab and in (aba) and (bab) formally
-					//s2h("bc"):  {[]byte{'b', 'c'}, []int{1}, 0, 0, 0, 0},    // in abc and bca
-					//s2h("ca"):  {[]byte{'c', 'a'}, []int{2}, 0, 0, 0, 0},    // in bca and cab
+					s2h("ab"):  {[]byte{'a', 'b'}, []int{0, 3}, 0, 0, 0, 0}, // in abc and cab and in (aba) and (bab) formally
+					s2h("bc"):  {[]byte{'b', 'c'}, []int{1}, 0, 0, 0, 0},    // in abc and bca
+					s2h("ca"):  {[]byte{'c', 'a'}, []int{2}, 0, 0, 0, 0},    // in bca and cab
 					s2h("abc"): {[]byte{'a', 'b', 'c'}, []int{0}, 0, 0, 0, 0},
 					s2h("bca"): {[]byte{'b', 'c', 'a'}, []int{1}, 0, 0, 0, 0},
 					s2h("cab"): {[]byte{'c', 'a', 'b'}, []int{2}, 0, 0, 0, 0},
@@ -155,7 +155,7 @@ func TestHistogram_Reduce_0(t *testing.T) {
 				Keys: tt.fields.Keys,
 			}
 			//p.ComputeBalance(tt.args)
-			p.Reduce()
+			p.ReduceFromSmallerSide()
 			p.DeleteEmptyKeys()
 			assert.Equal(t, tt.exp, tt.fields.Hist)
 		})
@@ -178,61 +178,96 @@ func TestHistogram_Reduce_1_ok(t *testing.T) {
 		reduce bool
 		exp    map[string]Pattern
 	}{ // test cases:
-		//{
-		//	"", fields{map[string]Pattern{}, &m, nil}, []byte("aaaaa"), 3, true, true,
-		//	map[string]Pattern{
-		//		s2h("aa"):  {[]byte{'a', 'a'}, []int{}, 0, 0, 0, 0},
-		//		s2h("aaa"): {[]byte{'a', 'a', 'a'}, []int{0, 1, 2, 3, 4}, 0, 0, 0, 0},
-		//	},
-		//},
-
-		{ // name fields                               data         maxLen ring reduce
+		{ // name fields                               data    01234  maxLen ring reduce
+			"", fields{map[string]Pattern{}, &m, nil}, []byte("aaaaa"), 3, true, true,
+			map[string]Pattern{
+				s2h("aaa"): {[]byte{'a', 'a', 'a'}, []int{0, 1, 2, 3, 4}, 0, 0, 0, 0},
+			},
+		},
+		{ // name fields                               data    01234  maxLen ring reduce
+			"", fields{map[string]Pattern{}, &m, nil}, []byte("aaaaa"), 3, true, true,
+			map[string]Pattern{
+				s2h("aaa"): {[]byte{'a', 'a', 'a'}, []int{0, 1, 2, 3, 4}, 0, 0, 0, 0},
+			},
+		},
+		{ // name fields                               data    01234567  maxLen ring reduce
+			"", fields{map[string]Pattern{}, &m, nil}, []byte("aaaabaac"), 4, false, false,
+			map[string]Pattern{
+				"6161":     {Bytes: []uint8{0x61, 0x61}, Pos: []int{0, 1, 2, 5}, Balance: 0, Weight: 0, RateDirect: 0, RateIndirect: 0},
+				"616161":   {Bytes: []uint8{0x61, 0x61, 0x61}, Pos: []int{0, 1}, Balance: 0, Weight: 0, RateDirect: 0, RateIndirect: 0},
+				"61616161": {Bytes: []uint8{0x61, 0x61, 0x61, 0x61}, Pos: []int{0}, Balance: 0, Weight: 0, RateDirect: 0, RateIndirect: 0},
+				"61616162": {Bytes: []uint8{0x61, 0x61, 0x61, 0x62}, Pos: []int{1}, Balance: 0, Weight: 0, RateDirect: 0, RateIndirect: 0},
+				"616162":   {Bytes: []uint8{0x61, 0x61, 0x62}, Pos: []int{2}, Balance: 0, Weight: 0, RateDirect: 0, RateIndirect: 0},
+				"61616261": {Bytes: []uint8{0x61, 0x61, 0x62, 0x61}, Pos: []int{2}, Balance: 0, Weight: 0, RateDirect: 0, RateIndirect: 0},
+				"616163":   {Bytes: []uint8{0x61, 0x61, 0x63}, Pos: []int{5}, Balance: 0, Weight: 0, RateDirect: 0, RateIndirect: 0},
+				"6162":     {Bytes: []uint8{0x61, 0x62}, Pos: []int{3}, Balance: 0, Weight: 0, RateDirect: 0, RateIndirect: 0},
+				"616261":   {Bytes: []uint8{0x61, 0x62, 0x61}, Pos: []int{3}, Balance: 0, Weight: 0, RateDirect: 0, RateIndirect: 0},
+				"61626161": {Bytes: []uint8{0x61, 0x62, 0x61, 0x61}, Pos: []int{3}, Balance: 0, Weight: 0, RateDirect: 0, RateIndirect: 0},
+				"6163":     {Bytes: []uint8{0x61, 0x63}, Pos: []int{6}, Balance: 0, Weight: 0, RateDirect: 0, RateIndirect: 0},
+				"6261":     {Bytes: []uint8{0x62, 0x61}, Pos: []int{4}, Balance: 0, Weight: 0, RateDirect: 0, RateIndirect: 0},
+				"626161":   {Bytes: []uint8{0x62, 0x61, 0x61}, Pos: []int{4}, Balance: 0, Weight: 0, RateDirect: 0, RateIndirect: 0},
+				"62616163": {Bytes: []uint8{0x62, 0x61, 0x61, 0x63}, Pos: []int{4}, Balance: 0, Weight: 0, RateDirect: 0, RateIndirect: 0},
+			},
+		},
+		{ // name fields                               data    01234567  maxLen ring reduce
+			"", fields{map[string]Pattern{}, &m, nil}, []byte("aaaabaac"), 4, false, true,
+			map[string]Pattern{
+				s2h("aaaa"): {[]byte{'a', 'a', 'a', 'a'}, []int{0}, 0, 0, 0, 0},
+				s2h("aaab"): {[]byte{'a', 'a', 'a', 'b'}, []int{1}, 0, 0, 0, 0},
+				s2h("aaba"): {[]byte{'a', 'a', 'b', 'a'}, []int{2}, 0, 0, 0, 0},
+				s2h("abaa"): {[]byte{'a', 'b', 'a', 'a'}, []int{3}, 0, 0, 0, 0},
+				s2h("baac"): {[]byte{'b', 'a', 'a', 'c'}, []int{4}, 0, 0, 0, 0},
+			},
+		},
+		{ // name fields                               data    01234  maxLen ring reduce
+			"", fields{map[string]Pattern{}, &m, nil}, []byte("aaaaa"), 3, true, true,
+			map[string]Pattern{
+				s2h("aaa"): {[]byte{'a', 'a', 'a'}, []int{0, 1, 2, 3, 4}, 0, 0, 0, 0},
+			},
+		},
+		{ // name fields                               data    01234  maxLen ring reduce
 			"", fields{map[string]Pattern{}, &m, nil}, []byte("aaaaa"), 3, true, false,
 			map[string]Pattern{
 				s2h("aa"):  {[]byte{'a', 'a'}, []int{0, 1, 2, 3, 4}, 0, 0, 0, 0},
 				s2h("aaa"): {[]byte{'a', 'a', 'a'}, []int{0, 1, 2, 3, 4}, 0, 0, 0, 0},
 			},
 		},
-
-		//{
-		//	"", fields{map[string]Pattern{}, &m, nil}, []byte("ABABCAB"), 3, true, true,
-		//	map[string]Pattern{
-		//		s2h("ABA"): {[]byte{'A', 'B', 'A'}, []int{0, 5}, 0, 0, 0, 0}, // "414241":pattern.Pat{Weight:2, Pos:[]int{0, 5}, 0, 0, 0, 0},
-		//		s2h("BAB"): {[]byte{'B', 'A', 'B'},[]int{1, 6}, 0, 0, 0, 0}, // "424142":pattern.Pat{Weight:2, Pos:[]int{1, 6}, 0, 0, 0, 0},
-		//		s2h("ABC"): {[]byte{'A', 'B', 'C'}, []int{2}, 0, 0, 0, 0},    // "414243":pattern.Pat{Weight:1, Pos:[]int{2}, 0, 0, 0, 0},
-		//		s2h("BCA"): {[]byte{'B', 'C', 'A'},[]int{3}, 0, 0, 0, 0},    // "424341":pattern.Pat{Weight:1, Pos:[]int{3}, 0, 0, 0, 0},
-		//		s2h("CAB"): {[]byte{'C', 'A', 'B'}, []int{4}, 0, 0, 0, 0},    // "434142":pattern.Pat{Weight:1, Pos:[]int{4}}}
-		//	},
-		//},
-
-		//{
-		//	"", fields{map[string]Pattern{}, &m, nil}, []byte("ABABCAB"), 3, false, true,
-		//	map[string]Pattern{
-		//		s2h("ABA"): {[]byte{'A', 'B', 'A'}, []int{0}, 0, 0, 0, 0}, // "414241":pattern.Pat{Weight:2, Pos:[]int{0, 5}, 0, 0, 0, 0},
-		//		s2h("BAB"): {[]byte{'B', 'A', 'B'}, []int{1}, 0, 0, 0, 0}, // "424142":pattern.Pat{Weight:2, Pos:[]int{1, 6}, 0, 0, 0, 0},
-		//		s2h("ABC"): {[]byte{'A', 'B', 'C'},[]int{2}, 0, 0, 0, 0}, // "414243":pattern.Pat{Weight:1, Pos:[]int{2}, 0, 0, 0, 0},
-		//		s2h("BCA"): {[]byte{'B', 'C', 'A'}, []int{3}, 0, 0, 0, 0}, // "424341":pattern.Pat{Weight:1, Pos:[]int{3}, 0, 0, 0, 0},
-		//		s2h("CAB"): {[]byte{'C', 'A', 'B'}, []int{4}, 0, 0, 0, 0}, // "434142":pattern.Pat{Weight:1, Pos:[]int{4}}}
-		//	},
-		//},
-
-		//{
-		//	"", fields{map[string]Pattern{}, &m, nil}, []byte("ABCABC"), 3, false, true,
-		//	map[string]Pattern{
-		//		s2h("ABC"): {[]byte{'A', 'B', 'C'}, []int{0, 3}, 0, 0, 0, 0}, // "414243":pattern.Pat{Weight:1, Pos:[]int{2}, 0, 0, 0, 0},
-		//		s2h("BCA"): {[]byte{'B', 'C', 'A'}, []int{1}, 0, 0, 0, 0},    // "424142":pattern.Pat{Weight:2, Pos:[]int{1, 6}, 0, 0, 0, 0},
-		//		s2h("CAB"): {[]byte{'C', 'A', 'B'}, []int{2}, 0, 0, 0, 0},    // "434142":pattern.Pat{Weight:1, Pos:[]int{4}}}
-		//	},
-		//},
-
-		//{
-		//	"", fields{map[string]Pattern{}, &m, nil}, []byte("ABCABCABC"), 3, false, true,
-		//	map[string]Pattern{
-		//		s2h("ABC"): {[]byte{'A', 'B', 'C'}, []int{0, 3, 6}, 0, 0, 0, 0}, // "414243":pattern.Pat{Weight:1, Pos:[]int{2}, 0, 0, 0, 0},
-		//		s2h("BCA"): {[]byte{'B', 'C', 'A'}, []int{1, 4}, 0, 0, 0, 0},    // "424142":pattern.Pat{Weight:2, Pos:[]int{1, 6}, 0, 0, 0, 0},
-		//		s2h("CAB"): {[]byte{'C', 'A', 'B'}, []int{2, 5}, 0, 0, 0, 0},    // "434142":pattern.Pat{Weight:1, Pos:[]int{4}}}
-		//	},
-		//},
+		{
+			"", fields{map[string]Pattern{}, &m, nil}, []byte("ABABCAB"), 3, true, true,
+			map[string]Pattern{
+				s2h("ABA"): {[]byte{'A', 'B', 'A'}, []int{0, 5}, 0, 0, 0, 0}, // "414241":pattern.Pat{Weight:2, Pos:[]int{0, 5}, 0, 0, 0, 0},
+				s2h("BAB"): {[]byte{'B', 'A', 'B'},[]int{1, 6}, 0, 0, 0, 0}, // "424142":pattern.Pat{Weight:2, Pos:[]int{1, 6}, 0, 0, 0, 0},
+				s2h("ABC"): {[]byte{'A', 'B', 'C'}, []int{2}, 0, 0, 0, 0},    // "414243":pattern.Pat{Weight:1, Pos:[]int{2}, 0, 0, 0, 0},
+				s2h("BCA"): {[]byte{'B', 'C', 'A'},[]int{3}, 0, 0, 0, 0},    // "424341":pattern.Pat{Weight:1, Pos:[]int{3}, 0, 0, 0, 0},
+				s2h("CAB"): {[]byte{'C', 'A', 'B'}, []int{4}, 0, 0, 0, 0},    // "434142":pattern.Pat{Weight:1, Pos:[]int{4}}}
+			},
+		},
+		{
+			"", fields{map[string]Pattern{}, &m, nil}, []byte("ABABCAB"), 3, false, true,
+			map[string]Pattern{
+				s2h("ABA"): {[]byte{'A', 'B', 'A'}, []int{0}, 0, 0, 0, 0}, // "414241":pattern.Pat{Weight:2, Pos:[]int{0, 5}, 0, 0, 0, 0},
+				s2h("BAB"): {[]byte{'B', 'A', 'B'}, []int{1}, 0, 0, 0, 0}, // "424142":pattern.Pat{Weight:2, Pos:[]int{1, 6}, 0, 0, 0, 0},
+				s2h("ABC"): {[]byte{'A', 'B', 'C'},[]int{2}, 0, 0, 0, 0}, // "414243":pattern.Pat{Weight:1, Pos:[]int{2}, 0, 0, 0, 0},
+				s2h("BCA"): {[]byte{'B', 'C', 'A'}, []int{3}, 0, 0, 0, 0}, // "424341":pattern.Pat{Weight:1, Pos:[]int{3}, 0, 0, 0, 0},
+				s2h("CAB"): {[]byte{'C', 'A', 'B'}, []int{4}, 0, 0, 0, 0}, // "434142":pattern.Pat{Weight:1, Pos:[]int{4}}}
+			},
+		},
+		{
+			"", fields{map[string]Pattern{}, &m, nil}, []byte("ABCABC"), 3, false, true,
+			map[string]Pattern{
+				s2h("ABC"): {[]byte{'A', 'B', 'C'}, []int{0, 3}, 0, 0, 0, 0}, // "414243":pattern.Pat{Weight:1, Pos:[]int{2}, 0, 0, 0, 0},
+				s2h("BCA"): {[]byte{'B', 'C', 'A'}, []int{1}, 0, 0, 0, 0},    // "424142":pattern.Pat{Weight:2, Pos:[]int{1, 6}, 0, 0, 0, 0},
+				s2h("CAB"): {[]byte{'C', 'A', 'B'}, []int{2}, 0, 0, 0, 0},    // "434142":pattern.Pat{Weight:1, Pos:[]int{4}}}
+			},
+		},
+		{
+			"", fields{map[string]Pattern{}, &m, nil}, []byte("ABCABCABC"), 3, false, true,
+			map[string]Pattern{
+				s2h("ABC"): {[]byte{'A', 'B', 'C'}, []int{0, 3, 6}, 0, 0, 0, 0}, // "414243":pattern.Pat{Weight:1, Pos:[]int{2}, 0, 0, 0, 0},
+				s2h("BCA"): {[]byte{'B', 'C', 'A'}, []int{1, 4}, 0, 0, 0, 0},    // "424142":pattern.Pat{Weight:2, Pos:[]int{1, 6}, 0, 0, 0, 0},
+				s2h("CAB"): {[]byte{'C', 'A', 'B'}, []int{2, 5}, 0, 0, 0, 0},    // "434142":pattern.Pat{Weight:1, Pos:[]int{4}}}
+			},
+		},
 
 	}
 	for _, tt := range tests {
@@ -244,7 +279,7 @@ func TestHistogram_Reduce_1_ok(t *testing.T) {
 			}
 			p.ScanData(tt.data, tt.maxLen, tt.ring)
 			if tt.reduce {
-				p.Reduce()
+				p.ReduceFromSmallerSide()
 			}
 			p.DeleteEmptyKeys()
 			p.SortPositions()
@@ -271,7 +306,7 @@ func TestHistogram_Reduce_1_devel(t *testing.T) {
 	}{ // test cases:
 		{ // name fields                               data                  max, ring reduce
 			"", fields{map[string]Pattern{}, &m, nil}, []byte("ABCABCABCABC"), 4, false, false,
-			//map[string]Pat{ //////////////////////////// 0123456789ab
+			//map[string]Pat{ //////////////////////////////// 0123456789ab
 			map[string]Pattern{
 				s2h("AB"):   {[]byte{'A', 'B'}, []int{0, 3, 6, 9}, 0, 0, 0, 0},        //"4142":     {Weight: 4, Pos: []int{0, 3, 6, 9}, 0, 0, 0, 0},
 				s2h("BC"):   {[]byte{'B', 'C'}, []int{1, 4, 7, 10}, 0, 0, 0, 0},       //"4243":     {Weight: 4, Pos: []int{1, 4, 7, 10}, 0, 0, 0, 0},
@@ -284,16 +319,16 @@ func TestHistogram_Reduce_1_devel(t *testing.T) {
 				s2h("CABC"): {[]byte{'C', 'A', 'B', 'C'}, []int{2, 5, 8}, 0, 0, 0, 0}, //"43414243": {Weight: 3, Pos: []int{2, 5, 8}, 0, 0, 0, 0},
 			},
 		},
-		//{ // name fields                               data                  max, ring reduce
-		//	"", fields{map[string]Pattern{}, &m, nil}, []byte("ABCABCABCABC"), 4, false, true,
-		//	map[string]Pattern{ ////////////////////////////// 0123456789ab
-		//		////////////////////////////////////////// ABCA  ABCA   <- 2 pattern
-		//		////////////////////////////////////////// ABCABCABCABC <- 3 pattern
-		//		s2h("ABCA"): {[]byte{'A', 'B', 'C', 'A'},  []int{0, 3, 6}, 0, 0, 0, 0}, //"41424341":pattern.Pat{Weight:3, Pos:[]int{0, 3, 6}, 0, 0, 0, 0},
-		//		s2h("BCAB"): {[]byte{'B', 'C', 'A', 'B'},  []int{1, 4, 7}, 0, 0, 0, 0}, //"42434142":pattern.Pat{Weight:3, Pos:[]int{1, 4, 7}, 0, 0, 0, 0},
-		//		s2h("CABC"): {[]byte{'C', 'A', 'B', 'C'},  []int{2, 5, 8}, 0, 0, 0, 0}, //"43414243":pattern.Pat{Weight:3, Pos:[]int{2, 5, 8}}
-		//	},
-		//},
+		{ // name fields                               data                  max, ring reduce
+			"", fields{map[string]Pattern{}, &m, nil}, []byte("ABCABCABCABC"), 4, false, true,
+			map[string]Pattern{ ////////////////////////////// 0123456789ab
+				////////////////////////////////////////////// ABCA  ABCA   <- 2 pattern
+				////////////////////////////////////////////// ABCABCABCABC <- 3 pattern
+				s2h("ABCA"): {[]byte{'A', 'B', 'C', 'A'},  []int{0, 3, 6}, 0, 0, 0, 0}, //"41424341":pattern.Pat{Weight:3, Pos:[]int{0, 3, 6}, 0, 0, 0, 0},
+				s2h("BCAB"): {[]byte{'B', 'C', 'A', 'B'},  []int{1, 4, 7}, 0, 0, 0, 0}, //"42434142":pattern.Pat{Weight:3, Pos:[]int{1, 4, 7}, 0, 0, 0, 0},
+				s2h("CABC"): {[]byte{'C', 'A', 'B', 'C'},  []int{2, 5, 8}, 0, 0, 0, 0}, //"43414243":pattern.Pat{Weight:3, Pos:[]int{2, 5, 8}}
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -304,7 +339,7 @@ func TestHistogram_Reduce_1_devel(t *testing.T) {
 			}
 			p.ScanData(tt.data, tt.maxLen, tt.ring)
 			if tt.reduce {
-				p.Reduce()
+				p.ReduceFromSmallerSide()
 			}
 			p.DeleteEmptyKeys()
 			p.SortPositions()
@@ -320,15 +355,17 @@ func TestHistogram_ComputeValues(t *testing.T) {
 		p    *Histogram
 		exp  map[string]float64
 	}{ // test cases:
-		{
-			"", &Histogram{ // name Histogram
-				map[string]Pattern{
-					"1122":   {[]byte{0x11, 0x22}, []int{8, 32}, 0, 0, 0, 0},
-					"112233": {[]byte{0x11, 0x22, 0x33}, []int{8}, 0, 0, 0, 0},
-				},
-				&mu, nil,
+		{"", &Histogram{
+			map[string]Pattern{ // data
+				"1122":   {[]byte{0x11, 0x22}, []int{8, 32}, 0, 0, 0, 0}, // count of positions is 2
+				"112233": {[]byte{0x11, 0x22, 0x33}, []int{8}, 0, 0, 0, 0}, // count of positions is 1
 			},
-			map[string]float64{"1122": 4, "112233": 3}, // exp
+			&mu, nil,
+		},
+			map[string]float64{ // exp
+				"1122":   4,
+				"112233": 3,
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -355,35 +392,48 @@ func TestHistogram_ReduceSubKey(t *testing.T) {
 		p    *Histogram
 		args args
 		exp  *Histogram
-	}{
-		// test cases:
-		{
-			"",
-			&Histogram{
+	}{ // test cases:
+		{"",
+			&Histogram{ // data
 				map[string]Pattern{
 					s2h("ab"):     {[]byte{'a', 'b'}, []int{8, 32}, 0, 0, 0, 0},
 					s2h("112233"): {[]byte{0x11, 0x22, 0x33}, []int{8}, 0, 0, 0, 0},
 				},
 				&mu, nil,
 			},
-			args{
-				s2h("abc"),
-				s2h("ab"),
+			args{ // param
+				s2h("abc"), // key
+				s2h("ab"),  // subkey
 			},
-			&Histogram{map[string]Pattern{s2h("ab"): {[]byte{'a', 'b'}, []int{8, 32}, 0, 0, 0, 0}, s2h("112233"): {[]byte{0x11, 0x22, 0x33}, []int{8}, 0, 0, 0, 0}}, &mu, nil},
+			&Histogram{map[string]Pattern{ // expected data (unchanged)
+				s2h("ab"):     {[]byte{'a', 'b'}, []int{8, 32}, 0, 0, 0, 0},
+				s2h("112233"): {[]byte{0x11, 0x22, 0x33}, []int{8}, 0, 0, 0, 0},
+			}, &mu, nil},
 		},
-		//{
-		//	"",
-		//	&Histogram{map[string]Pattern{s2h("ab"): {[]byte{'a', 'b'}, []int{8, 32}, 0, 0, 0, 0}, s2h("abc"): {[]byte{'a', 'b', 'c'}, []int{8}, 0, 0, 0, 0}}, &mu, nil},
-		//	args{s2h("abc"), s2h("ab")},
-		//	&Histogram{map[string]Pattern{s2h("ab"): {[]byte{'a', 'b'}, []int{32}, 0, 0, 0, 0}, s2h("abc"): {[]byte{'a', 'b', 'c'},[]int{8}, 0, 0, 0, 0}}, &mu, nil},
-		//},
-		//{
-		//	"",
-		//	&Histogram{map[string]Pattern{s2h("ab"): {2, []int{8, 32}, 0, 0, 0, 0}, s2h("bc"): {2, []int{9, 44}, 0, 0, 0, 0}, s2h("abc"): {1, []int{8}, 0, 0, 0, 0}}, &mu, nil},
-		//	args{s2h("abc"), s2h("bc")},
-		//	&Histogram{map[string]Pattern{s2h("ab"): {2, []int{8, 32}, 0, 0, 0, 0}, s2h("bc"): {1, []int{44}, 0, 0, 0, 0}, s2h("abc"): {1, []int{8}, 0, 0, 0, 0}}, &mu, nil},
-		//},
+		{"",
+			&Histogram{map[string]Pattern{ // data
+				s2h("ab"):  {[]byte{'a', 'b'}, []int{8, 32}, 0, 0, 0, 0},
+				s2h("abc"): {[]byte{'a', 'b', 'c'}, []int{8}, 0, 0, 0, 0},
+			}, &mu, nil},
+			args{s2h("abc"), s2h("ab")}, // param key & subkey
+			&Histogram{map[string]Pattern{ // expected data (removed position 8 in ab)
+				s2h("ab"):  {[]byte{'a', 'b'}, []int{32}, 0, 0, 0, 0},
+				s2h("abc"): {[]byte{'a', 'b', 'c'}, []int{8}, 0, 0, 0, 0},
+			}, &mu, nil}, // exp
+		},
+		{"",
+			&Histogram{map[string]Pattern{ // data
+				s2h("ab"):  {[]byte{'a', 'b'}, []int{8, 32}, 0, 0, 0, 0},
+				s2h("bc"):  {[]byte{'b', 'c'}, []int{9, 44}, 0, 0, 0, 0},
+				s2h("abc"): {[]byte{'a', 'b', 'c'}, []int{8}, 0, 0, 0, 0},
+			}, &mu, nil},
+			args{s2h("abc"), s2h("bc")}, // param key & subkey
+			&Histogram{map[string]Pattern{ // expected data (removed position 9 in bc)
+				s2h("ab"):  {[]byte{'a', 'b'}, []int{8, 32}, 0, 0, 0, 0},
+				s2h("bc"):  {[]byte{'b', 'c'}, []int{44}, 0, 0, 0, 0},
+				s2h("abc"): {[]byte{'a', 'b', 'c'}, []int{8}, 0, 0, 0, 0},
+			}, &mu, nil},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

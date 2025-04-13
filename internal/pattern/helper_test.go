@@ -4,6 +4,9 @@ import (
 	"encoding/hex"
 	"math"
 	"slices"
+	"testing"
+
+	"github.com/tj/assert"
 )
 
 // SortPositions pouts all positions in ascending order.
@@ -23,4 +26,9 @@ func withinTolerance(a, b, epsilon float64) bool {
 
 func s2h(s string) string {
 	return hex.EncodeToString([]byte(s))
+}
+
+func Test_s2h(t *testing.T) {
+	s := s2h("XYZ")
+	assert.Equal(t, "58595a", s)
 }

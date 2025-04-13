@@ -1,7 +1,6 @@
 package tiptable
 
 import (
-	"encoding/hex"
 	"flag"
 	"fmt"
 	"log"
@@ -25,7 +24,7 @@ func init() {
 	flag.IntVar(&ID1Count, "n", 127, "direct ID count ID1Count (count for 2-bytes pattern), 0-127 for u=7 and 0-191 for u=6")
 }
 
-func PrintPattern(x pattern.Pattern) {
+func PrintPattern(index int, x pattern.Pattern) {
 	s := make([]byte, 32)
 	for _, b := range x.Bytes {
 		if !(20 <= b && b <= 127) {
@@ -33,7 +32,8 @@ func PrintPattern(x pattern.Pattern) {
 		}
 		s = append(s, b)
 	}
-	fmt.Printf("cnt:%4d w:%9.1f b:%8.2f rateD:%8.4f rateI:%8.4f hex:%16s, ascci:'%s'\n", len(x.Pos), x.Weight, x.Balance, 1000*x.RateDirect, 1000*x.RateIndirect, hex.EncodeToString(x.Bytes), string(s))
+	//fmt.Printf("cnt:%4d w:%9.1f b:%8.2f rateD:%8.4f rateI:%8.4f hex:%16s, ascci:'%s'\n", len(x.Pos), x.Weight, x.Balance, 1000*x.RateDirect, 1000*x.RateIndirect, hex.EncodeToString(x.Bytes), string(s))
+	fmt.Printf("i:%3d, cnt:%6d, ascci:'%s'\n", index, len(x.Pos), string(s))
 }
 
 // Generate writes a file oFn containing C code using loc file(s) and max pattern size.
@@ -62,60 +62,59 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 		p.PrintInfo("Histogram after Scan")
 	}
 	// All these trials did not result in significantly improved
-	//p.DiscardSeldomPattern(0)
-	//p.PrintInfo("Histogram after DiscardSeldomPattern")
-	//p.PrintInfo("Histogram after Balance")
-	p.ComputeValues(maxPatternSize)
-	p.Reduce()
-	p.ComputeValues(maxPatternSize)
-	p.DeleteEmptyKeys()
+	p.DiscardSeldomPattern(300)
+	//p.ComputeValues(maxPatternSize)
+	p.ReduceFromSmallerSide()
+	//p.ReduceFromLargerSide()
+	//p.ComputeValues(maxPatternSize)
+	//p.DeleteEmptyKeys()
 
 	//p.PrintInfo("Histogram after Reduce")
 	//p.PrintInfo("Histogram after AddWeights")
 
 	// Todo: Reduce bigger keys if smaller keys fit?
-	ll := 1000
+	ll := 200
 	list := p.ExportAsList()
 	pattern.SortByDescCount(list)
 	fmt.Println("SortByDescCount")
 	for i, x := range list {
-		PrintPattern(x)
+		PrintPattern(i, x)
 		if i == ll {
 			break
 		}
 	}
-	pattern.SortByDescWeight(list)
-	fmt.Println("SortByDescWeight")
-	for i, x := range list {
-		PrintPattern(x)
-		if i == ll {
-			break
-		}
-	}
-	pattern.SortByDescBalance(list)
-	fmt.Println("SortByDescBalance")
-	for i, x := range list {
-		PrintPattern(x)
-		if i == ll {
-			break
-		}
-	}
-	pattern.SortByIncrRateDirect(list)
-	fmt.Println("SortByIncrRateDirect (i len weight balance RateDirect RateIndirect pattern)")
-	for i, x := range list {
-		PrintPattern(x)
-		if i == ll {
-			break
-		}
-	}
-	pattern.SortByIncrRateIndirect(list)
-	fmt.Println("SortByIncrRateIndirect (i len weight balance RateDirect RateIndirect pattern)")
-	for i, x := range list {
-		PrintPattern(x)
-		if i == ll {
-			break
-		}
-	}
+	//pattern.SortByDescWeight(list)
+	//fmt.Println("SortByDescWeight")
+	//for i, x := range list {
+	//	PrintPattern(x)
+	//	if i == ll {
+	//		break
+	//	}
+	//}
+	// pattern.SortByDescBalance(list)
+	// fmt.Println("SortByDescBalance")
+	// for i, x := range list {
+	// 	PrintPattern(x)
+	// 	if i == ll {
+	// 		break
+	// 	}
+	// }
+	//  pattern.SortByIncrRateDirect(list)
+	//  fmt.Println("SortByIncrRateDirect (i len weight balance RateDirect RateIndirect pattern)")
+	//  for i, x := range list {
+	//  	PrintPattern(x)
+	//  	if i == ll {
+	//  		break
+	//  	}
+	//  }
+	//  pattern.SortByIncrRateIndirect(list)
+	//  fmt.Println("SortByIncrRateIndirect (i len weight balance RateDirect RateIndirect pattern)")
+	//  for i, x := range list {
+	//  	PrintPattern(x)
+	//  	if i == ll {
+	//  		break
+	//  	}
+	//  }
 
 	idList, moreBytes, maxListPatternSize := pattern.Extract2BytesPatterns(list)
 	//moreBytes = list

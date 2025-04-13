@@ -148,12 +148,6 @@ func SortByDescBalance(list []Pattern){
 		if len(a.Bytes) > len(b.Bytes) {
 			return -1
 		}
-		//if a.Key > b.Key {
-		//	return 1
-		//}
-		//if a.Key < b.Key {
-		//	return -1
-		//}
 		return 0
 	}
 	slices.SortFunc(list, compareFn)
@@ -169,12 +163,6 @@ func SortByDescLength(list []Pattern) []Pattern {
 		if len(a.Bytes) > len(b.Bytes) {
 			return -1
 		}
-		//if a.Key > b.Key {
-		//	return 1
-		//}
-		//if a.Key < b.Key {
-		//	return -1
-		//}
 		return 0
 	}
 	slices.SortFunc(list, compareFn)

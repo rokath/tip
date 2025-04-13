@@ -8,7 +8,7 @@ import (
 	"github.com/tj/assert"
 )
 
-// TODO
+// This test is not really needed.
 func _TestGenerateAA(t *testing.T) {
 	defer Setup(t)() // This executes Setup(t) and puts the returned function into the defer list.
 	testTable := []struct {
