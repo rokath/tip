@@ -66,7 +66,8 @@ func doit(w io.Writer, fSys *afero.Afero) {
 	}
 
 	if rFn != "" {
-		f, err := fSys.Create(rFn+".txt")
+		fn := rFn+".txt"
+		f, err := fSys.Create(fn)
 		if err != nil {
 			panic(err)
 		}
@@ -84,7 +85,10 @@ func doit(w io.Writer, fSys *afero.Afero) {
 			f.WriteString("123")
 			f.WriteString(randSeq(6))
 			f.WriteString("xy")
+			f.WriteString(randSeq(6))
+			f.WriteString("AAAAAA")
 		}
+		fmt.Println( fn, "created")
 		return
 	}
 

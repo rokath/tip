@@ -117,6 +117,7 @@ Pattern 'bc' count is 10231 and should get like 0 after REDUCE, what is ok.
 // The sub-key count is reduced by n.
 // It uses the key positions.
 func (p *Histogram) ReduceFromSmallerSide() {
+	var lastSmallerKeys []string
 	if Verbose {
 		fmt.Println("Reducing histogram with length", len(p.Hist), "...")
 	}
@@ -141,7 +142,8 @@ func (p *Histogram) ReduceFromSmallerSide() {
 		}
 		if smallerLength < biggerLength { // == on last item
 			fmt.Println(i, biggerLength, smallerLength, "(i, biggerLength, smallerLength)")
-			p.ReduceOverlappingKeys(biggerKeys, smallerKeys)
+			p.ReduceOverlappingKeys(biggerKeys, smallerKeys, lastSmallerKeys)
+			lastSmallerKeys = smallerKeys
 		}
 		i = k // restore position
 	}
@@ -193,7 +195,7 @@ i: 12, cnt:   650, ascci:'ca'
 i: 13, cnt:   548, ascci:'Ia'
 
 So, the 3-byte sub-pattern are removed but not the 2-byte sub-pattern.
-*/
+
 func (p *Histogram) ReduceFromLargerSide() {
 	if Verbose {
 		fmt.Println("Reducing histogram with length", len(p.Hist), "...")
@@ -229,7 +231,7 @@ func (p *Histogram) ReduceFromLargerSide() {
 	}
 }
 
-/*/ positionsMatch returns all sub positions where bpos + idx and sub equal.
+// positionsMatch returns all sub positions where bpos + idx and sub equal.
 func positionsMatch(bpos []int, idx int, sub []int) []int {
 	pos := make([]int, 0)
 	for _, x := range bpos {
@@ -288,11 +290,42 @@ func (p *Histogram) getMatchingSubKeyPositions(bkey, subKey string) []int {
 	}
 }
 
+// Example for understanding:
+// 01234567 (positions)
+// xxAAAAyy (patterns)
+// xxAA     @ 0
+//  xAAA    @ 1       <- when xAAA is big key, xAA@1 is removed but AA@2 needs to be restored then
+//   AAAA   @ 2
+//    AAAy  @ 3       <- when AAAy is big key, AAy@4 is removed but AA@4 needs to be restored then
+//     AAyy @ 4
+// xxA      @ 0
+//  xAA     @ 1        <- when xAA is big key AA@2 is removed
+//   AAA    @ 2 = 2 3
+//    AAA   @ 3 = 2 3
+//     AAy  @ 4        <- when AAy is big key AA@4 is removed
+//      Ayy @ 5
+// xx       @ 0
+//  xA      @ 1
+//   AA     @ 2 = 2 3 4
+//    AA    @ 3 = 2 3 4
+//     AA   @ 4 = 2 3 4
+//      Ay  @ 5
+//       yy @ 6
+
 // DeletePositionsOfKey removes positions from key.
-func (p *Histogram) DeletePositionsOfKey(key string, positions []int) {
+func (p *Histogram) DeletePositionsOfKey(key string, positions []int, lastSmallerKeys []string) {
 	if len(positions) == 0 {
 		return
 	}
+
+	// Before we delete the positions of key, we need to check if lastSmallerKeys 
+	// contain some deleted matching positions or in other words, if current key
+	// caused a position deletion in lastSmallerKeys and we need to restore that position.
+	for i := range lastSmallerKeys {
+		p.RestoreSubKey(lastSmallerKeys[i], key )
+	}
+
+
 	slices.Sort(positions)
 	positions = slices.Compact(positions) // uniq
 	v := p.Hist[key]
@@ -302,11 +335,34 @@ func (p *Histogram) DeletePositionsOfKey(key string, positions []int) {
 			v.Pos[n] = x // keep
 			n++
 		} else {
-			// v.DeletedPos = append(v.DeletedPos, x)
+			v.DeletedPos = append(v.DeletedPos, x)
 		}
 	}
 	v.Pos = v.Pos[:n]
 	p.Hist[key] = v
+}
+
+func (p *Histogram) RestorePositionsOfKey(key string, positions []int){
+	if len(positions) == 0 {
+		return
+	}
+
+	//  v := p.Hist[key]
+	//  for i, x := range v.DeletedPos {
+	//  	if slices.Contains(positions, x) {
+	//  		v.Pos = append( v.Pos, x)
+	//  	} else {
+	//  		v.DeletedPos[i] = -1 // invalidate deleted position
+	//  	}
+	//  }
+	//  p.Hist[key] = v
+}
+
+func (p *Histogram) RestoreSubKey(bkey, subKey string ){
+	p.mu.Lock()
+	pos := p.getMatchingSubKeyPositions(bkey, subKey)
+	p.RestorePositionsOfKey(subKey, pos )
+	p.mu.Unlock()
 }
 
 // ReduceSubKey checks if subKey is inside bkey and removes the subKey internal positions,
@@ -318,23 +374,23 @@ func (p *Histogram) DeletePositionsOfKey(key string, positions []int) {
 // bkey:         Xabc found @ 10
 // subkey index inside bkey @        4     8
 // then the subkey positions 14, 18 are removed.
-func (p *Histogram) ReduceSubKey(bkey, subKey string) {
+func (p *Histogram) ReduceSubKey(bkey, subKey string, lastSmallerKeys []string) {
 	p.mu.Lock()
 	pos := p.getMatchingSubKeyPositions(bkey, subKey)
-	p.DeletePositionsOfKey(subKey, pos)
+	p.DeletePositionsOfKey(subKey, pos, lastSmallerKeys)
 	p.mu.Unlock()
 }
 
 // ReduceOverlappingKeys checks for all biggerKeys if the smallerKeys are part of them
 // and removes the subkey internal positions, if the positions are matching.
-func (p *Histogram) ReduceOverlappingKeys(biggerKeys, smallerKeys []string) {
+func (p *Histogram) ReduceOverlappingKeys(biggerKeys, smallerKeys, lastSmallerKeys []string) {
 	var wg sync.WaitGroup
 	for _, bkey := range biggerKeys {
 		wg.Add(1)
 		go func(bigKey string) {
 			defer wg.Done()
 			for _, subKey := range smallerKeys {
-				p.ReduceSubKey(bkey, subKey)
+				p.ReduceSubKey(bkey, subKey, lastSmallerKeys)
 			}
 		}(bkey)
 	}

@@ -73,6 +73,11 @@ func (p *Histogram) DeleteEmptyKeys() {
 	}
 }
 
+//  func (p *Histogram) DiscardSeldomPattern2(){
+//  	SortByDescCount()
+//  
+//  }
+
 // DiscardSeldomPattern removes all keys occuring only discardSize or less often.
 func (p *Histogram) DiscardSeldomPattern(discardSize int) {
 	hlen := len(p.Hist)

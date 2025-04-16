@@ -62,7 +62,8 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 		p.PrintInfo("Histogram after Scan")
 	}
 	// All these trials did not result in significantly improved
-	p.DiscardSeldomPattern(300)
+	discardSize := 100 // len(p.Hist)/100
+	p.DiscardSeldomPattern(discardSize)
 	//p.ComputeValues(maxPatternSize)
 	p.ReduceFromSmallerSide()
 	//p.ReduceFromLargerSide()
@@ -73,7 +74,7 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 	//p.PrintInfo("Histogram after AddWeights")
 
 	// Todo: Reduce bigger keys if smaller keys fit?
-	ll := 200
+	ll := 50
 	list := p.ExportAsList()
 	pattern.SortByDescCount(list)
 	fmt.Println("SortByDescCount")
