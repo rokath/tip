@@ -8,6 +8,15 @@ import (
 	"github.com/tj/assert"
 )
 
+// GetKeys extracts all p.Hist keys into p.Keys.
+func (p *Histogram) GetKeys() {
+	p.mu.Lock()
+	for key := range p.Hist {
+		p.Keys = append(p.Keys, key)
+	}
+	p.mu.Unlock()
+}
+
 func TestHistogram_scanForRepetitions(t *testing.T) {
 	var m sync.Mutex
 	type fields struct {

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"slices"
 	"strings"
 	"sync"
 
@@ -16,7 +17,7 @@ var (
 	ID1Max                    int // ID1Max results immediately from UnreplacableContainerBits.
 	ID1Count                  int // ID1Count its the direct IDs count.
 	MaxID                     int // MaxID is the max possible amount of pattern in the idTable.
-	UnreplacableContainerBits = 6 // UnreplacableContainerBits is container bit size for unreplacebale bytes.
+	UnreplacableContainerBits = 7 // UnreplacableContainerBits is container bit size for unreplacebale bytes.
 )
 
 func init() {
@@ -33,20 +34,22 @@ func PrintPattern(index int, x pattern.Pattern) {
 		s = append(s, b)
 	}
 	//fmt.Printf("cnt:%4d w:%9.1f b:%8.2f rateD:%8.4f rateI:%8.4f hex:%16s, ascci:'%s'\n", len(x.Pos), x.Weight, x.Balance, 1000*x.RateDirect, 1000*x.RateIndirect, hex.EncodeToString(x.Bytes), string(s))
-	fmt.Printf("i:%3d, cnt:%6d, ascci:'%s'\n", index, len(x.Pos), string(s))
+	fmt.Printf("i:%3d, weight:%8d, cnt:%6d, ascci:'%s'\n", index, len(x.Pos)*len(x.Bytes), len(x.Pos), string(s))
 }
 
 // Generate writes a file oFn containing C code using loc file(s) and max pattern size.
 // https://en.wikipedia.org/wiki/Dictionary_coder
 // https://cs.stackexchange.com/questions/112901/algorithm-to-find-repeated-patterns-in-a-large-string
 func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error) {
-
 	if UnreplacableContainerBits == 7 {
 		ID1Max = 127
 	} else if UnreplacableContainerBits == 6 {
 		ID1Max = 191
 	} else {
 		log.Fatalf("Invalid value %d for UnreplacableContainerBits", UnreplacableContainerBits)
+	}
+	if ID1Count > ID1Max {
+		log.Fatalf("Invalid value %d for ID1Count (must not be bigger than ID1Max=%d)", ID1Count, ID1Max)
 	}
 	MaxID = ID1Count + (ID1Max-ID1Count)*255
 
@@ -58,89 +61,27 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 	} else {
 		err = p.ScanFile(fSys, loc, maxPatternSize)
 	}
-	if Verbose {
-		p.PrintInfo("Histogram after Scan")
-	}
-	// All these trials did not result in significantly improved
-	discardSize := 100 // len(p.Hist)/100
-	p.DiscardSeldomPattern(discardSize)
-	//p.ComputeValues(maxPatternSize)
-	p.ReduceFromSmallerSide()
-	//p.ReduceFromLargerSide()
-	//p.ComputeValues(maxPatternSize)
-	//p.DeleteEmptyKeys()
 
-	//p.PrintInfo("Histogram after Reduce")
-	//p.PrintInfo("Histogram after AddWeights")
-
-	// Todo: Reduce bigger keys if smaller keys fit?
-	ll := 50
 	list := p.ExportAsList()
-	pattern.SortByDescCount(list)
-	fmt.Println("SortByDescCount")
-	for i, x := range list {
-		PrintPattern(i, x)
-		if i == ll {
-			break
+	pattern.SortByDescWeight(list)
+	idList1 := list[:ID1Count]                                                   // direct IDs
+	idList2 := slices.DeleteFunc(list[ID1Count:], func(x pattern.Pattern) bool { // indirect IDs
+		return len(x.Bytes) <= 2 // 2-bytes patteren make no sense for indirect IDs
+	})
+	cList := append(idList1, idList2...) // combined list
+	var idList []pattern.Pattern         // used ID
+	if len(cList) > MaxID {
+		idList = cList[:MaxID] // used part
+	} else {
+		fmt.Printf("idList len %d is smaller than MaxID %d - consider parameter change\n", len(cList), MaxID)
+		idList = cList
+	}
+	var maxListPatternSize int
+	for _, x := range idList {
+		if len(x.Bytes) > maxListPatternSize {
+			maxListPatternSize = len(x.Bytes)
 		}
 	}
-	//pattern.SortByDescWeight(list)
-	//fmt.Println("SortByDescWeight")
-	//for i, x := range list {
-	//	PrintPattern(x)
-	//	if i == ll {
-	//		break
-	//	}
-	//}
-	// pattern.SortByDescBalance(list)
-	// fmt.Println("SortByDescBalance")
-	// for i, x := range list {
-	// 	PrintPattern(x)
-	// 	if i == ll {
-	// 		break
-	// 	}
-	// }
-	//  pattern.SortByIncrRateDirect(list)
-	//  fmt.Println("SortByIncrRateDirect (i len weight balance RateDirect RateIndirect pattern)")
-	//  for i, x := range list {
-	//  	PrintPattern(x)
-	//  	if i == ll {
-	//  		break
-	//  	}
-	//  }
-	//  pattern.SortByIncrRateIndirect(list)
-	//  fmt.Println("SortByIncrRateIndirect (i len weight balance RateDirect RateIndirect pattern)")
-	//  for i, x := range list {
-	//  	PrintPattern(x)
-	//  	if i == ll {
-	//  		break
-	//  	}
-	//  }
-
-	idList, moreBytes, maxListPatternSize := pattern.Extract2BytesPatterns(list)
-	//moreBytes = list
-	// lists are sorted by descending count here.
-	if len(idList) >= ID1Count {
-		idList = idList[:ID1Count]
-	}
-	// idList contains now up to ID1Count 2-bytes pattern. Remaining 2-bytes patterns are discarded
-	// because they give nearly no compression effect when indexed with an indirect ID.
-
-	moreBytesCount := MaxID - ID1Count
-	if len(moreBytes) > moreBytesCount {
-		moreBytes = moreBytes[:moreBytesCount]
-	} else {
-		fmt.Printf("warning:more pattern ID space than pattern (LastID %d < MaxID %d)", len(moreBytes), MaxID)
-	}
-	//for _, x := range moreBytes {
-	//	idList = append(idList, x)
-	//}
-	idList = append(idList, moreBytes...)
-
-	// indirectIndexedCount := min(MaxID, len(moreBytes))
-	// idList := pattern.SortByDescLength(list[:idCount])
-
-	//maxListPatternSize := len(idList[ID1Count].Bytes)
 	oh, err := fSys.Create(oFn)
 	if err != nil {
 		log.Fatal(err)
@@ -191,18 +132,27 @@ const uint8_t maxPatternlength = %d;
 //! The generator pattern max size was`, maxPatternSize, `and the list pattern max size is:`, maxListPatternSize)
 	start := fmt.Sprintf("const uint8_t idTable[] = { // from %s\n", loc)
 	fill := spaces(len("    xxx, ") + len("0x00, ")*maxListPatternSize)
+	switch maxListPatternSize {
+	case 2:
+		fill = fill[:len(fill)-3]
+	case 3:
+		fill = fill[:len(fill)-2]
+	case 4:
+		fill = fill[:len(fill)-1]
+	}
 	fill2 := spaces(maxListPatternSize - len("ASCII"))
-	fmt.Fprintf(oh, start+"%s// `ASCII%s`|  count    id (decimal)  id1  id2\n", fill, fill2)
+	fmt.Fprintf(oh, start+"%s// `ASCII%s`|  count   weight   id (decimal)  id1  id2\n", fill, fill2)
 	for i, x := range idList {
 		pls := createPatternLineString(x.Bytes, maxListPatternSize) // todo: review and improve code
 		sz := len(x.Bytes)
 		tipTableSize += 1 + sz
 		if i < len(idList) {
 			id1, id2 := tipPackageIDs(i + 1)
+			w := len(x.Pos) * len(x.Bytes)
 			if id2 == -1 {
-				fmt.Fprintf(oh, "\t%s|%7d  0x%04x (%5d)   %02x   --\n", pls, len(x.Pos), i+1, i+1, id1)
+				fmt.Fprintf(oh, "\t%s|%7d %8d 0x%04x (%5d)   %02x   --\n", pls, len(x.Pos), w, i+1, i+1, id1)
 			} else {
-				fmt.Fprintf(oh, "\t%s|%7d  0x%04x (%5d)   %02x   %02x\n", pls, len(x.Pos), i+1, i+1, id1, uint8(id2))
+				fmt.Fprintf(oh, "\t%s|%7d %8d 0x%04x (%5d)   %02x   %02x\n", pls, len(x.Pos), w, i+1, i+1, id1, uint8(id2))
 			}
 		}
 	}
@@ -212,14 +162,17 @@ const uint8_t maxPatternlength = %d;
 	fmt.Fprintf(oh, "// tipTableSize is %d.\n", tipTableSize)
 	fmt.Fprintln(oh)
 
-	fmt.Fprint(oh, "// Informal, here are all pattern occuring at least twice:\n")
-	for i, x := range list {
-		if len(x.Pos) > 1 {
-			pls := createPatternLineString(x.Bytes, maxListPatternSize) // todo: review and improve code
-			fmt.Fprintf(oh, "//%4d: (%4d) %s\n", i, len(x.Pos), pls)
+	if Verbose {
+		fmt.Fprint(oh, "// Informal, here are all by weight sorted pattern occuring at least twice:\n")
+		fmt.Fprint(oh, "//   index: ( count) len, bytes... // ASCII\n")
+		for i, x := range list {
+			if len(x.Pos) > 1 {
+				pls := createPatternLineString(x.Bytes, maxListPatternSize) // todo: review and improve code
+				fmt.Fprintf(oh, "//%8d: (%6d) %s\n", i, len(x.Pos), pls)
+			}
 		}
+		fmt.Fprintln(oh)
 	}
-	fmt.Fprintln(oh)
 	return
 }
 

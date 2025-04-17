@@ -23,8 +23,8 @@ var (
 	date    string // do not initialize, goreleaser will handle that
 	iFn     string // input file name
 	oFn     string // ouput file name
-	tFn     string // token file/folder name
-	rFn     string // random file name
+	//tFn     string // token file/folder name
+	//rFn     string // random file name
 	help    bool
 	verbose bool
 )
@@ -34,8 +34,8 @@ func init() {
 	flag.BoolVar(&verbose, "v", false, "verbose")
 	flag.StringVar(&iFn, "i", "", "input file/folder name")
 	flag.StringVar(&oFn, "o", "idTable.c", "output file name")
-	flag.StringVar(&tFn, "t", "", "tokenizer file name")
-	flag.StringVar(&rFn, "r", "", "random file name")
+	//flag.StringVar(&tFn, "t", "", "tokenizer file name")
+	//flag.StringVar(&rFn, "r", "", "random file name")
 }
 
 func init() {
@@ -51,7 +51,7 @@ func doit(w io.Writer, fSys *afero.Afero) {
 	flag.Parse()
 	distributeArgs()
 	if help {
-		fmt.Fprintln(w, "Usage: ti_generate -i inputFileName [-o outputFileName] [-z max pattern size] [-v]")
+		fmt.Fprintln(w, "Usage: ti_generate -i inputFileName [options]")
 		fmt.Fprintln(w, "Example: `ti_generate -i trice.bin` creates idTable.c")
 		flag.PrintDefaults()
 		fmt.Fprintln(w, "The TipUserManual explains details.")
@@ -59,12 +59,13 @@ func doit(w io.Writer, fSys *afero.Afero) {
 	}
 	if verbose {
 		if version == "" && commit == "" && date == "" {
-			fmt.Println("experimenal version")
+			fmt.Println("experimental version")
 		} else {
 			fmt.Fprintln(w, version, commit, date)
 		}
 	}
 
+	/*
 	if rFn != "" {
 		fn := rFn+".txt"
 		f, err := fSys.Create(fn)
@@ -96,8 +97,9 @@ func doit(w io.Writer, fSys *afero.Afero) {
 		tokenize(w, fSys, tFn)
 		return
 	}
+	*/
 
-	if iFn == "" && tFn == "" {
+	if iFn == "" {
 		if !verbose {
 			fmt.Fprintln(w, `"ti_generate -h" prints help`)
 		}

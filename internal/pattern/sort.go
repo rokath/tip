@@ -68,38 +68,23 @@ func SortByDescCount(list []Pattern) []Pattern {
 	return list
 }
 
-/*
-// SortByDescRateDirect sorts and returns list ordered for descenting count and pattern length.
+
+// SortByDescWeight sorts and returns list ordered for descenting weight, count and pattern length.
 // It also sorts alphabetical to get reproducable results.
-func SortByIncrRateDirect(list []Pattern) []Pattern {
+func SortByDescWeight(list []Pattern) []Pattern {
 	compareFn := func(a, b Pattern) int {	
-		if a.RateDirect > b.RateDirect {
+		aWeight := len(a.Pos) * len(a.Bytes)
+		bWeight := len(b.Pos) * len(b.Bytes)
+		if aWeight < bWeight {
 			return 1
 		}
-		if a.RateDirect < b.RateDirect {
+		if aWeight > bWeight {
 			return -1
 		}
-		if len(a.Bytes) < len(b.Bytes) {
+		if len(a.Pos) < len(b.Pos) {
 			return 1
 		}
-		if len(a.Bytes) > len(b.Bytes) {
-			return -1
-		}
-		return 0
-	}
-	slices.SortFunc(list, compareFn)
-	return list
-}
-*/
-/*
-// SortByDescRateDirect sorts and returns list ordered for descenting count and pattern length.
-// It also sorts alphabetical to get reproducable results.
-func SortByIncrRateIndirect(list []Pattern) []Pattern {
-	compareFn := func(a, b Pattern) int {	
-		if a.RateIndirect > b.RateIndirect {
-			return 1
-		}
-		if a.RateIndirect < b.RateIndirect {
+		if len(a.Pos) > len(b.Pos) {
 			return -1
 		}
 		if len(a.Bytes) < len(b.Bytes) {
@@ -114,48 +99,6 @@ func SortByIncrRateIndirect(list []Pattern) []Pattern {
 	return list
 }
 
-// SortByDescWeight sorts list ordered for descenting weight and pattern length.
-// It also sorts alphabetical to get reproducable results.
-func SortByDescWeight(list []Pattern){
-	compareFn := func(a, b Pattern) int {	
-		if a.Weight < b.Weight {
-			return 1
-		}
-		if a.Weight > b.Weight {
-			return -1
-		}
-		if len(a.Bytes) < len(b.Bytes) {
-			return 1
-		}
-		if len(a.Bytes) > len(b.Bytes) {
-			return -1
-		}
-		return 0
-	}
-	slices.SortFunc(list, compareFn)
-}
-
-// SortByDescBalance sorts list ordered for descenting weight and pattern length.
-// It also sorts alphabetical to get reproducable results.
-func SortByDescBalance(list []Pattern){
-	compareFn := func(a, b Pattern) int {	
-		if a.Balance < b.Balance {
-			return 1
-		}
-		if a.Balance > b.Balance {
-			return -1
-		}
-		if len(a.Bytes) < len(b.Bytes) {
-			return 1
-		}
-		if len(a.Bytes) > len(b.Bytes) {
-			return -1
-		}
-		return 0
-	}
-	slices.SortFunc(list, compareFn)
-}
-*/
 // SortByDescLength sorts and returns list ordered for descending pattern length.
 // It also sorts alphabetical to get reproducable results.
 func SortByDescLength(list []Pattern) []Pattern {
