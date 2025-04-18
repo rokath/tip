@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"flag"
 	"fmt"
 	"io"
@@ -51,9 +52,13 @@ func doit(w io.Writer, fSys *afero.Afero) (err error) {
 	if oFn == "" {
 		oFn = iFn + ".untip"
 	}
-	//  if verbose {
-	//  	fmt.Fprintln(w, version, commit, date)
-	//  }
+	if verbose {
+		if version == "" && commit == "" && date == "" {
+			fmt.Println("experimental version")
+		} else {
+			fmt.Fprintln(w, version, commit, date)
+		}
+	}
 	fi, err := fSys.Stat(iFn)
 	if err != nil {
 		return
@@ -70,8 +75,8 @@ func doit(w io.Writer, fSys *afero.Afero) (err error) {
 	buffer := make([]byte, 24*len(packet)) // assuming 24-bytes pattern matching exactly
 	n := tip.Unpack(buffer, packet)
 	if verbose {
-		//fmt.Println(hex.Dump(packet))
-		//fmt.Println(hex.Dump(buffer[:n]))
+		fmt.Println("packet:", hex.Dump(packet))
+		fmt.Println("buffer:", hex.Dump(buffer[:n]))
 		fmt.Fprintln(w, "file size", fi.Size(), "changed to", n, "(rate", 100*int64(n)/fi.Size(), "percent)")
 	}
 	return fSys.WriteFile(oFn, buffer[:n], 0644)

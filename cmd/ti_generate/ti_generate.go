@@ -8,7 +8,6 @@ import (
 	"math/rand"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/rokath/tip/internal/pattern"
 	"github.com/rokath/tip/internal/tiptable"
@@ -23,8 +22,8 @@ var (
 	date    string // do not initialize, goreleaser will handle that
 	iFn     string // input file name
 	oFn     string // ouput file name
-	//tFn     string // token file/folder name
-	//rFn     string // random file name
+	tFn     string // token file/folder name
+	rFn     string // random file name
 	help    bool
 	verbose bool
 )
@@ -34,12 +33,8 @@ func init() {
 	flag.BoolVar(&verbose, "v", false, "verbose")
 	flag.StringVar(&iFn, "i", "", "input file/folder name")
 	flag.StringVar(&oFn, "o", "idTable.c", "output file name")
-	//flag.StringVar(&tFn, "t", "", "tokenizer file name")
-	//flag.StringVar(&rFn, "r", "", "random file name")
-}
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
+	flag.StringVar(&tFn, "t", "", "tokenizer file name")
+	flag.StringVar(&rFn, "r", "", "random file name")
 }
 
 func main() {
@@ -64,10 +59,8 @@ func doit(w io.Writer, fSys *afero.Afero) {
 			fmt.Fprintln(w, version, commit, date)
 		}
 	}
-
-	/*
 	if rFn != "" {
-		fn := rFn+".txt"
+		fn := rFn + ".txt"
 		f, err := fSys.Create(fn)
 		if err != nil {
 			panic(err)
@@ -89,7 +82,7 @@ func doit(w io.Writer, fSys *afero.Afero) {
 			f.WriteString(randSeq(6))
 			f.WriteString("AAAAAA")
 		}
-		fmt.Println( fn, "created")
+		fmt.Println(fn, "created")
 		return
 	}
 
@@ -97,7 +90,6 @@ func doit(w io.Writer, fSys *afero.Afero) {
 		tokenize(w, fSys, tFn)
 		return
 	}
-	*/
 
 	if iFn == "" {
 		if !verbose {
@@ -153,7 +145,7 @@ func tokenize(w io.Writer, fSys *afero.Afero, tFn string) {
 
 	sentences := tokenizer.Tokenize(text)
 
-	for _, s := range sentences {
+	for i, s := range sentences {
 		t := strings.TrimSpace(s.Text)
 		f, err := os.CreateTemp(folder+"", "*.txt")
 		if err != nil {
@@ -161,6 +153,8 @@ func tokenize(w io.Writer, fSys *afero.Afero, tFn string) {
 		}
 		defer f.Close()
 		f.WriteString(t)
-		//fmt.Printf("%3d:\t'%s'\n", i, t)
+		if verbose {
+			fmt.Printf("%3d:\t'%s'\n", i, t)
+		}
 	}
 }

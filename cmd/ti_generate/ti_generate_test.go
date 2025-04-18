@@ -20,7 +20,7 @@ func Test_doit(t *testing.T) {
 	var b bytes.Buffer
 	doit(&b, FSys)
 	act := b.String()
-	exp := `Usage: ti_generate -i inputFileName [-o outputFileName] [-z max pattern size] [-v]
+	exp := `Usage: ti_generate -i inputFileName [options]
 Example: `+"`ti_generate -i trice.bin`"+` creates idTable.c
 The TipUserManual explains details.
 `

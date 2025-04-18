@@ -8,6 +8,7 @@ package main
 import "C"
 
 import (
+	"encoding/hex"
 	"flag"
 	"fmt"
 	"io"
@@ -58,9 +59,13 @@ func doit(w io.Writer, fSys *afero.Afero) (err error) {
 	if oFn == "" {
 		oFn = iFn + ".tip"
 	}
-	//  if verbose {
-	//  	fmt.Fprintln(w, version, commit, date)
-	//  }
+	if verbose {
+		if version == "" && commit == "" && date == "" {
+			fmt.Println("experimental version")
+		} else {
+			fmt.Fprintln(w, version, commit, date)
+		}
+	}
 	fi, err := fSys.Stat(iFn)
 	if err != nil {
 		return
@@ -76,6 +81,8 @@ func doit(w io.Writer, fSys *afero.Afero) (err error) {
 	packet := make([]byte, 2*len(buffer))
 	n := tip.Pack(packet, buffer)
 	if verbose {
+		fmt.Println("buffer:", hex.Dump(buffer))
+		fmt.Println("packet:", hex.Dump(packet[:n]))
 		fmt.Fprintln(w, "file size", fi.Size(), "changed to", n, "(rate", 100*n/len(buffer), "percent)")
 	}
 	return fSys.WriteFile(oFn, packet[:n], 0644)

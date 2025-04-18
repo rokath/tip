@@ -1,12 +1,72 @@
 package pattern
 
 import (
+	"fmt"
 	"reflect"
+	"slices"
 	"sync"
 	"testing"
 
 	"github.com/tj/assert"
 )
+
+func TestHistogramGeneration(t *testing.T) {
+	var m sync.Mutex
+	type fields struct {
+		Hist map[string]Pattern
+		mu   *sync.Mutex
+		Keys []string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		data   []byte
+		maxLen int
+		ring   bool
+		exp    map[string]Pattern
+	}{ // test cases:
+		{ // name fields                               data    01234567  max, ring,
+			"", fields{map[string]Pattern{}, &m, nil}, []byte("xxAAAAyy"), 4, false,
+			map[string]Pattern{ // expected
+				s2h("xxAA"): {Pos: []int{0}},    //// xxAA     @ 0
+				s2h("xAAA"): {Pos: []int{1}},    ////  xAAA    @ 1
+				s2h("AAAA"): {Pos: []int{2}},    ////   AAAA   @ 2
+				s2h("AAAy"): {Pos: []int{3}},    ////    AAAy  @ 3
+				s2h("AAyy"): {Pos: []int{4}},    ////     AAyy @ 4
+				s2h("xxA"):  {Pos: []int{0}},    //// xxA      @ 0
+				s2h("xAA"):  {Pos: []int{1}},    ////  xAA     @ 1
+				s2h("AAA"):  {Pos: []int{2, 3}}, ////   AAA    @ 2 = 2 3
+				//                                 //    AAA   @ 3 = 2 3
+				s2h("AAy"): {Pos: []int{4}},       //     AAy  @ 4
+				s2h("Ayy"): {Pos: []int{5}},       //      Ayy @ 5
+				s2h("xx"):  {Pos: []int{0}},       // xx       @ 0
+				s2h("xA"):  {Pos: []int{1}},       //  xA      @ 1
+				s2h("AA"):  {Pos: []int{2, 3, 4}}, //   AA     @ 2 = 2 3 4
+				s2h("Ay"):  {Pos: []int{5}},       //      Ay  @ 5
+				s2h("yy"):  {Pos: []int{6}},       //       yy @ 6
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := &Histogram{
+				Hist: tt.fields.Hist,
+				mu:   tt.fields.mu,
+				Keys: tt.fields.Keys,
+			}
+			p.ScanData(tt.data, tt.maxLen, tt.ring)
+
+			for k, v := range tt.exp {
+				fmt.Println(k, v.Pos, tt.fields.Hist[k].Pos)
+			}
+			for k, v := range tt.exp {
+				act := tt.fields.Hist[k].Pos
+				slices.Sort(act)
+				assert.Equal(t, v.Pos, act)
+			}
+		})
+	}
+}
 
 // GetKeys extracts all p.Hist keys into p.Keys.
 func (p *Histogram) GetKeys() {
