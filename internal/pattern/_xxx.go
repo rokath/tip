@@ -1,9 +1,6 @@
 package pattern
 
 /*
-
-*/
-/*
 // Reduce searches the keys if they contain sub-keys.
 // If a sub-key is found inside a key with count n,
 // The sub-key count is reduced by n.
