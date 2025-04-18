@@ -81,8 +81,10 @@ func doit(w io.Writer, fSys *afero.Afero) (err error) {
 	packet := make([]byte, 2*len(buffer))
 	n := tip.Pack(packet, buffer)
 	if verbose {
-		fmt.Println("buffer:", hex.Dump(buffer))
-		fmt.Println("packet:", hex.Dump(packet[:n]))
+		fmt.Println("buffer:")
+		fmt.Println(hex.Dump(buffer))
+		fmt.Println("packet:")
+		fmt.Println(hex.Dump(packet[:n]))
 		fmt.Fprintln(w, "file size", fi.Size(), "changed to", n, "(rate", 100*n/len(buffer), "percent)")
 	}
 	return fSys.WriteFile(oFn, packet[:n], 0644)

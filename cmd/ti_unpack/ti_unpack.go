@@ -75,8 +75,10 @@ func doit(w io.Writer, fSys *afero.Afero) (err error) {
 	buffer := make([]byte, 24*len(packet)) // assuming 24-bytes pattern matching exactly
 	n := tip.Unpack(buffer, packet)
 	if verbose {
-		fmt.Println("packet:", hex.Dump(packet))
-		fmt.Println("buffer:", hex.Dump(buffer[:n]))
+		fmt.Println("packet:")
+		fmt.Println(hex.Dump(packet))
+		fmt.Println("buffer:")
+		fmt.Println(hex.Dump(buffer[:n]))
 		fmt.Fprintln(w, "file size", fi.Size(), "changed to", n, "(rate", 100*int64(n)/fi.Size(), "percent)")
 	}
 	return fSys.WriteFile(oFn, buffer[:n], 0644)
