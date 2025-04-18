@@ -1,9 +1,6 @@
 package slice
 
-import (
-	"slices"
-)
-
+/*
 // Index returns at which index v was first found in s or -1.
 // If s or v are nil -1 is returned.
 // See also mem.Mem() function.
@@ -38,3 +35,4 @@ func Count(s, v []byte) (n int) {
 	}
 	return
 }
+*/

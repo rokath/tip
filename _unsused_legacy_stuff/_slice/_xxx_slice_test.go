@@ -1,11 +1,6 @@
 package slice
 
-import (
-	"testing"
-
-	"github.com/tj/assert"
-)
-
+/*
 func TestIndex(t *testing.T) {
 	tt := []struct {
 		s   []byte // slice inside to search
@@ -56,3 +51,4 @@ func TestCount(t *testing.T) {
 		assert.Equal(t, x.exp, idx)
 	}
 }
+*/

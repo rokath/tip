@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"sync"
 
 	"github.com/spf13/afero"
@@ -23,13 +24,9 @@ func init() {
 
 // Pattern contains a pattern and its occurrances count.
 type Pattern struct {
-	Bytes []byte // Bytes is the pattern as byte slice.
-	Pos          []int // Pos holds all start occurances of Bytes. Its len is the occurances count.
-	DeletedPos   []int // DeletedPos holds all deleted Pos elements.
-	//Balance      float64
-	//Weight       float64 // count * length
-	//RateDirect   float64 // 1 / Weight = 1 / (count * length) is the compression effect
-	//RateIndirect float64 // 2 / Weight = 1 / (count * length) is the compression effect
+	Bytes      []byte // Bytes is the pattern as byte slice.
+	Pos        []int  // Pos holds all start occurances of Bytes. Its len is the occurances count.
+	DeletedPos []int  // DeletedPos holds all deleted Pos elements.
 }
 
 // Histogram objects hold pattern strings occurences count.
@@ -63,7 +60,6 @@ func (p *Histogram) ScanData(data []byte, maxPatternSize int, ring bool) {
 	}
 	wg.Wait()
 }
-
 
 func (p *Histogram) DeleteEmptyKeys() {
 	for k, v := range p.Hist {
@@ -167,4 +163,34 @@ func (p *Histogram) ScanAllFiles(fSys *afero.Afero, location string, maxPatternS
 		fmt.Println(numScanned, "files scanned")
 	}
 	return
+}
+
+// SortByDescWeight sorts and returns list ordered for descenting weight, count and pattern length.
+// It also sorts alphabetical to get reproducable results.
+func SortByDescWeight(list []Pattern) []Pattern {
+	compareFn := func(a, b Pattern) int {
+		aWeight := len(a.Pos) * len(a.Bytes)
+		bWeight := len(b.Pos) * len(b.Bytes)
+		if aWeight < bWeight {
+			return 1
+		}
+		if aWeight > bWeight {
+			return -1
+		}
+		if len(a.Pos) < len(b.Pos) {
+			return 1
+		}
+		if len(a.Pos) > len(b.Pos) {
+			return -1
+		}
+		if len(a.Bytes) < len(b.Bytes) {
+			return 1
+		}
+		if len(a.Bytes) > len(b.Bytes) {
+			return -1
+		}
+		return 0
+	}
+	slices.SortFunc(list, compareFn)
+	return list
 }

@@ -33,7 +33,6 @@ func PrintPattern(index int, x pattern.Pattern) {
 		}
 		s = append(s, b)
 	}
-	//fmt.Printf("cnt:%4d w:%9.1f b:%8.2f rateD:%8.4f rateI:%8.4f hex:%16s, ascci:'%s'\n", len(x.Pos), x.Weight, x.Balance, 1000*x.RateDirect, 1000*x.RateIndirect, hex.EncodeToString(x.Bytes), string(s))
 	fmt.Printf("i:%3d, weight:%8d, cnt:%6d, ascci:'%s'\n", index, len(x.Pos)*len(x.Bytes), len(x.Pos), string(s))
 }
 
@@ -209,4 +208,34 @@ func createPatternLineString(pattern []byte, maxPatternSize int) string {
 	s.WriteString(fmt.Sprintf("%s // ", fill))               // align
 	s.WriteString(byteSliceAsASCII(pattern, maxPatternSize)) // write pattern lettes as comment
 	return s.String()                                        // no alignment here to keep s length
+}
+
+
+// spaces returns a string consisting of n spaces.
+func spaces(n int) string {
+	if n <= 0 {
+		return ""
+	}
+	var s strings.Builder
+	for range n {
+		s.WriteString(" ")
+	}
+	return s.String()
+}
+
+// byteSliceAsASCII returns b as ASCII string size len. Example: "˙Aah˙B˙˙C˙˙     "
+// length is used to append spaces until the string has the desired length.
+func byteSliceAsASCII(b []byte, length int) string {
+	var s strings.Builder
+	s.WriteString("`")
+	for _, x := range b {
+		if 0x20 <= x && x < 0x7f {
+			s.WriteString(fmt.Sprintf("%c", x))
+		} else {
+			s.WriteString(`˙`)
+		}
+	}
+	s.WriteString("`")
+	s.WriteString(spaces(length - len(b)))
+	return s.String()
 }

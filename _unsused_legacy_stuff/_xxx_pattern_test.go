@@ -1,6 +1,42 @@
 package pattern
 
 /*
+func TestHistogram_SortKeysByIncrSize(t *testing.T) {
+	var mu sync.Mutex
+	type fields struct {
+		Hist map[string]Pattern
+		mu   *sync.Mutex
+		Keys []string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		exp    fields
+	}{
+		// test cases:
+		{
+			"", // name
+			fields{map[string]Pattern{}, &mu, []string{"bb11", "112233", "aa22"}},
+			fields{map[string]Pattern{}, &mu, []string{"aa22", "bb11", "112233"}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := &Histogram{
+				Hist: tt.fields.Hist,
+				mu:   tt.fields.mu,
+				Keys: tt.fields.Keys,
+			}
+			p.SortKeysByIncrSize()
+			for i := range p.Keys {
+				assert.Equal(t, tt.exp.Keys[i], tt.fields.Keys[i])
+			}
+		})
+	}
+}
+*/
+
+/*
 func TestHistogram_Reduce_2(t *testing.T) {
 	var m sync.Mutex
 	type fields struct {
