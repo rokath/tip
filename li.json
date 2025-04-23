@@ -9,7 +9,7 @@
 	},
 	"13076": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 362
+		"Line": 366
 	},
 	"13078": {
 		"File": "src/ti_pack.c",
@@ -57,7 +57,7 @@
 	},
 	"13335": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 309
+		"Line": 313
 	},
 	"13350": {
 		"File": "src/ti_pack.c",
@@ -89,7 +89,7 @@
 	},
 	"13564": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 316
+		"Line": 320
 	},
 	"13578": {
 		"File": "src/ti_pack.c",
@@ -101,7 +101,7 @@
 	},
 	"13653": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 385
+		"Line": 389
 	},
 	"13660": {
 		"File": "../trice/examples/exampleData/triceLogDiagData.c",
@@ -125,7 +125,7 @@
 	},
 	"13714": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 398
+		"Line": 402
 	},
 	"13782": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
@@ -181,7 +181,7 @@
 	},
 	"13990": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 399
+		"Line": 403
 	},
 	"14007": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
@@ -205,7 +205,7 @@
 	},
 	"14117": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 356
+		"Line": 360
 	},
 	"14118": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
@@ -233,7 +233,7 @@
 	},
 	"14160": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 352
+		"Line": 356
 	},
 	"14180": {
 		"File": "../trice/examples/exampleData/triceLogDiagData.c",
@@ -289,7 +289,7 @@
 	},
 	"14428": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 344
+		"Line": 348
 	},
 	"14453": {
 		"File": "examples/F030_inst/Core/Src/main.c",
@@ -321,7 +321,7 @@
 	},
 	"14596": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 91
+		"Line": 93
 	},
 	"14597": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
@@ -329,7 +329,7 @@
 	},
 	"14690": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 417
+		"Line": 421
 	},
 	"14704": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
@@ -349,7 +349,7 @@
 	},
 	"14763": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 346
+		"Line": 350
 	},
 	"14768": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
@@ -373,7 +373,7 @@
 	},
 	"14893": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 378
+		"Line": 382
 	},
 	"14903": {
 		"File": "src/ti_pack.c",
@@ -385,7 +385,7 @@
 	},
 	"14990": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 365
+		"Line": 369
 	},
 	"15007": {
 		"File": "src/ti_pack.c",
@@ -405,7 +405,7 @@
 	},
 	"15050": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 378
+		"Line": 382
 	},
 	"15072": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
@@ -473,7 +473,7 @@
 	},
 	"15493": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 351
+		"Line": 355
 	},
 	"15504": {
 		"File": "src/ti_pack.c",
@@ -513,7 +513,7 @@
 	},
 	"15694": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 355
+		"Line": 359
 	},
 	"15770": {
 		"File": "examples/G0B1_inst/Core/Src/stm32g0xx_it.c",
@@ -543,13 +543,17 @@
 		"File": "../trice/examples/exampleData/triceLogDiagData.c",
 		"Line": 46
 	},
+	"15934": {
+		"File": "examples/L432_inst/Core/Src/main.c",
+		"Line": 101
+	},
 	"15938": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
 		"Line": 48
 	},
 	"15942": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 382
+		"Line": 386
 	},
 	"16055": {
 		"File": "../trice/examples/exampleData/triceExamples.c",
@@ -605,7 +609,7 @@
 	},
 	"16352": {
 		"File": "examples/G0B1_inst/Core/Src/main.c",
-		"Line": 358
+		"Line": 362
 	},
 	"16364": {
 		"File": "../trice/examples/exampleData/triceLogDiagData.c",

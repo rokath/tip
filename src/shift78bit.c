@@ -1,4 +1,5 @@
 
+#include <stddef.h>
 #include <stdint.h>
 
 //! shift78bit transforms slen 7-bit bytes in src to 8-bit units in dst.

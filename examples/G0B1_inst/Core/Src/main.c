@@ -23,7 +23,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "trice.h"
-#include "tip.h"
+#include "ti_pack.h"
+#include "ti_unpack.h"
 //#include <limits.h> // INT_MAX
 /* USER CODE END Includes */
 
@@ -87,8 +88,11 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+#if !TRICE_OFF
   TriceInit(); // This so early, to allow trice logs inside interrupts from the beginning. Only needed for RTT.
   trice("msg:Hi\n");
+//TriceHeadLine("  𝕹𝖀𝕮𝕷𝕰𝕺-G01BRE with tip  ");
+#endif
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -352,10 +356,10 @@ size_t slen =  sizeof(src); //   strlen(in);
 // ok     trice8B("msg:%3d\n", &srcMap.path[i][1], plen);
 // ok }
 
-trice8B( "buf: %02x\n", src, slen);
-trice8B( "exp: %02x\n", exp, sizeof(exp) ); 
-loc_t dlen = tiPack( dst, IdT, src, slen );
-trice8B( "tip: %02x\n", dst, dlen ); 
+trice8B("buf: %02x\n", src, slen);
+trice8B("exp: %02x\n", exp, sizeof(exp) ); 
+size_t dlen = tiPack( dst, IdT, src, slen );
+trice8B("tip: %02x\n", dst, dlen ); 
 
 
 //size_t plen = tip(pkg, src, slen);

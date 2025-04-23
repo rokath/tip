@@ -1,4 +1,5 @@
 
+#include <stddef.h>
 #include <stdint.h>
 
 //! shift68bit transforms slen 6-bit bytes in src to 8-bit units in dst.

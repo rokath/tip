@@ -88,11 +88,6 @@ int main(void)
 *DWT_CYCCNT = 0;                  // clear DWT cycle counter
 *DWT_CONTROL = *DWT_CONTROL | 1;  // enable DWT cycle counter
 
-#if !TRICE_OFF
-  TriceInit(); // This so early, to allow trice logs inside interrupts from the beginning.
-  trice("Hi!\n");
-//TriceHeadLine("  𝕹𝖀𝕮𝕷𝕰𝕺-L432KC with tip  ");
-#endif
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -101,6 +96,11 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+#if !TRICE_OFF
+  TriceInit(); // This so early, to allow trice logs inside interrupts from the beginning. Only needed for RTT.
+  trice("msg:Hi\n");
+//TriceHeadLine("  𝕹𝖀𝕮𝕷𝕰𝕺-L432KC with tip  ");
+#endif
 
   /* USER CODE END Init */
 

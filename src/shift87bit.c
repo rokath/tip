@@ -1,4 +1,5 @@
 
+#include <stddef.h>
 #include <stdint.h>
 
 //! @brief shift87bit transforms slen 8-bit bytes in src to 7-bit units.

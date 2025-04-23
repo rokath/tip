@@ -543,6 +543,10 @@
 		"Type": "trice16",
 		"Strg": "err:triceSingleDepthMax =%4u of %d (TRICE_BUFFER_SIZE overflow!)\\n"
 	},
+	"15934": {
+		"Type": "trice",
+		"Strg": "msg:Hi\\n"
+	},
 	"15938": {
 		"Type": "Trice32B",
 		"Strg": "msg:%08x  \\n"

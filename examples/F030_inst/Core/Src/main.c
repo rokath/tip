@@ -22,8 +22,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "trice.h"
-#include "tip.h"
-#include "pack.h"
+#include "ti_pack.h"
+#include "ti_unpack.h"
 //#include <limits.h> // INT_MAX
 /* USER CODE END Includes */
 
@@ -105,10 +105,10 @@ int main(void)
 //static uint8_t pkg[100] = {0};
 //static uint8_t src[] = { 0x0d, 0x0a, 0x0d, 0x0a, 0x74, 0x68, 0x65, 0x20, 0x0d, 0x0a }; // ok
 //static uint8_t src[] = { 0x55, 0x74, 0x68, 0x65, 0x20, 0x55, 0x74, 0x68, 0x65, 0x20 }; // ok
-  static uint8_t src[] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0xaa, 0xbb, 0x38, 0x39, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66 };
+  //static uint8_t src[] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0xaa, 0xbb, 0x38, 0x39, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66 };
   //static char* in = "ABCABCABC123";
   //static uint8_t src[100] = {0};
-  size_t slen =  sizeof(src); //   strlen(in);
+  //size_t slen =  sizeof(src); //   strlen(in);
   //  memcpy(src,in,slen);
   //  trice8B("rd:%02x \n", src, slen);
   //  createIDPosTable(idTable, src, slen );
