@@ -67,7 +67,12 @@ size_t tiPack( uint8_t * dst, const uint8_t * table, const uint8_t * src, size_t
 #endif
         return 0;
     }
-    size_t dstSizeMax = ((18725ul*slen)>>14)+1;  // The max possible dst size is len*8/7+1 or ((len*65536*8/7)>>16)+1.
+    size_t dstSizeMax;
+    if (unreplacableContainerBits == 6){
+        dstSizeMax = ((43691ul*slen)>>15)+1;  // The max possible dst size is len*8/6+1 or ((len*65536*4/3)>>16)+1.
+    }else{ // (unreplacableContainerBits == 7)
+        dstSizeMax = ((18725ul*slen)>>14)+1;  // The max possible dst size is len*8/7+1 or ((len*65536*8/7)>>16)+1.
+    }
     uint8_t * dstLimit = dst + dstSizeMax;
     memset(dst, 0, dstSizeMax);
     idPatTable = table;
@@ -588,10 +593,23 @@ static size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * t
     int u8Count = selectUnreplacableBytes(dst, pidx, src, slen );
     int uTCount;
     uint8_t * uTsrc;
-#if OPTIMIZE_UNREPLACABLES == 1
+#if 1 // OPTIMIZE_UNREPLACABLES == 1
+
     if (u8Count > 0){ // no optimization possible
+
+        for( int i = 0; i < u8Count; i++ ){
+            printf( "%02x_", dst[i] );
+        }
+        printf( "\n" );
+        
         uTCount = (int)convertBits( dstLimit-1, dst, (size_t)u8Count );
         uTsrc = dstLimit - uTCount;
+
+        for( int i = 0; i < uTCount; i++ ){
+            printf( "%02x ", uTsrc[i] );
+        }
+        printf( "\n" );
+   
     } else { // We keep name "uT" for clarity.
         u8Count = -u8Count; // Make it positive by revering the sign.
         uTCount = (size_t)u8Count;

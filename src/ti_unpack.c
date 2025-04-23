@@ -50,7 +50,7 @@ static int isID( const uint8_t * p){
 }
 
 #if OPTIMIZE_UNREPLACABLES == 1
-
+/*
 //! endsWithID checks, if src ends with an ID.
 //! @retval 0: no ID
 //! @retval 1: primary ID
@@ -68,31 +68,40 @@ static int endsWithID(const uint8_t * src, size_t slen){
         } // The last src byte is > ID1Count, what would expect one more byte. 
         return 0;    
     }
+	// tip: 80bc 79d1 7fc7 7fc1 7fb8            f0 7979   a8 7fea 7ffe 7e89 7c6e 7fd0 790d 50 7fec 7f72                           e8bcaf 7c09 79ad 7d7b     f0
+	//      uuuu id   id   id   id              uu id     uu id   id   id   id   id   id   ID id   id                             uuuuuu id   id   id       uu // uu len=8
+    // At this point, isID sees 0x7bf0 and returns a false positive answer.
+    // We need to process from the buffer start!
     int result = isID( src + slen - 2); // slen >= 2
     if (result == 2) {
         return 2;
     }
     return isID( src + slen - 1); 
 }
-
+*/
 #endif // #if OPTIMIZE_UNREPLACABLES == 1
 
 // collectUTBytes copies all bytes with msbit=1 into dst and returns their count.
 static int collectUTBytes( uint8_t * dst, const uint8_t * src, size_t slen ){
     uint8_t * p = dst;
+    int lastByteIsId;
     for( int i = 0; i < slen; i++ ){
         int x = isID(src+i);
         if (x==0){
             *p++ = src[i]; // collect
-        }else if (x==2){
-            i++; // indirect ID, ignore next byte (secondary ID)
-        } // else primary ID, do nothing
+            lastByteIsId = 0;
+        }else{
+            lastByteIsId = 1;
+            if (x==2){
+                i++; // indirect ID, ignore next byte (secondary ID)
+            } // else primary ID, do nothing
+        }
     }
     int count = p - dst;
 #if OPTIMIZE_UNREPLACABLES == 1 // cases like III or IIU or UUIIIUII 
     if (count <= 1) { // TiP packet has no or max one unrplacable byte, cases like III or IIU
         count = -count; // Unreplacable bytes optimisation was possible.
-    }else if (endsWithID(src, slen) ) {// TiP packet ends with an ID.
+    }else if (lastByteIsId) {// TiP packet ends with an ID.
         count = -count; // Unreplacable bytes optimisation was possible.
     }
 #endif // #if OPTIMIZE_UNREPLACABLES == 1

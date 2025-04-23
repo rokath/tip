@@ -16,8 +16,8 @@ extern "C" {
 //! Its size has influence on the statically allocated RAM.
 #define TIP_MAX_PATH_COUNT 20000
 
-#define VERBOSE 0
-#define DEBUG 0
+#define VERBOSE 1
+#define DEBUG 1
 
 //! OPTIMIZE_UNREPLACABLES allows to reduce the TiP packet size in some special cases.
 //! It is a selectable option just for tests and should be enabled always.
