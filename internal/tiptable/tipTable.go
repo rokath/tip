@@ -17,7 +17,7 @@ var (
 	ID1Max                    int // ID1Max results immediately from UnreplacableContainerBits.
 	ID1Count                  int // ID1Count its the direct IDs count.
 	MaxID                     int // MaxID is the max possible amount of pattern in the idTable.
-	UnreplacableContainerBits = 7 // UnreplacableContainerBits is container bit size for unreplacebale bytes.
+	UnreplacableContainerBits = 6 // UnreplacableContainerBits is container bit size for unreplacebale bytes.
 )
 
 func init() {

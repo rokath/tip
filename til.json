@@ -1,4 +1,8 @@
 {
+	"13024": {
+		"Type": "trice",
+		"Strg": " %02x"
+	},
 	"13066": {
 		"Type": "TRICE32_0",
 		"Strg": "att:🐁 Speedy Gonzales B  32-bit time stamp\\n"
@@ -7,9 +11,21 @@
 		"Type": "trice8B",
 		"Strg": "wr:%02x \\n"
 	},
+	"13078": {
+		"Type": "trice",
+		"Strg": " "
+	},
+	"13081": {
+		"Type": "trice",
+		"Strg": "slen %lu \u003e %u TIP_SRC_BUFFER_SIZE_MAX is invalid\\n"
+	},
 	"13112": {
 		"Type": "trice",
 		"Strg": "deb:TRICE_DIRECT_OUTPUT == %d, TRICE_DEFERRED_OUTPUT == %d\\n"
+	},
+	"13150": {
+		"Type": "trice",
+		"Strg": ", pat:"
 	},
 	"13191": {
 		"Type": "TRICE32_0",
@@ -27,13 +43,25 @@
 		"Type": "trice",
 		"Strg": "Hi\\n"
 	},
+	"13313": {
+		"Type": "trice",
+		"Strg": "~"
+	},
 	"13316": {
 		"Type": "trice",
 		"Strg": "Hi\\n"
 	},
+	"13327": {
+		"Type": "trice",
+		"Strg": "\\n"
+	},
 	"13335": {
 		"Type": "TRice",
 		"Strg": "msg:StartDefaultTask\\n"
+	},
+	"13350": {
+		"Type": "triceS",
+		"Strg": "%s"
 	},
 	"13364": {
 		"Type": "trice",
@@ -63,6 +91,14 @@
 		"Type": "trice64",
 		"Strg": "Hi, sum is %u\\n"
 	},
+	"13578": {
+		"Type": "trice",
+		"Strg": "\\n"
+	},
+	"13605": {
+		"Type": "trice",
+		"Strg": "\\n"
+	},
 	"13653": {
 		"Type": "trice8B",
 		"Strg": "att:%02x \\n"
@@ -70,6 +106,10 @@
 	"13660": {
 		"Type": "trice16",
 		"Strg": "diag:RTT0_writeDepthMax=%u (BUFFER_SIZE_UP=%u)\\n"
+	},
+	"13672": {
+		"Type": "trice",
+		"Strg": "%6u: psum%3d, plen%3d, pti:"
 	},
 	"13676": {
 		"Type": "trice",
@@ -79,6 +119,10 @@
 		"Type": "triceB",
 		"Strg": "msg:%02x "
 	},
+	"13711": {
+		"Type": "trice",
+		"Strg": "\\n"
+	},
 	"13714": {
 		"Type": "trice8B",
 		"Strg": "rd:%02x "
@@ -86,6 +130,18 @@
 	"13782": {
 		"Type": "trice",
 		"Strg": "Hi\\n"
+	},
+	"13798": {
+		"Type": "trice",
+		"Strg": " %2d"
+	},
+	"13806": {
+		"Type": "trice",
+		"Strg": " idx | id  | pos | ASCII\\n"
+	},
+	"13807": {
+		"Type": "trice",
+		"Strg": "no new path possible: srcMap is full (%d paths)\\n"
 	},
 	"13812": {
 		"Type": "trice8B",
@@ -103,9 +159,17 @@
 		"Type": "TRICE32_0",
 		"Strg": "att:🐁 Speedy Gonzales K without time stamp\\n"
 	},
+	"13872": {
+		"Type": "trice",
+		"Strg": "------------------------\\n"
+	},
 	"13923": {
 		"Type": "trice16",
 		"Strg": "wrn:TriceDynBufTruncateCount = %u\\n"
+	},
+	"13952": {
+		"Type": "trice",
+		"Strg": "-----------\\n"
 	},
 	"13977": {
 		"Type": "trice8B",
@@ -134,6 +198,10 @@
 	"14079": {
 		"Type": "trice8B",
 		"Strg": "rd:%02x \\n"
+	},
+	"14101": {
+		"Type": "trice",
+		"Strg": " %3d | %3d | %3d |"
 	},
 	"14117": {
 		"Type": "trice8B",
@@ -183,6 +251,10 @@
 		"Type": "trice8B",
 		"Strg": "wr:%02x "
 	},
+	"14293": {
+		"Type": "trice",
+		"Strg": " %02x"
+	},
 	"14302": {
 		"Type": "TRICE32_0",
 		"Strg": "att:🐁 Speedy Gonzales I without time stamp\\n"
@@ -198,6 +270,10 @@
 	"14370": {
 		"Type": "TRice",
 		"Strg": "msg:StartTask02:Diagnostics and TriceTransfer\\n"
+	},
+	"14391": {
+		"Type": "trice",
+		"Strg": "i %u: pidx %u, id %u, start %u\\n"
 	},
 	"14392": {
 		"Type": "Trice",
@@ -231,6 +307,18 @@
 		"Type": "trice8B",
 		"Strg": "rd:%02x \\n"
 	},
+	"14574": {
+		"Type": "trice",
+		"Strg": "SrcMap:\\n"
+	},
+	"14582": {
+		"Type": "trice",
+		"Strg": "%lu transmuted:"
+	},
+	"14589": {
+		"Type": "trice",
+		"Strg": " u8: "
+	},
 	"14596": {
 		"Type": "trice",
 		"Strg": "msg:Hi\\n"
@@ -255,6 +343,10 @@
 		"Type": "TRICE32_0",
 		"Strg": "att:🐁 Speedy Gonzales C  32-bit time stamp\\n"
 	},
+	"14760": {
+		"Type": "triceS",
+		"Strg": " '%s' \\n"
+	},
 	"14763": {
 		"Type": "trice",
 		"Strg": "%2d: id%2d, start=%d, limit=%d \\n"
@@ -262,6 +354,10 @@
 	"14768": {
 		"Type": "TRICE32_0",
 		"Strg": "att:🐁 Speedy Gonzales J without time stamp\\n"
+	},
+	"14818": {
+		"Type": "trice",
+		"Strg": " %02x"
 	},
 	"14838": {
 		"Type": "trice",
@@ -271,13 +367,29 @@
 		"Type": "trice16",
 		"Strg": "diag:TriceDataOffsetDepthMax = %d of %d (TRICE_DATA_OFFSET)\\n"
 	},
+	"14851": {
+		"Type": "trice",
+		"Strg": "...\\n"
+	},
 	"14893": {
 		"Type": "trice8B",
 		"Strg": "rd:%02x \\n"
 	},
+	"14903": {
+		"Type": "trice",
+		"Strg": "i%3d pti%3d id%3d patsta%p patlen%d u8sta%p u8len%4d dstN%p "
+	},
+	"14916": {
+		"Type": "trice",
+		"Strg": "%lu unreplacables:"
+	},
 	"14990": {
 		"Type": "trice8B",
 		"Strg": "att:%02x \\n"
+	},
+	"15007": {
+		"Type": "trice",
+		"Strg": "selectUnreplacableBytes:\\n"
 	},
 	"15013": {
 		"Type": "trice16",
@@ -303,9 +415,25 @@
 		"Type": "trice",
 		"Strg": "deb:TRICE_DOUBLE_BUFFER, "
 	},
+	"15108": {
+		"Type": "trice",
+		"Strg": "-----|-----|-----|------\\n"
+	},
 	"15138": {
 		"Type": "trice16",
 		"Strg": "err:TriceDataOffsetDepthMax = %d of %d (TRICE_DATA_OFFSET)\\n"
+	},
+	"15139": {
+		"Type": "trice",
+		"Strg": "\\n"
+	},
+	"15153": {
+		"Type": "trice",
+		"Strg": "%lu unreplacables:"
+	},
+	"15234": {
+		"Type": "trice",
+		"Strg": "ShortestTipPath: %u, u8Count: %d, uTCount: %d\\n"
 	},
 	"15248": {
 		"Type": "trice",
@@ -314,6 +442,10 @@
 	"15259": {
 		"Type": "TriceS",
 		"Strg": "rd:%s \u003c- float number as string\\n"
+	},
+	"15280": {
+		"Type": "trice",
+		"Strg": " %02x"
 	},
 	"15344": {
 		"Type": "trice",
@@ -343,6 +475,10 @@
 		"Type": "trice",
 		"Strg": "att:path %2d: len %2d: "
 	},
+	"15504": {
+		"Type": "trice",
+		"Strg": "ERROR: pidx %u \u003e= %u srcMap.count\\n"
+	},
 	"15556": {
 		"Type": "trice16",
 		"Strg": "wrn:TriceDynStringBufTruncateCount = %u\\n"
@@ -350,6 +486,14 @@
 	"15567": {
 		"Type": "trice16",
 		"Strg": "err:TriceDeferredOverflowCount = %u\\n"
+	},
+	"15607": {
+		"Type": "trice",
+		"Strg": "\\n"
+	},
+	"15609": {
+		"Type": "trice",
+		"Strg": "-----------\\n"
 	},
 	"15637": {
 		"Type": "trice8B",
@@ -375,13 +519,25 @@
 		"Type": "trice",
 		"Strg": "isr:TIM17_FDCAN_IT1_IRQHandler! (%u ms)\\n"
 	},
+	"15771": {
+		"Type": "trice",
+		"Strg": "IDPositionTable:\\n"
+	},
 	"15819": {
 		"Type": "TRICE32_0",
 		"Strg": "att:🐁 Speedy Gonzales A  32-bit time stamp\\n"
 	},
+	"15835": {
+		"Type": "trice",
+		"Strg": "pat: "
+	},
 	"15862": {
 		"Type": "trice",
 		"Strg": "info:%d times a 16 byte long Trice messages, which may not be written all if the buffer is too small:\\n"
+	},
+	"15883": {
+		"Type": "trice",
+		"Strg": "%d transmuted:"
 	},
 	"15912": {
 		"Type": "trice16",
@@ -398,6 +554,18 @@
 	"16055": {
 		"Type": "TRice",
 		"Strg": "att:🐁 Speedy Gonzales b  32-bit time stamp\\n"
+	},
+	"16104": {
+		"Type": "trice",
+		"Strg": "PATH %d\\n"
+	},
+	"16121": {
+		"Type": "trice",
+		"Strg": "srcMap is full (%d paths)\\n"
+	},
+	"16122": {
+		"Type": "triceS",
+		"Strg": "%s"
 	},
 	"16147": {
 		"Type": "trice",

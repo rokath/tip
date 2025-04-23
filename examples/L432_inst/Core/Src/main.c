@@ -23,7 +23,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "trice.h"
-#include "tip.h"
+#include "ti_pack.h"
+#include "ti_unpack.h"
 //#include <limits.h> // INT_MAX
 /* USER CODE END Includes */
 

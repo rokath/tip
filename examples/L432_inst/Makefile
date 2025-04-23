@@ -92,8 +92,8 @@ C_SOURCES += \
 C_SOURCES += \
 ../../src/idTable.c \
 ../../src/memmem.c \
-../../src/pack.c \
-../../src/unpack.c
+../../src/ti_pack.c \
+../../src/ti_unpack.c
 
 # ASM sources
 ASM_SOURCES =  \
