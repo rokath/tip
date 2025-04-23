@@ -1,7 +1,7 @@
 # Makefile
 
 BUILDFILES = build.sh Makefile mcu.mak flags.mak gcc0.mak gcc1.mak clang0.mak clang1.mak
-VERBOSE = # -v
+TIP_VERBOSE = # -v
 
 ######################################
 # target
@@ -13,7 +13,7 @@ TARGET = G0B1
 # building variables
 ######################################
 # debug build?
-DEBUG = 1
+TIP_DEBUG = 1
 
 
 ######################################

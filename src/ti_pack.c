@@ -38,11 +38,11 @@ typedef struct {
 
 static size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen); // forward declaration
 
-#if VERBOSE
+#if TIP_VERBOSE
 static void printIDPositionTable( void );              // forward declaration
 #endif
 
-#if DEBUG
+#if TIP_DEBUG
 static void printSrcMap( void );
 static void printPath( char * prefix, unsigned pidx ); // forward declaration
 static void printPatternAsASCII( id_t id );
@@ -62,8 +62,8 @@ size_t tip( uint8_t * dst, const uint8_t * src, size_t len ){ // default user in
 
 size_t tiPack( uint8_t * dst, const uint8_t * table, const uint8_t * src, size_t slen ){ // extended user interface
     if( TIP_SRC_BUFFER_SIZE_MAX < slen ){
-#if DEBUG
-        printf( "slen %llu > %u TIP_SRC_BUFFER_SIZE_MAX is invalid\n", slen, TIP_SRC_BUFFER_SIZE_MAX );
+#if TIP_DEBUG
+        printf( "slen %lu > %u TIP_SRC_BUFFER_SIZE_MAX is invalid\n", slen, TIP_SRC_BUFFER_SIZE_MAX );
 #endif
         return 0;
     }
@@ -158,7 +158,7 @@ static void createIDPosTable(const uint8_t * IDPatTable, const uint8_t * src, si
             offset = loc + 1; // "xxxxxPPPxxx" - after finding first PP, we need to find the 2nd PP inside PPP.
         }
     }    
-#if VERBOSE
+#if TIP_VERBOSE
     printIDPositionTable();
 #endif
 }
@@ -188,7 +188,7 @@ static uint8_t ptiPatternLength(loc_t pti){
 //! @brief pathPatternSize returns sum of all pattern lengths in path pidx.
 static loc_t pathPatternSizeSum( unsigned pidx ){
     if( pidx >= srcMap.count ){
-#if DEBUG
+#if TIP_DEBUG
         printf( "ERROR: pidx %u >= %u srcMap.count\n", pidx, srcMap.count);
 #endif
         return 0;
@@ -244,7 +244,7 @@ static unsigned ShortestTipPath(void){
     loc_t minLast = TIP_SRC_BUFFER_SIZE_MAX;
     for( unsigned i = 0; i < srcMap.count; i++ ){
         if( maxSum == pathPatternSizeSum(i) ){
-#if DEBUG
+#if TIP_DEBUG
             printPath( "option:", i );
 #endif
             path_t path = srcMap.path[i];
@@ -265,7 +265,7 @@ static void removePath( unsigned pidx ){
     if( srcMap.count == 1 ){
         for(;;);
     }
-#if DEBUG
+#if TIP_DEBUG
     printPath("remove", pidx);
 #endif
     srcMap.count--;
@@ -357,7 +357,7 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
     // unsigned appendedPathsCount = 0;
     createIDPosTable(table, src, slen); // Get all ID positions in src ordered by increasing offset.
     memset(&srcMap, 0, sizeof(srcMap)); // Start with no path (PathCount=0).
-#if DEBUG
+#if TIP_DEBUG
     printf( "SrcMap:\n" );
 #endif
     for( unsigned pti = 0; pti < IDPosTable.count; pti++ ){ // Loop over IDPosition table.
@@ -369,7 +369,7 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
         unsigned srcMapCount = srcMap.count;
         for( unsigned k = 0; k < srcMapCount; k++ ){ // Loop over all so far existing paths.
             if( srcMap.count > TIP_MAX_PATH_COUNT ){ // Create no new paths for this src buffer.
-#if DEBUG
+#if TIP_DEBUG
                 printf( "srcMap is full (%d paths)\n", TIP_MAX_PATH_COUNT);
 #endif
                 IDPosAppended = 1; // Do not add any further paths.
@@ -399,12 +399,12 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
                 if( srcMap.count < TIP_MAX_PATH_COUNT ){
                     unsigned n = forkPath(k);
                     appendPosTableIndexToPath(n, pti);
-#if DEBUG    
+#if TIP_DEBUG    
                     printPath("fork: ", n);
 #endif    
                 }else{
                     appendPosTableIndexToPath(k, pti);
-#if DEBUG    
+#if TIP_DEBUG    
                     printPath("appd: ", k);
 #endif    
                 IDPosAppended = 1; // pti is appended to at least one path now.
@@ -421,18 +421,18 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
                 path->last = 0;     // One position table index is now in this new path.
                 path->pti[0] = pti; // Write the pti (the first last is naturally 0)
                 srcMap.count++;     // We have one more path now.
-#if DEBUG
+#if TIP_DEBUG
                 printPath(" new: ", nextIdx);
 #endif
             }else{
-#if DEBUG
+#if TIP_DEBUG
                 printf( "no new path possible: srcMap is full (%d paths)\n", srcMap.count);
 #endif
             }
         }
         shrinkSrcMap();
     }
-#if DEBUG
+#if TIP_DEBUG
     printSrcMap();
 #endif
 }
@@ -441,7 +441,7 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
 //! If afterwards optimization is possible, the returned count i <= 0.
 //! It uses idPatTable and the path index pidx in the actual srcMap, which is linked to IDPosTable.
 static int selectUnreplacableBytes( uint8_t * dst, unsigned pidx, const uint8_t * src, size_t slen ){
-#if DEBUG
+#if TIP_DEBUG
     printf( "selectUnreplacableBytes:\n");
 #endif
     const uint8_t * srcNext = src;   // next position for src buffer read
@@ -460,7 +460,7 @@ static int selectUnreplacableBytes( uint8_t * dst, unsigned pidx, const uint8_t 
         const uint8_t * patternFrom = src + idPos.start; // pattern start in src buffer
         loc_t u8len = patternFrom - srcNext; // count of unreplacable bytes
         uint8_t patlen = IDPatternLength( id );
-#if DEBUG
+#if TIP_DEBUG
         printf( "i%3d pti%3d id%3d patsta%p patlen%d u8sta%p u8len%4d dstN%p ", i, pti, id, patternFrom, patlen, srcNext, u8len, dstNext );
         printf( "pat: ");
         printPatternAsASCII(id);
@@ -543,9 +543,9 @@ static size_t createOutput( uint8_t * dst, unsigned pidx, const uint8_t * uTsrc,
     const uint8_t * srcNext = src;   // next position for src buffer read
     uint8_t * dstNext = dst;         // next position for dst buffer write
     const uint8_t * uTNext = uTsrc;
-#if DEBUG
+#if TIP_DEBUG
     printf( "PATH %d\n", pidx );
-    printPath( "DEBUG:", pidx );
+    printPath( "TIP_DEBUG:", pidx );
 #endif
     for( int i = 0; i <= path.last; i++ ){
         loc_t pti = path.pti[i];
@@ -555,7 +555,7 @@ static size_t createOutput( uint8_t * dst, unsigned pidx, const uint8_t * uTsrc,
         loc_t u8len = patternFrom - srcNext; // count of unreplacable bytes
         uint8_t patlen = IDPatternLength( id );
         srcNext += patlen + u8len;
-#if DEBUG
+#if TIP_DEBUG
         printf( "i %u: pidx %u, id %u, start %u\n", i, pidx, id, idPos.start );
 #endif
         memcpy( dstNext, uTNext, u8len ); // Copy u8len bytes from uTsrc buffer.
@@ -586,7 +586,7 @@ static size_t convertBits( uint8_t * lst, const uint8_t * src, size_t slen ){
 static size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * table, const uint8_t * src, size_t slen){
     createSrcMap(table, src, slen);
     unsigned pidx = ShortestTipPath(); // find minimum line
-#if DEBUG
+#if TIP_DEBUG
     printPath( "SELECT:", pidx );
 #endif
     memset(dst, 0, dstLimit-dst);
@@ -596,20 +596,8 @@ static size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * t
 #if 1 // OPTIMIZE_UNREPLACABLES == 1
 
     if (u8Count > 0){ // no optimization possible
-
-        for( int i = 0; i < u8Count; i++ ){
-            printf( "%02x_", dst[i] );
-        }
-        printf( "\n" );
-        
         uTCount = (int)convertBits( dstLimit-1, dst, (size_t)u8Count );
         uTsrc = dstLimit - uTCount;
-
-        for( int i = 0; i < uTCount; i++ ){
-            printf( "%02x ", uTsrc[i] );
-        }
-        printf( "\n" );
-   
     } else { // We keep name "uT" for clarity.
         u8Count = -u8Count; // Make it positive by revering the sign.
         uTCount = (size_t)u8Count;
@@ -620,14 +608,14 @@ static size_t buildTiPacket(uint8_t * dst, uint8_t * dstLimit, const uint8_t * t
     uTCount = convertBits( dstLimit-1, dst, (size_t)u8Count );
     uTsrc = dstLimit - uTCount;
 #endif // #else // #if OPTIMIZE_UNREPLACABLES == 1
-#if DEBUG
+#if TIP_DEBUG
     printf( "ShortestTipPath: %u, u8Count: %d, uTCount: %d\n", pidx, u8Count, uTCount );
 #endif
     size_t pkgSize = createOutput( dst, pidx, uTsrc, uTCount, src );
     return pkgSize; // final ti package size
 }
 
-#if DEBUG
+#if TIP_DEBUG
 
 //! @brief printBufferAsASCII prints buffer as ASCII.
 static void printBufferAsASCII( const uint8_t * buf, size_t len){
@@ -639,7 +627,7 @@ static void printBufferAsASCII( const uint8_t * buf, size_t len){
         }
         sprintf( msg+i, "%c", c);
     }
-    printf( msg );
+    printf( "%s", msg );
 }
 
 //! @brief printPatternAsASCII is a debug helper.
@@ -691,7 +679,7 @@ static void printSrcMap( void ){
 
 #endif
 
-#if VERBOSE
+#if TIP_VERBOSE
 
 //! @brief IDPatternAddress writes pattern address of id into patternAddress and returns pattern length.
 static loc_t IDPatternAddress( const uint8_t ** patternAddress, id_t id ){

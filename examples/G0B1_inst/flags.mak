@@ -78,7 +78,7 @@ C_FLAGS += -O0                    # -O0 means: 'do not optimize at all'.
 
 #C_FLAGS += -pedantic              #
 
-#ifeq ($(DEBUG), 1)
+#ifeq ($(TIP_DEBUG), 1)
 #C_FLAGS += -g #
  C_FLAGS += -gdwarf-4 #
 #endif

@@ -20,7 +20,7 @@ TARGET = F030_inst
 # building variables
 ######################################
 # debug build?
-DEBUG = 1
+TIP_DEBUG = 1
 # optimization
 OPT = -Og
 
@@ -167,7 +167,7 @@ ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffuncti
 
 CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-ifeq ($(DEBUG), 1)
+ifeq ($(TIP_DEBUG), 1)
 CFLAGS += -g -gdwarf-2
 endif
 
