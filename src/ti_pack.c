@@ -54,11 +54,25 @@ static void printBufferAsASCII( const uint8_t * buf, size_t len);
 //! especially for testing and not to have to pass it to all functions.
 //! The ID table has MaxID IDs with pattern, each max 255 bytes long.
 //! ATTENTION: The pack functions are usable only sequentially!
-static const uint8_t * idPatTable = idTable;
+static uint8_t const * idPatTable = IDTable;
 
 size_t tip( uint8_t * dst, const uint8_t * src, size_t len ){ // default user interface
-    return tiPack( dst, idTable, src, len );
+    return tiPack( dst, IDTable, src, len );
 }
+
+size_t tiPack2( 
+    uint8_t * dst, 
+    const uint8_t * src, 
+    size_t slen, 
+    unsigned urcb, // unreplacableContainerBits, only 6 and 7 are accepted
+	unsigned id1Max, // ID1Max, can be up to 191 for unreplacableContainerBits == 6 or 127 for unreplacableContainerBits == 7.
+	unsigned id1Count, // ID1Count, used ID1 values. The remaining space is for indirect indexing.
+	uint8_t * const idt ){// idTable
+
+    
+    const uint8_t * table, ){ // extended user interface
+
+
 
 size_t tiPack( uint8_t * dst, const uint8_t * table, const uint8_t * src, size_t slen ){ // extended user interface
     if( TIP_SRC_BUFFER_SIZE_MAX < slen ){
