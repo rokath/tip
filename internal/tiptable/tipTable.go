@@ -96,36 +96,41 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 	fmt.Fprintf(oh, `
 
 //! UnreplacableContainerBits is container bit size for unreplacebale bytes.
-const unsigned unreplacableContainerBits = %d; // 6 bits or 7 bits
+unsigned unreplacableContainerBits = %d; // 6 bits or 7 bits
 `, UnreplacableContainerBits)
 
 	fmt.Fprintf(oh, `
 //! ID1Max is the max possible number of primary IDs. Its value depends on UnreplacableContainerBits.
-const unsigned ID1Max = %d; // 7 bits:127 or 6 bits:191
+unsigned ID1Max = %d; // 7 bits:127 or 6 bits:191
 `, ID1Max)
 
 	fmt.Fprintf(oh, `
 //! ID1Count is the direct ID count. The resulting indirect ID count is (ID1Max - ID1Count) * 255.
-const unsigned ID1Count = %d;
+unsigned ID1Count = %d;
 `, ID1Count)
 
 	fmt.Fprintf(oh, `
 //! MaxID is a computed value: MaxID = ID1Count + (ID1Max - ID1Count) * 255.
 //! It is the max possible amount of pattern in the idTable.
-const unsigned MaxID = %d;
+unsigned MaxID = %d;
 `, MaxID)
 
 	fmt.Fprintf(oh, `
 //! LastID is pattern count inside the idTable. If it is < MaxID, consider increasing ID1Count.
-const unsigned LastID = %d;
+unsigned LastID = %d;
 `, len(idList))
 
 	fmt.Fprintf(oh, `
 //! maxPatternlength is the size of the longest pattern inside idTable.
-const uint8_t maxPatternlength = %d;
+uint8_t maxPatternlength = %d;
 `, pattern.PatternSizeMax)
 
 	fmt.Fprintln(oh, `
+static const uint8_t idTable[]; // forward declaration
+
+//! IDTable points to the unsed idTable.
+uint8_t const * IDTable = idTable;
+
 //! idTable is sorted by pattern length and pattern count.
 //! The pattern position + 1 is the replace id.
 //! The generator pattern max size was`, maxPatternSize, `and the list pattern max size is:`, maxListPatternSize)

@@ -39,25 +39,25 @@ typedef uint8_t loc_t;
 typedef uint16_t id_t; 
 
 //! maxPatternlength is the length of the longes pattern inside idTable. It cannot exceed 255
-extern const uint8_t maxPatternlength;
+extern uint8_t maxPatternlength;
 
 //! UnreplacableContainerBits is an in idTable.c generated value.
-extern const unsigned unreplacableContainerBits; 
+extern unsigned unreplacableContainerBits; 
 
 //! ID1Max is an in idTable.c generated value.
-extern const unsigned ID1Max;
+extern unsigned ID1Max;
 
 //! ID1Count is an in idTable.c generated value.
-extern const unsigned ID1Count;
+extern unsigned ID1Count;
 
 //! MaxID is an in idTable.c generated value.
-extern const unsigned MaxID;
+extern unsigned MaxID;
 
 //! LastID is an in idTable.c generated value.
-extern const unsigned LastID;
+extern unsigned LastID;
 
-//! idTable is an in idTable.c generated value.
-extern const uint8_t idTable[];
+//! IDTable is an in idTable.c generated value.
+extern uint8_t const * IDTable;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Exported for target tests
@@ -69,7 +69,7 @@ extern const uint8_t idTable[];
 #include "ti_pack.h"
 #include "ti_unpack.h"
 
-extern const uint8_t idTable[];
+//extern const uint8_t idTable[];
 
 #ifdef __cplusplus
 }

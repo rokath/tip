@@ -6,28 +6,33 @@
 
 
 //! UnreplacableContainerBits is container bit size for unreplacebale bytes.
-const unsigned unreplacableContainerBits = 6; // 6 bits or 7 bits
+unsigned unreplacableContainerBits = 6; // 6 bits or 7 bits
 
 //! ID1Max is the max possible number of primary IDs. Its value depends on UnreplacableContainerBits.
-const unsigned ID1Max = 191; // 7 bits:127 or 6 bits:191
+unsigned ID1Max = 191; // 7 bits:127 or 6 bits:191
 
 //! ID1Count is the direct ID count. The resulting indirect ID count is (ID1Max - ID1Count) * 255.
-const unsigned ID1Count = 127;
+unsigned ID1Count = 127;
 
 //! MaxID is a computed value: MaxID = ID1Count + (ID1Max - ID1Count) * 255.
 //! It is the max possible amount of pattern in the idTable.
-const unsigned MaxID = 16447;
+unsigned MaxID = 16447;
 
 //! LastID is pattern count inside the idTable. If it is < MaxID, consider increasing ID1Count.
-const unsigned LastID = 7008;
+unsigned LastID = 7008;
 
 //! maxPatternlength is the size of the longest pattern inside idTable.
-const uint8_t maxPatternlength = 4;
+uint8_t maxPatternlength = 4;
+
+static const uint8_t idTable[]; // forward declaration
+
+//! IDTable points to the unsed idTable.
+uint8_t const * IDTable = idTable;
 
 //! idTable is sorted by pattern length and pattern count.
 //! The pattern position + 1 is the replace id.
 //! The generator pattern max size was 4 and the list pattern max size is: 4
-const uint8_t idTable[] = { // from dummy.txt.SAMPLES
+static const uint8_t idTable[] = { // from dummy.txt.SAMPLES
                                  // `ASCII`|  count    id (decimal)  id1  id2
 	  4, 0x41, 0x41, 0x41, 0x41, // `AAAA`|   1650  0x0001 (    1)   01   --	6600.000000	16.000000
 	  4, 0x30, 0x41, 0x41, 0x41, // `0AAA`|    525  0x0002 (    2)   02   --	2100.000000	16.000000
