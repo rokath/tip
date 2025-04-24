@@ -126,7 +126,7 @@ uint8_t maxPatternlength = %d;
 `, pattern.PatternSizeMax)
 
 	fmt.Fprintln(oh, `
-static const uint8_t idTable[]; // forward declaration
+static uint8_t const idTable[]; // forward declaration
 
 //! IDTable points to the unsed idTable.
 uint8_t const * IDTable = idTable;
@@ -134,7 +134,7 @@ uint8_t const * IDTable = idTable;
 //! idTable is sorted by pattern length and pattern count.
 //! The pattern position + 1 is the replace id.
 //! The generator pattern max size was`, maxPatternSize, `and the list pattern max size is:`, maxListPatternSize)
-	start := fmt.Sprintf("const uint8_t idTable[] = { // from %s\n", loc)
+	start := fmt.Sprintf("static uint8_t const idTable[] = { // from %s\n", loc)
 	fill := spaces(len("    xxx, ") + len("0x00, ")*maxListPatternSize)
 	switch maxListPatternSize {
 	case 2:

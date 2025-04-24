@@ -10,6 +10,7 @@ extern "C" {
 
 #include <stdint.h>
 #include "tipConfig.h" // project specific file
+#include "tipDefaultConfig.h" // set defaults for non defined values
 
 size_t shift87bit( uint8_t * lst, const uint8_t * src, size_t slen );
 size_t shift78bit( uint8_t * dst, const uint8_t * src, size_t slen );
