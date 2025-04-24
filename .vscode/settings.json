@@ -4,6 +4,7 @@
         "tip.h": "c",
         "tipconfig.h": "c",
         "tipinternal.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "cmath": "c"
     }
 }

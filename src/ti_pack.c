@@ -49,30 +49,30 @@ static void printPatternAsASCII( id_t id );
 static void printBufferAsASCII( const uint8_t * buf, size_t len);
 #endif
 
+/*
 //! @brief idPatTable points to a parameter "table" passed to some functions.
 //! @details This allows using different idTable's than idTable.c 
 //! especially for testing and not to have to pass it to all functions.
 //! The ID table has MaxID IDs with pattern, each max 255 bytes long.
 //! ATTENTION: The pack functions are usable only sequentially!
 static uint8_t const * idPatTable = IDTable;
+*/
 
-size_t tip( uint8_t * dst, const uint8_t * src, size_t len ){ // default user interface
-    return tiPack( dst, IDTable, src, len );
+size_t tip( uint8_t * dst, const uint8_t * src, size_t slen ){ // default user interface
+    if( slen > TIP_SRC_BUFFER_SIZE_MAX ){
+        return 0;
+    }
+    size_t dstSizeMax;
+    if (unreplacableContainerBits == 6){
+        dstSizeMax = ((43691ul*slen)>>15)+1;  // The max possible dst size is slen*8/6+1 or ((len*65536*8/6)>>16)+1.
+    }else{ // (unreplacableContainerBits == 7)
+        dstSizeMax = ((18725ul*slen)>>14)+1;  // The max possible dst size is slen*8/7+1 or ((len*65536*8/7)>>16)+1.
+    }
+    uint8_t * dstLimit = dst + dstSizeMax;
+    memset(dst, 0, dstSizeMax);
+    size_t tipSize = buildTiPacket(dst, dstLimit, IDTable, src, slen);
+    return tipSize;
 }
-
-size_t tiPack2( 
-    uint8_t * dst, 
-    const uint8_t * src, 
-    size_t slen, 
-    unsigned urcb, // unreplacableContainerBits, only 6 and 7 are accepted
-	unsigned id1Max, // ID1Max, can be up to 191 for unreplacableContainerBits == 6 or 127 for unreplacableContainerBits == 7.
-	unsigned id1Count, // ID1Count, used ID1 values. The remaining space is for indirect indexing.
-	uint8_t * const idt ){// idTable
-
-    
-    const uint8_t * table, ){ // extended user interface
-
-
 
 size_t tiPack( uint8_t * dst, const uint8_t * table, const uint8_t * src, size_t slen ){ // extended user interface
     if( TIP_SRC_BUFFER_SIZE_MAX < slen ){
@@ -89,7 +89,7 @@ size_t tiPack( uint8_t * dst, const uint8_t * table, const uint8_t * src, size_t
     }
     uint8_t * dstLimit = dst + dstSizeMax;
     memset(dst, 0, dstSizeMax);
-    idPatTable = table;
+    IDTable = table;
     size_t tipSize = buildTiPacket(dst, dstLimit, table, src, slen);
     return tipSize;
 }
@@ -99,7 +99,7 @@ static const uint8_t * nextIDPatTablePos = NULL;
 
 //! @brief initGetNextPattern causes getNextIDPattern to start from 0.
 static void initGetNextPattern( const uint8_t * idTbl ){
-    idPatTable = idTbl;
+    IDTable = idTbl;
     nextIDPatTablePos = idTbl;
 }
 
@@ -184,7 +184,7 @@ static srcMap_t srcMap = {0};
 
 //! @brief IDPatternLength returns pattern length of id. The max pattern length is 255.
 static uint8_t IDPatternLength( id_t id ){
-    const uint8_t * next = idPatTable;
+    const uint8_t * next = IDTable;
     for( id_t i = 1; i < id; i++ ){
         next += 1 + *next;
     }
@@ -453,7 +453,7 @@ void createSrcMap(const uint8_t * table, const uint8_t * src, size_t slen){
 
 //! @brief selectUnreplacableBytes copies all unreplacable bytes from src to dst and returns their count.
 //! If afterwards optimization is possible, the returned count i <= 0.
-//! It uses idPatTable and the path index pidx in the actual srcMap, which is linked to IDPosTable.
+//! It uses IDTable and the path index pidx in the actual srcMap, which is linked to IDPosTable.
 static int selectUnreplacableBytes( uint8_t * dst, unsigned pidx, const uint8_t * src, size_t slen ){
 #if TIP_DEBUG
     printf( "selectUnreplacableBytes:\n");
@@ -547,7 +547,7 @@ static unsigned  writeID( uint8_t * dst, id_t id ){
 }
 
 //! @brief createOutput uses the uT buffer and pidx to intermix transformed unreplacable bytes and pattern IDs.
-//! It uses idPatTable and the path index pidx in the actual srcMap, which is linked to IDPosTable.
+//! It uses IDTable and the path index pidx in the actual srcMap, which is linked to IDPosTable.
 static size_t createOutput( uint8_t * dst, unsigned pidx, const uint8_t * uTsrc, size_t uTlen, const uint8_t * src ){
     if (srcMap.count==0) { // If no path at all, all src buffer bytes are unreplacables.
         memcpy( dst, uTsrc, uTlen );
@@ -646,7 +646,7 @@ static void printBufferAsASCII( const uint8_t * buf, size_t len){
 
 //! @brief printPatternAsASCII is a debug helper.
 static void printPatternAsASCII( id_t id ){
-    const uint8_t * next = idPatTable;
+    const uint8_t * next = IDTable;
     for( id_t i = 1; i < id; i++ ){
         next += 1 + *next;
     }
@@ -697,7 +697,7 @@ static void printSrcMap( void ){
 
 //! @brief IDPatternAddress writes pattern address of id into patternAddress and returns pattern length.
 static loc_t IDPatternAddress( const uint8_t ** patternAddress, id_t id ){
-    const uint8_t * next = idPatTable;
+    const uint8_t * next = IDTable;
     for( id_t i = 1; i < id; i++ ){
         next += 1 + *next;
     }

@@ -14,6 +14,7 @@ package tip
 // #include "shift78bit.c"
 // #include "shift86bit.c"
 // #include "shift68bit.c"
+// #include "tip.c"
 // int optimizeUnreplacablesEnabled(void) {
 //     return OPTIMIZE_UNREPLACABLES;
 // }
@@ -55,6 +56,18 @@ func TIPack(out, table, in []byte) (plen int) {
 	tbl := (*C.uchar)(unsafe.Pointer(&table[0]))
 	slen := (C.size_t)(len(in))
 	dlen := C.tiPack(dst, tbl, src, slen)
+	return int(dlen)
+}
+
+
+// Pack compresses in to out with no zeroes in out and returns packed size plen.
+// out needs to have a size of at least 8*len(in)/7 + 1 for the case in cannot get compressed.
+func TIPack2(out, in []byte, urc, id1Max int, table []byte) (plen int) {
+	dst := (*C.uchar)(unsafe.Pointer(&out[0]))
+	src := (*C.uchar)(unsafe.Pointer(&in[0]))
+	slen := (C.size_t)(len(in))
+	tbl := (*C.uchar)(unsafe.Pointer(&table[0]))
+	dlen := C.tiPack2(dst, src, slen, (C.uint)(urc), (C.uint)(id1Max), tbl)
 	return int(dlen)
 }
 

@@ -28,6 +28,14 @@ size_t tip( uint8_t* dst, const uint8_t * src, size_t len );
 //! tiPack is the extended user interface to use different ID tables in the same project.
 size_t tiPack( uint8_t * dst, const uint8_t * table, const uint8_t * src, size_t slen );
 
+size_t tiPack2( 
+    uint8_t * dst,               //!< @param destination buffer
+    uint8_t const * src,         //!< @param source buffer
+    size_t slen,                 //!< @param valid data length inside source buffer
+    unsigned urcb,               //!< @param unreplacableContainerBits, only 6 and 7 are accepted
+	unsigned id1Count,           //!< @param ID1Count, used ID1 values. The remaining space is for indirect indexing.
+	uint8_t const * const idt );
+
 #ifdef __cplusplus
 }
 #endif
