@@ -21,6 +21,30 @@ func _TestUnpack(t *testing.T) { // uses idTable.c
 	}
 }
 
+/*
+type IDPos struct {
+	id    byte
+	start int
+}
+
+// ! NewIDPositionTable is a wrapper for testing C function createIDPosTable and therefore returns posTable.
+func NewIDPositionTable(idTable, in []byte) (posTable []IDPos) {
+	src := (*C.uchar)(unsafe.Pointer(&in[0]))
+	slen := (C.size_t)(len(in))
+	idPatTbl := (*C.uchar)(unsafe.Pointer(&idTable[0]))
+	C.createIDPosTable(idPatTbl, src, slen)
+	n := int(C.IDPosTable.count)
+	pt := (*[C.TIP_SRC_BUFFER_SIZE_MAX]C.IDPosition_t)(unsafe.Pointer(&C.IDPosTable.item[0]))
+	posTable = make([]IDPos, n)
+	for i := range posTable {
+		posTable[i].id = byte(pt[i].id)
+		posTable[i].start = int(pt[i].start)
+	}
+	return
+}
+*/
+
+
 // TODO
 func _TestNewIDPositionTable(t *testing.T) {
 	type args struct {

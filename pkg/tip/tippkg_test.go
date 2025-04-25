@@ -38,7 +38,7 @@ var tipTestTable = []struct {
 	UnreplacableContainerBitCount int
 	unpacked                      []byte
 	packed                        []byte
-}{         // 0x70 0x70 0x70 0x41 0x70 0x70 0x70         0x7e, 0x80, 0x7e, 0xc1
+}{ // 0x70 0x70 0x70 0x41 0x70 0x70 0x70         0x7e, 0x80, 0x7e, 0xc1
 	{7, []byte{'p', 'p', 'p', 'A', 'p', 'p', 'p'}, []byte{126, 0x80, 126, 0x80 | 'A'}},                             // only unreplacable 1 byte, not optimizable because msb==0
 	{7, []byte{'p', 'p', 'p', 0xbb, 'p', 'p', 'p'}, []byte{126, 0xbb, 126}},                                        // only unreplacable 1 byte in the middle, optimizable
 	{7, []byte{'p', 'p', 'p', 'p', 'p', 'p', 'A'}, []byte{126, 126, 0x80, 0x80 | 'A'}},                             // only unreplacable 1 byte at the end, not optimizable
@@ -58,27 +58,30 @@ var tipTestTable = []struct {
 	{6, []byte{'p', 'p', 'p'}, []byte{126}},                                                                        // Just 1 pattern
 	{6, []byte{'p', 'p', 'p', 'p', 'p', 'p'}, []byte{126, 126}},                                                    // just 2 pattern
 	{6, []byte{0xc3, 'p', 'p', 'p'}, []byte{0xc3, 126}},                                                            // 1 pattern in the end
-	{6, []byte{'p', 'p', 'p', 0xc3}, []byte{126, 0xc3}},       // a single unreplacable (optimizable)
-	{6, []byte{'p', 'p', 'p', 0x33}, []byte{126, 0xc0, 0xf3}}, // a single unreplacable (not optimizable)
-	//{6, []byte{0xc1, 'p', 'p', 'p', 0xd2, 'x', 'x', 'p'}, []byte{0xc1, 126, 0xd2, 126}}, // 1 pattern in the end
-	//{7, []byte{0xd1, 'p', 'p', 'p', 0x72, 'x', 'x', 'p'}, []byte{0x82, 126, 0xd1, 126, 0xf2}},                      // 2 pattern with distributed unreplacable bytes, not optimizable
-	//{7, []byte{0xd1, 'p', 'p', 'p', 0xd2, 'x', 'x', 'p'}, []byte{0xd1, 126, 0xd2, 126}},                            // 2 pattern with distributed unreplacable bytes, optimizable
-	//{7, []byte{'A'}, []byte{0x80, 0x80 | 'A'}},                                                                     // only unreplacable 1 byte, not optimizable
-	//{7, []byte{'p'}, []byte{'p'}},                                                                                  // only unreplacable 1 byte, optimizable
-	//{7, []byte{0xd1, 0xd2, 'x', 'x', 'p'}, []byte{0xd1, 0xd2, 126}},                                                // 1 pattern in the end, optimizable
-	//{7, []byte{'p', 0xbb}, []byte{0x83, 'p', 0xbb}},                                                                // only unreplacable bytes, not optimizable
-	//{7, []byte{'p', 0xbb, 0xcc, 'p', 0xbb}, []byte{0x9f, 'p', 0xbb, 0xcc, 'p', 0xbb}},                              // only unreplacable bytes, not optimizable
-	//{7, []byte{0xd1, 'p', 'p', 'p', 0xd2, 'x', 'x', 'p', 0xd3}, []byte{0x87, 126, 0xd1, 126, 0xd2, 0xd3}},          // 2 pattern with distributed unreplacable bytes, not optimizable
+	{6, []byte{'p', 'p', 'p', 0xc3}, []byte{126, 0xc3}},                                                            // a single unreplacable (optimizable)
+	{6, []byte{'p', 'p', 'p', 0x33}, []byte{126, 0xc0, 0xf3}},                                                      // a single unreplacable (not optimizable)
+	{6, []byte{0xc1, 'p', 'p', 'p', 0xd2, 'p', 'p', 'p'}, []byte{0xc1, 126, 0xd2, 126}},                            // 1 pattern in the end
+	{7, []byte{0xd1, 'p', 'p', 'p', 0x72, 'x', 'x', 'p'}, []byte{0x84, 126, 0xd1, 0x01, 0xf2, 0xf0}},               // 2 pattern with distributed unreplacable bytes, not optimizable
+	{7, []byte{0xd1, 'p', 'p', 'p', 0x72, 'p', 'x', 'x'}, []byte{0x84, 126, 0xd1, 0xf2, 0x01, 0xf0}},               // 2 pattern with distributed unreplacable bytes, not optimizable
+	{7, []byte{0xd1, 'p', 'p', 'p', 0xf2, 'p', 'x', 'x'}, []byte{0x86, 126, 0xd1, 0xf2, 0x01, 0xf0}},               // 2 pattern with distributed unreplacable bytes, not optimizable
+	{7, []byte{0xd1, 'p', 'p', 'p', 0xf2, 0xF0, 'x', 'x'}, []byte{0xd1, 126, 0xf2, 0xf0, 0x01}},                    // 2 pattern with distributed unreplacable bytes,  optimizable
+	{7, []byte{0xd1, 'p', 'p', 'p', 0xd2, 'p', 'p', 'p'}, []byte{0xd1, 126, 0xd2, 126}},                            // 2 pattern with distributed unreplacable bytes, optimizable
+	{7, []byte{'A'}, []byte{0x80, 0x80 | 'A'}},                                                                     // only unreplacable 1 byte, not optimizable
+	{7, []byte{0xf0}, []byte{0xf0}},                                                                                // only unreplacable 1 byte, optimizable
+	{7, []byte{0xd1, 0xd2, 'p', 'p', 'p'}, []byte{0xd1, 0xd2, 126}},                                                // 1 pattern in the end, optimizable
+	{7, []byte{'p', 0xbb}, []byte{0x81, 0x80 | 'p', 0xbb}},                                                         // only unreplacable bytes, not optimizable
+	{7, []byte{'p', 0xbb, 0xcc, 'p', 0xbb}, []byte{0x8d, 0x80 | 'p', 0xbb, 0xcc, 0x80 | 'p', 0xbb}},                // only unreplacable bytes, not optimizable
+	{7, []byte{0xd1, 'p', 'p', 'p', 0xd2, 'p', 'p', 'p', 0xd3}, []byte{0x87, 126, 0xd1, 126, 0xd2, 0xd3}},          // 2 pattern with distributed unreplacable bytes, not optimizable
 }
 
 func TestTIPack(t *testing.T) {
 	packet := make([]byte, 100)
 	for i, x := range tipTestTable {
 		fmt.Println(i)
-		fmt.Println("x.unpacked ", hex.EncodeToString(x.unpacked))
-		fmt.Println("  x.packed ", hex.EncodeToString(x.packed))
+		//fmt.Println("x.unpacked ", hex.EncodeToString(x.unpacked))
+		//fmt.Println("  x.packed ", hex.EncodeToString(x.packed))
 		n := TIPack(packet, x.unpacked, x.UnreplacableContainerBitCount, 127, ppptable)
-		fmt.Println("pack result", hex.EncodeToString(packet[:n]))
+		//fmt.Println("pack result", hex.EncodeToString(packet[:n]))
 		assert.Equal(t, len(x.packed), n)
 		act := packet[:n]
 		assertNoZeroes(t, act)
@@ -124,5 +127,55 @@ func TestTIPackTIUnpack(t *testing.T) {
 func assertNoZeroes(t *testing.T, b []byte) {
 	for _, x := range b {
 		assert.NotEqual(t, x, 0)
+	}
+}
+
+func TestTIPackTIUnpackEx(t *testing.T) {
+	buffer := make([]byte, 100)
+	packet := make([]byte, 100)
+
+	var tables = [][]byte{
+		{0},
+		{2, 0xaa, 0xbb, 0},
+		ppptable,
+	}
+
+	var bufs = [][]byte{
+		{'p', 'p', 'p', 'A', 'p', 'p', 'p'},
+		{0xc1, 'p', 'p', 'p', 0xd2, 'x', 'x', 'p'},
+		{0xc1, 126, 0xd2, 126},
+		{0xd1, 'p', 'p', 'p', 0x72, 'x', 'x', 'p'},
+		{0x82, 126, 0xd1, 126, 0xf2},
+		{0xd1, 'p', 'p', 'p', 0xd2, 'x', 'x', 'p'},
+		{0xd1, 126, 0xd2, 126},
+		{'A'},
+		{0x80, 0x80 | 'A'},
+		{'p'},
+		{0xd1, 0xd2, 'x', 'x', 'p'},
+		{0xd1, 0xd2, 126},
+		{'p', 0xbb},
+		{0x83, 'p', 0xbb},
+		{'p', 0xbb, 0xcc, 'p', 0xbb},
+		{0x9f, 'p', 0xbb, 0xcc, 'p', 0xbb},
+		{0xd1, 'p', 'p', 'p', 0xd2, 'x', 'x', 'p', 0xd3},
+		{0x87, 126, 0xd1, 126, 0xd2, 0xd3},
+	}
+
+	for _, tbl := range tables {
+		for _, buf := range bufs {
+			n := TIPack(packet, buf, 6, 127, tbl)
+			act := packet[:n]
+			assertNoZeroes(t, act)
+			m := TIUnpack(buffer, act, 6, 127, tbl)
+			res := buffer[:m]
+			assert.Equal(t, buf, res)
+
+			n = TIPack(packet, buf, 7, 127, tbl)
+			act = packet[:n]
+			assertNoZeroes(t, act)
+			m = TIUnpack(buffer, act, 7, 127, tbl)
+			res = buffer[:m]
+			assert.Equal(t, buf, res)
+		}
 	}
 }

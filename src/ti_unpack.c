@@ -18,16 +18,16 @@ uint8_t u8[TIP_SRC_BUFFER_SIZE_MAX]; // todo
 size_t tiu( uint8_t * dst, const uint8_t * src, size_t slen ){
     int uTlen = collectUTBytes( uT8, src, slen );
     size_t u8len;
-#if OPTIMIZE_UNREPLACABLES == 1
+//  #if OPTIMIZE_UNREPLACABLES == 1
     if (uTlen <= 0 ) { // Unrplacable byte optimisation was possible.
         u8len = -uTlen;
         memcpy( u8, uT8, u8len );
     } else { // Otherwise the last byte is an unreplacable and not the only one and there is at least one ID.
         u8len = reconvertBits( u8, uT8, uTlen ); // Optimization was not possible.
     }
-#else // #if OPTIMIZE_UNREPLACABLES == 1
-    u8len = reconvertBits( u8, uT8, uTlen );
-#endif // #else // #if OPTIMIZE_UNREPLACABLES == 1
+//  #else // #if OPTIMIZE_UNREPLACABLES == 1
+//      u8len = reconvertBits( u8, uT8, uTlen );
+//  #endif // #else // #if OPTIMIZE_UNREPLACABLES == 1
     size_t dlen = restorePacket( dst, IDTable, u8, u8len, src, slen );
     return dlen;
 }
@@ -62,13 +62,13 @@ static int collectUTBytes( uint8_t * dst, const uint8_t * src, size_t slen ){
         }
     }
     int count = p - dst;
-#if OPTIMIZE_UNREPLACABLES == 1 // cases like III or IIU or UUIIIUII 
+//  #if OPTIMIZE_UNREPLACABLES == 1 // cases like III or IIU or UUIIIUII 
     if (count <= 1) { // TiP packet has no or max one unrplacable byte, cases like III or IIU
         count = -count; // Unreplacable bytes optimisation was possible.
     }else if (lastByteIsId) {// TiP packet ends with an ID.
         count = -count; // Unreplacable bytes optimisation was possible.
     }
-#endif // #if OPTIMIZE_UNREPLACABLES == 1
+//  #endif // #if OPTIMIZE_UNREPLACABLES == 1
     return count;
 }
 

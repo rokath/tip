@@ -24,19 +24,19 @@ extern "C" {
 #define TIP_MAX_PATH_COUNT (TIP_SRC_BUFFER_SIZE_MAX/4)
 #endif
 
-#ifndef TIP_VERBOSE
-#define TIP_VERBOSE 0
-#endif
-
-#ifndef TIP_DEBUG
-#define TIP_DEBUG 0
-#endif
-
-#ifndef OPTIMIZE_UNREPLACABLES
-//! OPTIMIZE_UNREPLACABLES allows to reduce the TiP packet size in some special cases.
-//! It is a selectable option just for tests and should be enabled always.
-#define OPTIMIZE_UNREPLACABLES 1
-#endif
+//  #ifndef TIP_VERBOSE
+//  #define TIP_VERBOSE 0
+//  #endif
+//  
+//  #ifndef TIP_DEBUG
+//  #define TIP_DEBUG 0
+//  #endif
+//  
+//  #ifndef OPTIMIZE_UNREPLACABLES
+//  //! OPTIMIZE_UNREPLACABLES allows to reduce the TiP packet size in some special cases.
+//  //! It is an option just for tests and should be enabled always.
+//  #define OPTIMIZE_UNREPLACABLES 1
+//  #endif
 
 #ifdef __cplusplus
 }
