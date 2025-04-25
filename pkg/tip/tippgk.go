@@ -15,70 +15,31 @@ package tip
 // #include "shift86bit.c"
 // #include "shift68bit.c"
 // #include "tip.c"
-// int optimizeUnreplacablesEnabled(void) {
-//     return OPTIMIZE_UNREPLACABLES;
-// }
-// int unreplacableBitCount(void) {
-//     return unreplacableContainerBits;
-// }
-// int maxPatternSize(void) {
-//     return maxPatternlength;
-// }
 import "C"
 
 import (
 	"unsafe"
 )
 
-// maxPatternSize returns the length of the longest existing pattern inside ID table.
-func MaxPatternSize() int {
-	x := C.maxIdPatternLength()
-	return int(x)
-}
-
-// OptimizeUnreplacablesEnabled returns, if in tipConfig.h OPTIMIZE_UNREPLACABLES was set.
-func OptimizeUnreplacablesEnabled() bool {
-	x := C.optimizeUnreplacablesEnabled()
-	return x > 0
-}
-
-// UnreplacableBitCount return the bit count used for unreplacable conversation (6 or 7).
-func UnreplacableBitCount() int {
-	x := C.unreplacableBitCount()
-	return int(x)
-}
-
 // Pack compresses in to out with no zeroes in out and returns packed size plen.
 // out needs to have a size of at least 8*len(in)/7 + 1 for the case in cannot get compressed.
-func TIPack(out, table, in []byte) (plen int) {
-	dst := (*C.uchar)(unsafe.Pointer(&out[0]))
-	src := (*C.uchar)(unsafe.Pointer(&in[0]))
-	tbl := (*C.uchar)(unsafe.Pointer(&table[0]))
-	slen := (C.size_t)(len(in))
-	dlen := C.tiPack(dst, tbl, src, slen)
-	return int(dlen)
-}
-
-
-// Pack compresses in to out with no zeroes in out and returns packed size plen.
-// out needs to have a size of at least 8*len(in)/7 + 1 for the case in cannot get compressed.
-func TIPack2(out, in []byte, urc, id1Max int, table []byte) (plen int) {
+func TIPack(out, in []byte, urc, id1Max int, table []byte) (plen int) {
 	dst := (*C.uchar)(unsafe.Pointer(&out[0]))
 	src := (*C.uchar)(unsafe.Pointer(&in[0]))
 	slen := (C.size_t)(len(in))
 	tbl := (*C.uchar)(unsafe.Pointer(&table[0]))
-	dlen := C.tiPack2(dst, src, slen, (C.uint)(urc), (C.uint)(id1Max), tbl)
+	dlen := C.tiPack(dst, src, slen, (C.uint)(urc), (C.uint)(id1Max), tbl)
 	return int(dlen)
 }
 
 // TIUnpack decompresses in to out and returns unpacked size ulen.
 // for the case if in has max possible compression.
-func TIUnpack(out, table, in []byte) (ulen int) {
+func TIUnpack(out, in []byte, urbc, id1Count int, table []byte) (ulen int) {
 	dst := (*C.uchar)(unsafe.Pointer(&out[0]))
 	tbl := (*C.uchar)(unsafe.Pointer(&table[0]))
 	src := (*C.uchar)(unsafe.Pointer(&in[0]))
 	slen := (C.size_t)(len(in))
-	dlen := C.tiUnpack(dst, tbl, src, slen)
+	dlen := C.tiUnpack(dst, src, slen, (C.uint)(urbc), (C.uint)(id1Count), tbl)
 	return int(dlen)
 }
 

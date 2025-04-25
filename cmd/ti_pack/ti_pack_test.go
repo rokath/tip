@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/rokath/tip/pkg/tip"
@@ -9,25 +10,21 @@ import (
 
 func Test_main(t *testing.T) {
 	var idTable = []byte{0}
-	buf := []byte{0xd1, 0xd2, 0xd3}
-	var exp []byte
-	if tip.OptimizeUnreplacablesEnabled() {
-		if tip.UnreplacableBitCount() == 7 {
-			exp = []byte{0x87, 0xd1, 0xd2, 0xd3}
-		} else { // == 6
-			exp = []byte{0xff, 0xd1, 0xd2, 0xd3}
-		}
-	} else {
-		if tip.UnreplacableBitCount() == 7 {
-			exp = []byte{0x87, 0xd1, 0xd2, 0xd3}
-		} else { // == 6
-			exp = []byte{0xff, 0xd1, 0xd2, 0xd3}
-		}
+	var tt = []struct{
+		ubc int
+		buf []byte
+		exp []byte
+	}{
+		{ 7, []byte{0xd1, 0xd2, 0xd3},  []byte{0x87, 0xd1, 0xd2, 0xd3} },
+		{ 6, []byte{0xd1, 0xd2, 0xd3},  []byte{0xff, 0xd1, 0xd2, 0xd3} },
 	}
+
 	out := make([]byte, 1000)
-	n := tip.TIPack(out, idTable, buf)
-	act := out[:n]
-	assert.Equal(t, exp, act)
+	for _, x := range tt {
+		n := tip.TIPack(out, x.buf, x.ubc, 127, idTable)
+		act := out[:n]
+		assert.Equal(t, x.exp, act)
+	}
 }
 
 func TestTiPackTiUnpack(t *testing.T) {
@@ -1955,12 +1952,13 @@ func TestTiPackTiUnpack(t *testing.T) {
 	assert.Equal(t, []byte(txt), buf)
 
 	out := make([]byte, 1000)
-	n := tip.TIPack(out, idTable, buf)
+	n := tip.TIPack(out, buf, 6, 126, idTable)
 	packet := out[:n]
 
 	back := make([]byte, 1000)
-	m := tip.TIUnpack(back, idTable, packet)
+	m := tip.TIUnpack(back, packet, 6, 126, idTable)
 	untip := back[:m]
 
 	assert.Equal(t, buf, untip)
+	fmt.Println(untip)
 }

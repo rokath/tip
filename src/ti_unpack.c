@@ -12,14 +12,10 @@ static size_t reconvertBits( uint8_t * lst, const uint8_t * src, size_t slen );
 static size_t restorePacket( uint8_t * dst, const uint8_t * table, const uint8_t * u8, size_t u8len, const uint8_t * src, size_t slen );
 static size_t getPatternFromId( uint8_t * pt, const uint8_t * table, id_t id );
 
-size_t tiu( uint8_t * dst, const uint8_t * src, size_t slen ){
-    return tiUnpack(dst, idTable, src, slen );
-}
-
 uint8_t uT8[TIP_SRC_BUFFER_SIZE_MAX*8u/7u+1]; // todo
 uint8_t u8[TIP_SRC_BUFFER_SIZE_MAX]; // todo
 
-size_t tiUnpack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_t slen ){
+size_t tiu( uint8_t * dst, const uint8_t * src, size_t slen ){
     int uTlen = collectUTBytes( uT8, src, slen );
     size_t u8len;
 #if OPTIMIZE_UNREPLACABLES == 1
@@ -32,7 +28,7 @@ size_t tiUnpack( uint8_t* dst, const uint8_t * table, const uint8_t * src, size_
 #else // #if OPTIMIZE_UNREPLACABLES == 1
     u8len = reconvertBits( u8, uT8, uTlen );
 #endif // #else // #if OPTIMIZE_UNREPLACABLES == 1
-    size_t dlen = restorePacket( dst, table, u8, u8len, src, slen );
+    size_t dlen = restorePacket( dst, IDTable, u8, u8len, src, slen );
     return dlen;
 }
 
@@ -48,38 +44,6 @@ static int isID( const uint8_t * p){
     }
     return 0;
 }
-
-#if OPTIMIZE_UNREPLACABLES == 1
-/*
-//! endsWithID checks, if src ends with an ID.
-//! @retval 0: no ID
-//! @retval 1: primary ID
-//! @retval 2: secondary ID (id1 at p[0] and id2 at p[1])
-static int endsWithID(const uint8_t * src, size_t slen){
-    if (slen == 0){
-        return 0;
-    }
-    if (slen == 1){
-        uint8_t by = src[slen-1];
-        if (by <= ID1Count){
-            return 1;
-        } else if (by <= ID1Max){
-            for(;;); // unexpected, option for further optimization?
-        } // The last src byte is > ID1Count, what would expect one more byte. 
-        return 0;    
-    }
-	// tip: 80bc 79d1 7fc7 7fc1 7fb8            f0 7979   a8 7fea 7ffe 7e89 7c6e 7fd0 790d 50 7fec 7f72                           e8bcaf 7c09 79ad 7d7b     f0
-	//      uuuu id   id   id   id              uu id     uu id   id   id   id   id   id   ID id   id                             uuuuuu id   id   id       uu // uu len=8
-    // At this point, isID sees 0x7bf0 and returns a false positive answer.
-    // We need to process from the buffer start!
-    int result = isID( src + slen - 2); // slen >= 2
-    if (result == 2) {
-        return 2;
-    }
-    return isID( src + slen - 1); 
-}
-*/
-#endif // #if OPTIMIZE_UNREPLACABLES == 1
 
 // collectUTBytes copies all bytes with msbit=1 into dst and returns their count.
 static int collectUTBytes( uint8_t * dst, const uint8_t * src, size_t slen ){

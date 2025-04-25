@@ -49,15 +49,6 @@ static void printPatternAsASCII( id_t id );
 static void printBufferAsASCII( const uint8_t * buf, size_t len);
 #endif
 
-/*
-//! @brief idPatTable points to a parameter "table" passed to some functions.
-//! @details This allows using different idTable's than idTable.c 
-//! especially for testing and not to have to pass it to all functions.
-//! The ID table has MaxID IDs with pattern, each max 255 bytes long.
-//! ATTENTION: The pack functions are usable only sequentially!
-static uint8_t const * idPatTable = IDTable;
-*/
-
 size_t tip( uint8_t * dst, const uint8_t * src, size_t slen ){ // default user interface
     if( slen > TIP_SRC_BUFFER_SIZE_MAX ){
         return 0;
@@ -71,26 +62,6 @@ size_t tip( uint8_t * dst, const uint8_t * src, size_t slen ){ // default user i
     uint8_t * dstLimit = dst + dstSizeMax;
     memset(dst, 0, dstSizeMax);
     size_t tipSize = buildTiPacket(dst, dstLimit, IDTable, src, slen);
-    return tipSize;
-}
-
-size_t tiPack( uint8_t * dst, const uint8_t * table, const uint8_t * src, size_t slen ){ // extended user interface
-    if( TIP_SRC_BUFFER_SIZE_MAX < slen ){
-#if TIP_DEBUG
-        printf( "slen %lu > %u TIP_SRC_BUFFER_SIZE_MAX is invalid\n", slen, TIP_SRC_BUFFER_SIZE_MAX );
-#endif
-        return 0;
-    }
-    size_t dstSizeMax;
-    if (unreplacableContainerBits == 6){
-        dstSizeMax = ((43691ul*slen)>>15)+1;  // The max possible dst size is len*8/6+1 or ((len*65536*4/3)>>16)+1.
-    }else{ // (unreplacableContainerBits == 7)
-        dstSizeMax = ((18725ul*slen)>>14)+1;  // The max possible dst size is len*8/7+1 or ((len*65536*8/7)>>16)+1.
-    }
-    uint8_t * dstLimit = dst + dstSizeMax;
-    memset(dst, 0, dstSizeMax);
-    IDTable = table;
-    size_t tipSize = buildTiPacket(dst, dstLimit, table, src, slen);
     return tipSize;
 }
 
@@ -724,3 +695,12 @@ static void printIDPositionTable( void ){
 }
 
 #endif
+
+/*
+//! @brief idPatTable points to a parameter "table" passed to some functions.
+//! @details This allows using different idTable's than idTable.c 
+//! especially for testing and not to have to pass it to all functions.
+//! The ID table has MaxID IDs with pattern, each max 255 bytes long.
+//! ATTENTION: The pack functions are usable only sequentially!
+static uint8_t const * idPatTable = IDTable;
+*/
