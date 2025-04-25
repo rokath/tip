@@ -132,6 +132,9 @@ func TIUnpack(out, in []byte, urbc, id1Count int, table []byte) (ulen int) {
 // Pack compresses in to out with no zeroes in out and returns packed size plen.
 // out needs to have a size of at least 8*len(in)/7 + 1 for the case in cannot get compressed.
 func Pack(out, in []byte) (plen int) {
+	if len(in) == 0 {
+		return 0
+	}
 	o := (*C.uchar)(unsafe.Pointer(&out[0])) //o := unsafe.Pointer((*C.uchar)(&out[0]))
 	i := (*C.uchar)(unsafe.Pointer(&in[0]))  //i := unsafe.Pointer((*C.uchar)(&in[0]))
 	ilen := (C.size_t)(len(in))

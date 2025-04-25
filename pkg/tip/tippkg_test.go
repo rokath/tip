@@ -1,7 +1,6 @@
 package tip
 
 import (
-	"encoding/hex"
 	"fmt"
 	"testing"
 
