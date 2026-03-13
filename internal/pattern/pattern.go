@@ -14,26 +14,29 @@ import (
 )
 
 var (
-	PatternSizeMax int // PatternSizeMax is the longest pattern to search for to build idTable.c
-	Verbose        bool
+	// PatternSizeMax is the longest pattern to search for when building
+	// `idTable.c`.
+	PatternSizeMax int
+	// Verbose enables progress output while scanning sample data.
+	Verbose bool
 )
 
 func init() {
 	flag.IntVar(&PatternSizeMax, "z", 8, "max pattern size to find")
 }
 
-// Pattern contains a pattern and its occurrances count.
+// Pattern contains a byte sequence and the positions where it occurs.
 type Pattern struct {
-	Bytes      []byte // Bytes is the pattern as byte slice.
-	Pos        []int  // Pos holds all start occurances of Bytes. Its len is the occurances count.
-	DeletedPos []int  // DeletedPos holds all deleted Pos elements.
+	Bytes      []byte // Bytes is the pattern as a byte slice.
+	Pos        []int  // Pos holds all start positions of Bytes. Its length is the occurrence count.
+	DeletedPos []int  // DeletedPos holds all removed elements from Pos.
 }
 
-// Histogram objects hold pattern strings occurences count.
+// Histogram holds hex-encoded patterns and their occurrences.
 type Histogram struct {
-	Hist map[string]Pattern // Hist is the created histogram. len(Pat.Pos) is the occurrances count.
-	mu   *sync.Mutex        // mu guaranties mutual exclusion access to the histogram.
-	Keys []string           // Key holds all histogram keys separately for faster processing.
+	Hist map[string]Pattern // Hist stores all collected patterns. len(Pat.Pos) is the occurrence count.
+	mu   *sync.Mutex        // mu guarantees mutually exclusive access to the histogram.
+	Keys []string           // Keys caches all histogram keys for later processing.
 }
 
 // NewHistogram returns a new Histogram instance.
@@ -43,12 +46,10 @@ func NewHistogram(mu *sync.Mutex) *Histogram {
 	return &object
 }
 
-// ScanData searches data for any 2-to-max bytes sequences and extends p
-// with them as key strings hex encoded with their increased count as values in hist.
-// ScanData( searches data for any 2-to-max bytes sequences and extends p.Hist with them.
-// The byte sequences are getting hex encodedand used as keys with their increased count as values in p.Hist.
-// Pattern of size 1 are skipped, because they give no compression effect when replaced by an id.
-// When ring is true, the data are considered as ring.
+// ScanData searches data for all 2-byte to maxPatternSize-byte sequences and
+// adds them to p.Hist. The byte sequences are hex-encoded and used as keys.
+// Patterns of size 1 are skipped because replacing them with an ID would not
+// improve compression. When ring is true, the data is treated as a ring buffer.
 func (p *Histogram) ScanData(data []byte, maxPatternSize int, ring bool) {
 	var wg sync.WaitGroup
 	for i := range maxPatternSize - 1 { // loop over pattern sizes
@@ -61,6 +62,7 @@ func (p *Histogram) ScanData(data []byte, maxPatternSize int, ring bool) {
 	wg.Wait()
 }
 
+// DeleteEmptyKeys removes all histogram entries that have no positions left.
 func (p *Histogram) DeleteEmptyKeys() {
 	for k, v := range p.Hist {
 		if len(v.Pos) == 0 {
@@ -69,7 +71,7 @@ func (p *Histogram) DeleteEmptyKeys() {
 	}
 }
 
-// DiscardSeldomPattern removes all keys occuring only discardSize or less often.
+// DiscardSeldomPattern removes all keys occurring discardSize times or fewer.
 func (p *Histogram) DiscardSeldomPattern(discardSize int) {
 	hlen := len(p.Hist)
 	counts := 0 // make([]int, discardSize)
@@ -84,24 +86,24 @@ func (p *Histogram) DiscardSeldomPattern(discardSize int) {
 	}
 }
 
-// scanForRepetitions searches data for ptLen bytes sequences
-// and adds them as key strings hex encoded with their count as values to p.Hist.
+// scanForRepetitions searches data for ptLen-byte sequences
+// and adds them as hex-encoded keys to p.Hist.
 // Also the pattern positions are recorded.
-// This pattern search algorithm: Start at offset 0 with ptLen bytes from data as pattern
-// and search data for repetitions by moving byte by byte.
-// When ring is true, the data are considered as ring.
+// The search starts at offset 0 with ptLen bytes from data as the pattern and
+// advances byte by byte. When ring is true, the data is treated as a ring
+// buffer.
 func (p *Histogram) scanForRepetitions(data []byte, ptLen int, ring bool) {
 	if ring {
 		data = append(data, data[:ptLen-1]...)
 	}
-	last := len(data) - (ptLen) // This is the last position in data to check for repetitions.
+	last := len(data) - ptLen // last is the final position in data to check for repetitions.
 	var wg sync.WaitGroup
-	for i := 0; i <= last; i++ { // Loop over all possible pattern.
+	for i := 0; i <= last; i++ { // Loop over all possible patterns.
 		wg.Add(1)
 		go func(k int) {
 			defer wg.Done()
 			pat := data[k : k+ptLen]
-			key := hex.EncodeToString(pat) // We need to convert pat into a key.
+			key := hex.EncodeToString(pat) // pat must be converted into a map key.
 			p.mu.Lock()
 
 			pt := p.Hist[key]
@@ -115,7 +117,7 @@ func (p *Histogram) scanForRepetitions(data []byte, ptLen int, ring bool) {
 	wg.Wait()
 }
 
-// ExportAsList converts p.Hist into list and restores original patterns.
+// ExportAsList converts p.Hist into a slice of patterns.
 func (p *Histogram) ExportAsList() (list []Pattern) {
 	list = make([]Pattern, len(p.Hist))
 	var i int
@@ -128,7 +130,7 @@ func (p *Histogram) ExportAsList() (list []Pattern) {
 	return
 }
 
-// ScanFile reads iFn ands its data to the histogram.
+// ScanFile reads iFn and adds its data to the histogram.
 func (p *Histogram) ScanFile(fSys *afero.Afero, iFn string, maxPatternSize int) (err error) {
 	data, err := fSys.ReadFile(iFn)
 	if err != nil {
@@ -165,8 +167,8 @@ func (p *Histogram) ScanAllFiles(fSys *afero.Afero, location string, maxPatternS
 	return
 }
 
-// SortByDescWeight sorts and returns list ordered for descenting weight, count and pattern length.
-// It also sorts alphabetical to get reproducable results.
+// SortByDescWeight sorts and returns list ordered by descending weight, count,
+// and pattern length.
 func SortByDescWeight(list []Pattern) []Pattern {
 	compareFn := func(a, b Pattern) int {
 		aWeight := len(a.Pos) * len(a.Bytes)
