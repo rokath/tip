@@ -13,11 +13,16 @@ import (
 )
 
 var (
-	Verbose                   bool
-	ID1Max                    int // ID1Max results immediately from UnreplacableContainerBits.
-	ID1Count                  int // ID1Count its the direct IDs count.
-	MaxID                     int // MaxID is the max possible amount of pattern in the idTable.
-	UnreplacableContainerBits = 6 // UnreplacableContainerBits is container bit size for unreplacebale bytes.
+	// Verbose enables extended output in the generated C file.
+	Verbose bool
+	// ID1Max follows directly from UnreplacableContainerBits.
+	ID1Max int
+	// ID1Count is the number of direct IDs.
+	ID1Count int
+	// MaxID is the maximum possible number of patterns in the generated ID table.
+	MaxID int
+	// UnreplacableContainerBits is the container bit size for unreplacable bytes.
+	UnreplacableContainerBits = 6
 )
 
 func init() {
@@ -25,6 +30,7 @@ func init() {
 	flag.IntVar(&ID1Count, "n", 127, "direct ID count ID1Count (count for 2-bytes pattern), 0-127 for u=7 and 0-191 for u=6")
 }
 
+// PrintPattern prints a pattern with weight, count, and an ASCII preview.
 func PrintPattern(index int, x pattern.Pattern) {
 	s := make([]byte, 32)
 	for _, b := range x.Bytes {
@@ -33,10 +39,11 @@ func PrintPattern(index int, x pattern.Pattern) {
 		}
 		s = append(s, b)
 	}
-	fmt.Printf("i:%3d, weight:%8d, cnt:%6d, ascci:'%s'\n", index, len(x.Pos)*len(x.Bytes), len(x.Pos), string(s))
+	fmt.Printf("i:%3d, weight:%8d, cnt:%6d, ascii:'%s'\n", index, len(x.Pos)*len(x.Bytes), len(x.Pos), string(s))
 }
 
-// Generate writes a file oFn containing C code using loc file(s) and max pattern size.
+// Generate writes a C source file to oFn using sample data from loc and the
+// given maximum pattern size.
 // https://en.wikipedia.org/wiki/Dictionary_coder
 // https://cs.stackexchange.com/questions/112901/algorithm-to-find-repeated-patterns-in-a-large-string
 func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error) {
@@ -65,7 +72,7 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 	pattern.SortByDescWeight(list)
 	idList1 := list[:ID1Count]                                                   // direct IDs
 	idList2 := slices.DeleteFunc(list[ID1Count:], func(x pattern.Pattern) bool { // indirect IDs
-		return len(x.Bytes) <= 2 // 2-bytes patteren make no sense for indirect IDs
+		return len(x.Bytes) <= 2 // 2-byte patterns do not make sense for indirect IDs
 	})
 	cList := append(idList1, idList2...) // combined list
 	var idList []pattern.Pattern         // used ID
@@ -95,7 +102,7 @@ func Generate(fSys *afero.Afero, oFn, loc string, maxPatternSize int) (err error
 
 	fmt.Fprintf(oh, `
 
-//! UnreplacableContainerBits is container bit size for unreplacebale bytes.
+//! unreplacableContainerBits is the container bit size for unreplacable bytes.
 unsigned unreplacableContainerBits = %d; // 6 bits or 7 bits
 `, UnreplacableContainerBits)
 
@@ -116,7 +123,7 @@ unsigned MaxID = %d;
 `, MaxID)
 
 	fmt.Fprintf(oh, `
-//! LastID is pattern count inside the idTable. If it is < MaxID, consider increasing ID1Count.
+//! LastID is the pattern count inside idTable. If it is < MaxID, consider increasing ID1Count.
 unsigned LastID = %d;
 `, len(idList))
 
@@ -128,12 +135,12 @@ uint8_t maxPatternlength = %d;
 	fmt.Fprintln(oh, `
 static uint8_t const idTable[]; // forward declaration
 
-//! IDTable points to the unsed idTable.
+//! IDTable points to the used idTable.
 uint8_t const * IDTable = idTable;
 
 //! idTable is sorted by pattern length and pattern count.
-//! The pattern position + 1 is the replace id.
-//! The generator pattern max size was`, maxPatternSize, `and the list pattern max size is:`, maxListPatternSize)
+//! The pattern position + 1 is the replacement ID.
+//! The generator pattern max size was`, maxPatternSize, ` and the list pattern max size is:`, maxListPatternSize)
 	start := fmt.Sprintf("static uint8_t const idTable[] = { // from %s\n", loc)
 	fill := spaces(len("    xxx, ") + len("0x00, ")*maxListPatternSize)
 	switch maxListPatternSize {
@@ -147,7 +154,7 @@ uint8_t const * IDTable = idTable;
 	fill2 := spaces(maxListPatternSize - len("ASCII"))
 	fmt.Fprintf(oh, start+"%s// `ASCII%s`|  count   weight   id (decimal)  id1  id2\n", fill, fill2)
 	for i, x := range idList {
-		pls := createPatternLineString(x.Bytes, maxListPatternSize) // todo: review and improve code
+		pls := createPatternLineString(x.Bytes, maxListPatternSize)
 		sz := len(x.Bytes)
 		tipTableSize += 1 + sz
 		if i < len(idList) {
@@ -171,7 +178,7 @@ uint8_t const * IDTable = idTable;
 		fmt.Fprint(oh, "//   index: ( count) len, bytes... // ASCII\n")
 		for i, x := range list {
 			if len(x.Pos) > 1 {
-				pls := createPatternLineString(x.Bytes, maxListPatternSize) // todo: review and improve code
+				pls := createPatternLineString(x.Bytes, maxListPatternSize)
 				fmt.Fprintf(oh, "//%8d: (%6d) %s\n", i, len(x.Pos), pls)
 			}
 		}
@@ -180,9 +187,9 @@ uint8_t const * IDTable = idTable;
 	return
 }
 
-// tipPackageIDs computes id1 and id2 from id = 1...MaxID.
-// id1 range is 1...ID1Count
-// id2 range is 1...255, when -1, than no id2
+// tipPackageIDs computes id1 and id2 from an ID in the range 1...MaxID.
+// id1 is in the range 1...ID1Count for direct IDs.
+// id2 is in the range 1...255 for indirect IDs, or -1 when no id2 is needed.
 func tipPackageIDs(id int) (id1 uint8, id2 int) {
 	if id <= ID1Count {
 		id1 = uint8(id)
@@ -202,19 +209,19 @@ func tipPackageIDs(id int) (id1 uint8, id2 int) {
 	return
 }
 
-// createPatternLineString writes pattern as "  n, b0, b1, ..., b(n-1), // AAA˙˙AA˙ " string.
-func createPatternLineString(pattern []byte, maxPatternSize int) string {
+// createPatternLineString formats a pattern as
+// "  n, b0, b1, ..., b(n-1), // AAA˙˙AA˙".
+func createPatternLineString(b []byte, maxPatternSize int) string {
 	var s strings.Builder
-	s.WriteString(fmt.Sprintf("%3d,", len(pattern))) // start line with pattern size
-	for _, x := range pattern {                      // write pattern bytes
+	s.WriteString(fmt.Sprintf("%3d,", len(b))) // start line with pattern size
+	for _, x := range b {                      // write pattern bytes
 		s.WriteString(fmt.Sprintf(" 0x%02x,", x))
 	}
-	fill := spaces(6 * (maxPatternSize - len(pattern)))
-	s.WriteString(fmt.Sprintf("%s // ", fill))               // align
-	s.WriteString(byteSliceAsASCII(pattern, maxPatternSize)) // write pattern lettes as comment
-	return s.String()                                        // no alignment here to keep s length
+	fill := spaces(6 * (maxPatternSize - len(b)))
+	s.WriteString(fmt.Sprintf("%s // ", fill))         // align
+	s.WriteString(byteSliceAsASCII(b, maxPatternSize)) // write pattern letters as comment
+	return s.String()                                  // no alignment here to keep s length
 }
-
 
 // spaces returns a string consisting of n spaces.
 func spaces(n int) string {
@@ -228,8 +235,9 @@ func spaces(n int) string {
 	return s.String()
 }
 
-// byteSliceAsASCII returns b as ASCII string size len. Example: "˙Aah˙B˙˙C˙˙     "
-// length is used to append spaces until the string has the desired length.
+// byteSliceAsASCII returns b as a padded ASCII string.
+// Example: "`˙Aah˙B˙˙C˙˙`     ".
+// length is used to append spaces until the string has the desired width.
 func byteSliceAsASCII(b []byte, length int) string {
 	var s strings.Builder
 	s.WriteString("`")
