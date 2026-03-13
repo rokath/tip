@@ -1,4 +1,3 @@
-
 package mem
 
 // #cgo CFLAGS: -g -Wall -I../../src
@@ -12,9 +11,9 @@ import (
 	"unsafe"
 )
 
-// Mem returns first position of needle in hay or -1.
-// Mem calls via CGO the memmem C function and exists to test it.
-// See also slice.Index function.
+// Mem returns the first position of needle in hay, or -1 if needle is not
+// found. It calls the C memmem implementation via cgo and exists primarily to
+// test that implementation from Go.
 func Mem(hay, needle []byte) (pos int) {
 	if hay == nil || needle == nil || len(hay) == 0 || len(needle) == 0 {
 		return -1
